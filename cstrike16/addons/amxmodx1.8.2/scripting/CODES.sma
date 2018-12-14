@@ -2,24 +2,25 @@
 #include <amxmisc>
 #include <fakemeta>
 #include <fvault>
+#include <celltrie>
 
 new const g_VAULTNAME[] = "CODES";
 
-new activated[33],g_name[32][33],g_ip[32][33],g_authid[32][65],iIP[32],data[ 125 ],iName[32],Codes[ 125 ][ 125 ],c_nums
+new activated[33],g_name[32][33],g_ip[32][33],g_authid[32][65],iIP[32],data[ 125 ],iName[32],Trie:Codes2;
 
 public plugin_init()
 {
 	register_clcmd("say","SayFUNC")
 	register_clcmd("say_team","SayFUNC")
-
+	
 	register_forward( FM_ClientUserInfoChanged, "Fwd_ClientUserInfoChanged" );
 }
 
 public plugin_precache()
 {
+	Codes2 = TrieCreate();
 	new iFile[ 256 ];
-	get_configsdir(iFile, charsmax(iFile))
-	add( iFile, charsmax( iFile ), "/coduri.ini");
+	copy(iFile[ get_localinfo( "amxx_configsdir" , iFile, charsmax( iFile ) ) ] , charsmax( iFile ) , "/coduri.ini" );
 	if( !file_exists( iFile ) )	write_file( iFile, "; Trece codurile mai jos, una sub alta", -1 );
 	
 	new iFilePointer = fopen(iFile, "r+")
@@ -31,9 +32,11 @@ public plugin_precache()
 			fgets( iFilePointer, szBuffer, charsmax( szBuffer ) );
 			trim(szBuffer)
 			
-			if( szBuffer[ 0 ] == '#' || szBuffer[ 0 ] == ';' || (szBuffer[ 0 ] == '/' && szBuffer[ 1 ] == '/') || !szBuffer[ 0 ] /*|| !strlen(szBuffer)||szLineData[0] == EOS*/)	continue;
+			if( szBuffer[ 0 ] == '#' || szBuffer[ 0 ] == ';' ||
+			(szBuffer[ 0 ] == '/' && szBuffer[ 1 ] == '/') || !szBuffer[ 0 ]
+			/*|| !strlen(szBuffer)||szLineData[0] == EOS||szBuffer[ 0 ] == ' '*/)	continue;
 			
-			copy(Codes[c_nums++],charsmax(Codes),szBuffer)
+			TrieSetCell( Codes2 , szBuffer , 1 );
 		}
 		fclose(iFilePointer);
 	}
@@ -45,7 +48,7 @@ public client_putinserver(id)
 	
 	get_user_name(id, g_name[id], charsmax(g_name[]));
 	get_user_ip(id, g_ip[id], charsmax(g_ip[]),1);
-	get_user_authid(id, g_authid[id], charsmax(g_authid[]));//unset
+	get_user_authid(id, g_authid[id], charsmax(g_authid[]));//not used!
 	
 	LoadData(id)
 }
@@ -53,15 +56,18 @@ public client_putinserver(id)
 public Fwd_ClientUserInfoChanged( id, szBuffer )
 {
 	if ( !is_user_connected( id ) )	return FMRES_IGNORED;
-
+	
 	static szNewName[ 32 ];
 	engfunc( EngFunc_InfoKeyValue, szBuffer, "name", szNewName, sizeof ( szNewName ) -1 );
-
+	
 	if ( equali( szNewName, g_name[ id ] ) )	return FMRES_IGNORED;
-
-	SaveData( id );
-	copy( g_name[ id ], sizeof ( g_name[ ] ) -1, szNewName );
-	LoadData( id );
+	
+	if(activated[id])
+	{
+		SaveData( id );
+		copy( g_name[ id ], sizeof ( g_name[ ] ) -1, szNewName );
+		LoadData( id );
+	}
 	return FMRES_IGNORED;
 }
 
@@ -87,25 +93,22 @@ public write_code(id,arg[])
 		return PLUGIN_HANDLED
 	}
 	
-	for(new i=0;i<c_nums;i++)
+	if(TrieKeyExists(Codes2,arg))
 	{
-		if(equal(arg,Codes[i]))
+		if(activated[id]==1||equal(iIP[id],g_ip[id])||equal(g_name[id],iName[id]))//steamid, if is validated
 		{
-			if(activated[id]==1||equal(iIP[id],g_ip[id])||equal(g_name[id],iName[id]))
-			{
-				client_print(id,print_chat,"[AMXX]: DEJA AI ACTIVAT")
-				return PLUGIN_HANDLED
-			}
-			client_print(id,print_chat,"[AMXX]: AI ACTIVAT CU SUCCES")
-			if(activated[id]!=1)	activated[id]=1
-			SaveData(id)
+			client_print(id,print_chat,"[AMXX]: DEJA AI ACTIVAT")
 			return PLUGIN_HANDLED
 		}
-		else
-		{
-			client_print(id,print_chat,"[AMXX]: COD INVALID")
-			return PLUGIN_HANDLED
-		}
+		client_print(id,print_chat,"[AMXX]: AI ACTIVAT CU SUCCES")
+		if(activated[id]!=1)	activated[id]=1
+		SaveData(id)
+		return PLUGIN_HANDLED
+	}
+	else
+	{
+		client_print(id,print_chat,"[AMXX]: COD INVALID")
+		return PLUGIN_HANDLED
 	}
 	return PLUGIN_HANDLED
 }
