@@ -1,5 +1,6 @@
 #include <amxmodx>
 #include <amxmisc>
+#include <fakemeta>
 #include <fvault>
 
 new const g_VAULTNAME[] = "CODES";
@@ -10,6 +11,8 @@ public plugin_init()
 {
 	register_clcmd("say","SayFUNC")
 	register_clcmd("say_team","SayFUNC")
+
+	register_forward( FM_ClientUserInfoChanged, "Fwd_ClientUserInfoChanged" );
 }
 
 public plugin_precache()
@@ -45,6 +48,21 @@ public client_putinserver(id)
 	get_user_authid(id, g_authid[id], charsmax(g_authid[]));//unset
 	
 	LoadData(id)
+}
+
+public Fwd_ClientUserInfoChanged( id, szBuffer )
+{
+	if ( !is_user_connected( id ) )	return FMRES_IGNORED;
+
+	static szNewName[ 32 ];
+	engfunc( EngFunc_InfoKeyValue, szBuffer, "name", szNewName, sizeof ( szNewName ) -1 );
+
+	if ( equali( szNewName, g_name[ id ] ) )	return FMRES_IGNORED;
+
+	SaveData( id );
+	copy( g_name[ id ], sizeof ( g_name[ ] ) -1, szNewName );
+	LoadData( id );
+	return FMRES_IGNORED;
 }
 
 public SayFUNC(id)
