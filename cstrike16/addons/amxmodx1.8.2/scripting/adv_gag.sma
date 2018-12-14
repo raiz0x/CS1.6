@@ -14,14 +14,17 @@ new const bars[ ] = "/";
 
 new command[ ][ ] =
 {
-        "/gag",
-        "/ungag",
+	"/gag",
+	"/ungag",
 	"/mute",
 	"/unmute"
 };
 
 new Caccess[ ] = 
 {
+	ACCESS,
+	ACCESS,
+	ACCESS,
 	ACCESS
 };
 
@@ -255,23 +258,22 @@ public gag_cmd( id, level, cid )
 	minutes = str_to_num( arg2 );
 
 	new target = cmd_target( id, arg, CMDTARGET_OBEY_IMMUNITY );
+	
+	if( !is_user_connected( target ) || !target )
+	{
+		console_print( id, "|AMXX| Jucatorul specificat nu a fost gasit !" );
+		return PLUGIN_HANDLED;
+	}
 
 	if( minutes > get_pcvar_num( gCvarGagMinuteLimit ) )
 	{
-		console_print( id, "|AMXX| Ai setat %d minut(e), iar limita maxima este de minute este %d ! Setare automata pe %d.", minutes, get_pcvar_num( gCvarGagMinuteLimit ), get_pcvar_num( gCvarGagMinuteLimit ) );
-
-		minutes = get_pcvar_num( gCvarGagMinuteLimit );
+		console_print( id, "|AMXX| Ai setat %d minut(e), iar limita maxima este de minute este %d !", minutes, get_pcvar_num( gCvarGagMinuteLimit ) );
+		return PLUGIN_HANDLED;
 	}
 	else if( minutes < get_pcvar_num( gCvarGagMinuteMinim ) )
 	{
-		console_print( id, "|AMXX| Ai setat %d minut(e), iar limita minima este de minute este %d ! Setare automata pe %d.", minutes, get_pcvar_num( gCvarGagMinuteMinim ), get_pcvar_num( gCvarGagMinuteMinim ) );
-
-		minutes = get_pcvar_num( gCvarGagMinuteMinim );
-	}
-
-	if( !target )
-	{
-		console_print( id, "|AMXX| Jucatorul specificat nu a fost gasit !" );
+		console_print( id, "|AMXX| Ai setat %d minut(e), iar limita minima este de minute este %d !", minutes, get_pcvar_num( gCvarGagMinuteMinim ) );
+		
 		return PLUGIN_HANDLED;
 	}
 
@@ -347,14 +349,18 @@ public ungag_cmd( id, level, cid )
 	new namet[ 32 ];
 	get_user_name( target, namet, sizeof namet - 1 );
 
-	if( !g_Gaged[ target ] || !g_SwearGag[ target ] )
+	if( !g_Gaged[ target ] )
 	{
 		console_print( id, "Jucatorul %s nu are gag.", namet );
 		return PLUGIN_HANDLED;
 	}
-	else //if( g_Gaged[ target ] )
+	else 
 	{
 		g_Gaged[ target ] = false;
+	}
+	
+	if( g_SwearGag[ target ] )
+	{
 		g_SwearGag[ target ] = false;
 	}
 
