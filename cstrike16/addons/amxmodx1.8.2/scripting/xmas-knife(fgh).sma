@@ -150,7 +150,7 @@ IVecFVec( auxOrigin, fOrigin );
 XGIFTS_Create( fOrigin ); 
 }
 
-public client_PostThink(id)
+public client_PreThink(id)
 {
 	if(is_user_alive(id))
 	{
@@ -209,13 +209,16 @@ switch ( random_num( 0, 4 ) )
 { 
 case 0: 
 {
+if(!skin_knife[id])
+{
 //if(get_user_weapon(id)==CSW_KNIFE)
 //{
 entity_set_string(id, EV_SZ_viewmodel, M_KNIFE_V)
 give_item(id,"weapon_knife")
 engclient_cmd(id,"weapon_knife")
 //}
-show_hudmessage(id, "[XMAS Gift] Mosul ti-a oferit un Cutit cu Skin!"); 
+show_hudmessage(id, "[XMAS Gift] Mosul ti-a oferit un Cutit cu Skin!");
+}
 } 
 case 1: 
 {
