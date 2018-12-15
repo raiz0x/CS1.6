@@ -213,6 +213,7 @@ if(!skin_knife[id])
 {
 //if(get_user_weapon(id)==CSW_KNIFE)
 //{
+skin_knife[id]=true
 entity_set_string(id, EV_SZ_viewmodel, M_KNIFE_V)
 give_item(id,"weapon_knife")
 engclient_cmd(id,"weapon_knife")
