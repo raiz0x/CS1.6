@@ -11,8 +11,6 @@
  
 #pragma tabsize 0
 #pragma compress 1
-
-new bool:busy_arena=false
  
  
 //////////////////////////////////////////////////////////////////////////
@@ -1854,8 +1852,7 @@ public end_his_duel(id)
         client_print_color(0,"^3[^4Arena: %s^3] ^4%s^1's challenger ^4%s^1 has ^3left the game^1.",arena_names[arena_number[id]],his_name[his_challenger[id]],his_name[id])
         user_can_spawn[his_challenger[id]] = 1
         user_can_spawn[id] = 1
-        if(arena_number[id] == arena_number[his_challenger[id]])
-            remove_the_arena(arena_number[id] +ARENA_CODE)
+        if(arena_number[id] == arena_number[his_challenger[id]])	remove_the_arena(arena_number[id] +ARENA_CODE)
         back_to_the_spawn(id)
         back_to_the_spawn(his_challenger[id])
         reset_values(his_challenger[id])
@@ -1869,8 +1866,7 @@ public times_up_duel(id)
        
     if(his_challenger[id])
     {
-        if(arena_number[id] == arena_number[his_challenger[id]])
-            remove_the_arena(arena_number[id] +ARENA_CODE)
+        if(arena_number[id] == arena_number[his_challenger[id]])	remove_the_arena(arena_number[id] +ARENA_CODE)
         user_kill(id,1)
         user_kill(his_challenger[id],1)
         //back_to_the_spawn(id)
@@ -1887,10 +1883,7 @@ public battle_timer(id)
         if(is_in_duel[id] == 2)
         {
             his_timer[id]++
-            if(his_timer[id] > MAX_TIME)
-            {
-                times_up_duel(id)
-            }
+            if(his_timer[id] > MAX_TIME)	times_up_duel(id)
             set_task(1.0,"battle_timer",id)
         }
     }
@@ -1918,8 +1911,7 @@ public give_up_player(id)
     if(is_user_connected(his_challenger[id]))
     {
         client_print_color(0,"%s^4%s^3 got scared to face ^4%s^1 :)",CHAT_TAG,his_name[id],his_name[his_challenger[id]])
-        if(arena_number[id] == arena_number[his_challenger[id]])
-            remove_the_arena(arena_number[id] +ARENA_CODE)
+        if(arena_number[id] == arena_number[his_challenger[id]])	remove_the_arena(arena_number[id] +ARENA_CODE)
         back_to_the_spawn(id)
         back_to_the_spawn(his_challenger[id])
         reset_values(his_challenger[id])
@@ -1937,8 +1929,7 @@ gBackStabing[id] = false;
 cs_set_user_money(id,cs_get_user_money(id)+7000,1)
  
 client_print_color(id,"%s^4Congratulations!!!^1, You have ^3won this battle^1!",CHAT_TAG)
-if(SOUNDS_ENABLED)
-client_cmd(id,"spk ^"%s^"",DUEL_SOUNDS[0])
+if(SOUNDS_ENABLED)	client_cmd(id,"spk ^"%s^"",DUEL_SOUNDS[0])
 /*if(cs_get_user_money(id)+15000 <= 16000)
 {
 cs_set_user_money(id,cs_get_user_money(id)+15000,1)
@@ -1955,8 +1946,7 @@ g_loss[id]++
 user_kill(id,1)
 gBackStabing[id] = false;
 client_print_color(id,"%sYou've ^3lost this battle^1!",CHAT_TAG)
-if(SOUNDS_ENABLED)
-client_cmd(id,"spk ^"%s^"",DUEL_SOUNDS[1])
+if(SOUNDS_ENABLED)	client_cmd(id,"spk ^"%s^"",DUEL_SOUNDS[1])
 /*if(cs_get_user_money(id)-15000 >= 0)
 {
 cs_set_user_money(id,cs_get_user_money(id)-15000,1)
@@ -2075,9 +2065,9 @@ public Duel_handler( id, menu, item )
     new enem = find_player("k", userid); // flag "k" : find player from userid
     if (is_user_connected(enem))
     {
-        if(busy_arena)
+        if(get_next_arena() == -1)
         {
-            client_print_color(id,"%sArena is busy right now! Try again later.",CHAT_TAG)
+            client_print_color(id,"%sAl arena is busy right now! Try again later.",CHAT_TAG)
 			return PLUGIN_HANDLED
         }
         if(!is_user_alive(enem))
@@ -2197,11 +2187,6 @@ public Ask_handler( id, menu, item )
             manage_battle(id)
             check_teams(id,his_challenger[id])
             begin_the_battle(id,his_challenger[id])
-			if(!busy_arena)
-			{
-			busy_arena=true
-			client_print_color(0,"%sARENA IS NOW^3 BUSY",CHAT_TAG)
-			}
 			return PLUGIN_HANDLED
         }
 		else
@@ -2384,12 +2369,6 @@ public Check_Results(id,enemy)
     back_to_the_spawn(enemy)
     reset_values(enemy)
     reset_values(id)
-
-	if(busy_arena)
-	{
-		busy_arena=false
-		client_print_color(0,"%sARENA IS NOW^3 FREE",CHAT_TAG)
-	}
 }
  
 public back_to_the_spawn(id)
@@ -2404,8 +2383,7 @@ public back_to_the_spawn(id)
     set_user_godmode(id, 0)
 }
  
- 
- 
+
 public manage_battle(id)
 {
     is_in_duel[id] = 2
@@ -2423,24 +2401,12 @@ public manage_battle(id)
     new CsTeams:teamid,CsTeams:teamenemy;
     teamid = cs_get_user_team(id)
     teamenemy = cs_get_user_team(his_challenger[id])
-    if(teamid == CS_TEAM_T)
-    {
-        his_previous_team[id] = 2
-    }
-    else if(teamid == CS_TEAM_CT)
-    {
-        his_previous_team[id] = 1
-    }
+    if(teamid == CS_TEAM_T)	his_previous_team[id] = 2
+    else if(teamid == CS_TEAM_CT)	his_previous_team[id] = 1
     else his_previous_team[id] = 0
    
-    if(teamenemy == CS_TEAM_T)
-    {
-        his_previous_team[his_challenger[id]] = 2
-    }
-    else if(teamenemy == CS_TEAM_CT)
-    {
-        his_previous_team[his_challenger[id]] = 1
-    }
+    if(teamenemy == CS_TEAM_T)	his_previous_team[his_challenger[id]] = 2
+    else if(teamenemy == CS_TEAM_CT)	his_previous_team[his_challenger[id]] = 1
     else his_previous_team[his_challenger[id]] = 0
     start_build(his_challenger[id])
     if(SOUNDS_ENABLED)
@@ -2564,22 +2530,18 @@ stock users_in_same_team(id,enemy)
 stock get_next_arena()
 {
     next_empty_arena = 0
-    for(new id;id < MAXPLAYERS;id++)
+    for(new id=1;id <= MAXPLAYERS;id++)
     {
         if(is_user_connected(id))
         {
             if(arena_number[id] == next_empty_arena)
             {
                 next_empty_arena++
-                if(next_empty_arena > total_arenas)
-                    return -1
+                if(next_empty_arena > total_arenas)	return -1
             }
         }
     }
-    if(next_empty_arena > total_arenas)
-    {
-        return -1
-    }
+    if(next_empty_arena > total_arenas)	return -1
     return next_empty_arena
 }
  
@@ -2597,17 +2559,9 @@ stock reset_values(id)
     user_can_spawn[id] = 1
 }
  
-public freeze_player(id)
-{
-    set_user_maxspeed(id,1.0)
-}
- 
-public unfreeze_player(id)
-{
-    set_user_maxspeed(id,250.0)
-}
- 
- 
+public freeze_player(id)	set_user_maxspeed(id,1.0)
+
+public unfreeze_player(id)	set_user_maxspeed(id,250.0)
  
 public wait_for_enemy_loop(id)
 {
