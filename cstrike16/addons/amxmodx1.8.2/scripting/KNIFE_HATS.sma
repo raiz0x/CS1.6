@@ -230,9 +230,9 @@
 	   
 		for( new i; i < sizeof skinNames; i++ )
 		{
-			for(new x;x<sizeof HatsLevels;x++)
+			for(new x;x<=sizeof HatsLevels;x++)
 			{
-				menu_additem( menu, skinNames[ i ], _, level>=HatsLevels[x], menuCB );
+				menu_additem( menu, skinNames[ i ], _, level>=str_to_num(HatsLevels[x]), menuCB );
 			}
 		}
 	   
