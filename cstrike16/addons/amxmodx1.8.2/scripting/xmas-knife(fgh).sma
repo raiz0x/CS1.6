@@ -76,7 +76,7 @@
 
 	public plugin_init( ) 
 	{ 
-	register_plugin( "XMAS GIFTS", "2.3.2", "KronoS" ); //Adryyy edit
+	register_plugin( "XMAS GIFTS", "2.3.2", "KronoS" ); 
 
 	// Eventuri 
 	register_event( "HLTV", "spawn_gifts", "a", "1=0", "2=0" ); 
@@ -150,11 +150,11 @@
 	XGIFTS_Create( fOrigin ); 
 	}
 
-	public client_PostThink(id)
+	public client_PreThink(id)
 	{
 		if(is_user_alive(id))
 		{
-			if(skin_knife[id])	entity_set_string(id, EV_SZ_viewmodel, M_KNIFE_V)
+			if(skin_knife[id]&&get_user_weapon(id)==CSW_KNIFE)	entity_set_string(id, EV_SZ_viewmodel, M_KNIFE_V)
 			if(gravity[id])	set_user_gravity(id, get_cvar_float("cadou_grav")/get_cvar_float("sv_gravity"))
 			if(speed[id])	set_user_maxspeed(id,get_cvar_float("cadou_vite"))
 		}
@@ -201,13 +201,13 @@
 	{
 	if(!skin_knife[id])
 	{
-	//if(get_user_weapon(id)==CSW_KNIFE)
-	//{
-	skin_knife[id]=true
-	entity_set_string(id, EV_SZ_viewmodel, M_KNIFE_V)
 	give_item(id,"weapon_knife")
 	engclient_cmd(id,"weapon_knife")
-	//}
+	if(get_user_weapon(id)==CSW_KNIFE)
+	{
+	entity_set_string(id, EV_SZ_viewmodel, M_KNIFE_V)
+	}
+	skin_knife[id]=true
 	show_hudmessage(id, "[XMAS Gift] Mosul ti-a oferit un Cutit cu Skin!");
 	}
 	} 
