@@ -150,7 +150,7 @@
 	XGIFTS_Create( fOrigin ); 
 	}
 
-	public client_PreThink(id)
+	public client_PostThink(id)
 	{
 		if(is_user_alive(id))
 		{
@@ -174,18 +174,12 @@
 
 	public forward_touch( ent, id ) 
 	{ 
-	if ( !pev_valid( ent ) ) 
-	return FMRES_IGNORED; 
+	if ( !pev_valid( ent ) )	return FMRES_IGNORED; 
 
 	static class[ 20 ]; 
-
 	pev( ent, pev_classname, class, sizeof class - 1 ); 
 
-	if ( ( !equali( class, "small_present" ) && !equali( class, "large_present" ) ) ) 
-	return FMRES_IGNORED; 
-
-	if ( !is_user_alive( id ) ) 
-	return FMRES_IGNORED; 
+	if ( ( !equali( class, "small_present" ) && !equali( class, "large_present" ) )||!is_user_alive( id ) ) return FMRES_IGNORED; 
 
 	set_pev( ent, pev_solid, SOLID_NOT ); 
 	set_pev( ent, pev_effects, EF_NODRAW ); 
@@ -193,20 +187,16 @@
 	if ( get_pcvar_float( pcvar_respawn_time ) > 0.0 ) 
 	{ 
 	new Float:flOrigin[ 3 ], iOrigin[ 3 ]; 
-
 	entity_get_vector( ent, EV_VEC_origin, flOrigin ); 
-
 	FVecIVec( flOrigin, iOrigin ); 
-
 	set_task( get_pcvar_float( pcvar_respawn_time ), "XGIFTS_Respawn", _, iOrigin, 3 ); 
 	} 
 
 	set_hudmessage(255, 165, 0, 0.02, 0.73, 0, 6.0, 5.0,0.1,0.2,-1); 
-
 	if ( equali( class, "small_present" ) ) 
-	{ 
+	{
 	switch ( random_num( 0, 4 ) ) 
-	{ 
+	{
 	case 0: 
 	{
 	if(!skin_knife[id])
@@ -227,7 +217,7 @@
 	{
 	gravity[id]=true
 	set_user_gravity(id, get_cvar_float("cadou_grav")/get_cvar_float("sv_gravity"))
-	show_hudmessage(id, "[XMAS Gift] Mosul ti-a oferit -%d Gravitatie !",get_cvar_num("cadou_grav"));
+	show_hudmessage(id, "[XMAS Gift] Mosul ti-a oferit -%f Gravitatie !",get_cvar_float("cadou_grav"));
 	}
 	} 
 	case 2: 
@@ -236,7 +226,7 @@
 	{
 	speed[id]=true
 	set_user_maxspeed(id,get_cvar_float("cadou_vite"))
-	show_hudmessage(id, "[XMAS Gift] Mosul ti-a oferit +%d Viteza !",get_cvar_num("cadou_vite"));
+	show_hudmessage(id, "[XMAS Gift] Mosul ti-a oferit +%f Viteza !",get_cvar_float("cadou_vite"));
 	}
 	} 
 	case 3: 
@@ -254,9 +244,7 @@
 	show_hudmessage(id, "[XMAS Gift] Mosul ti-a furat toti banii"); 
 	}
 	}
-	} 
-	} 
-
+	}
 	else if ( equali( class,"large_present" ) /*&& !g_bonus[ id ]*/ ) 
 	{ 
 	switch (random_num(0,2)) 
@@ -271,7 +259,6 @@
 	show_hudmessage(id, "[XMAS Gift] Mosul ti-a oferit 6000$ !"); 
 	}
 	}
-
 	case 1: 
 	{
 	if(cs_get_user_money(id)>0)
@@ -281,7 +268,6 @@
 	show_hudmessage(id, "[XMAS Gift] Mosul ti-a furat toti banii");
 	}
 	} 
-
 	case 2: 
 	{
 	//g_bonus[id] = 3;
@@ -291,14 +277,12 @@
 	if(is_valid_ent(deagle))	cs_set_weapon_ammo(deagle,2)
 	engclient_cmd(id,"weapon_deagle")
 	show_hudmessage(id, "[XMAS Gift] Mosul ti-a oferit deagle cu 2GL"); 
-	} 
-
-
-	} 
-	} 
+	}
+	}
+	}
 
 	return FMRES_IGNORED; 
-	} 
+	}
 
 	/*
 	public large_present_hud( id ) 
@@ -520,7 +504,6 @@
 
 	return true; 
 	}
-
 
 
 	stock fm_find_ent_by_owner(index, const classname[], owner, jghgtype = 0) {
