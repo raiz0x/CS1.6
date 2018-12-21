@@ -40,7 +40,7 @@
 		"[clonetrooper_big] lvl 510",
 		"[cross] lvl 540"
 	};
-	new const HatsLevels[MAXLEVEL] =
+	new const HatsLevels[MAXLEVEL] =//NEFOLOSIT MOMENTAN
 	{
 		0,
 		30,
@@ -64,7 +64,7 @@
 	};
 	new const Vnames[ MAXLEVEL ][ ] =
 	{
-		"models/hat/default.mdl",//DEFAULT HAT/NONE/0
+		"models/hat/default.mdl",//DEFAULT HAT/NONE/0  (model vizibil....)
 		"models/hat/afro.mdl",
 		"models/hat/angel2.mdl",
 		"models/hat/arrow.mdl",
@@ -93,8 +93,8 @@
 	new bool: PlayerHasTag[ 33 ];
 
 
-	public plugin_init()
-	{  
+	public plugin_init()//fix by Adryyy
+	{
 		register_event("DeathMsg", "hook_death", "a"/*, "1>0"*/);
 
 		menuCB = menu_makecallback( "menucallback1" );
@@ -118,7 +118,7 @@
 		register_clcmd ("say_team", "hook_teamsay")
 
 
-		register_concmd( "amx_reloadhatstag", "ClCmdReloadTags", -1, "" );
+		register_concmd( "amx_reloadhatstag", "ClCmdReloadTags", -1 );
 	}
 
 	public plugin_precache()
@@ -138,22 +138,17 @@
 
 	public client_putinserver( id )
 	{
-		if(is_user_connected(id)&&get_user_team(id)!=3&&!is_user_bot(id))
+		if(is_user_connected(id)&&!is_user_bot(id))
 		{
 		xpplayer[ id ] = 0;
 		setting[ id ] = 0;
-		set_task( 5.0, "SkinSelect", id );
 	   
 		new vault = nvault_open( VAULTNAME );
-	   
 		new name[ 50 ], useless;
 		get_user_name( id, name, 49 );
-	   
 		new showSz[ 50 ];
 		nvault_lookup( vault, name, showSz, 49, useless );
-	   
 		xpplayer[ id ] = str_to_num( showSz );
-	   
 		nvault_close( vault );
 
 
@@ -167,16 +162,12 @@
 		if(!is_user_bot(id))
 		{
 		new vault = nvault_open( VAULTNAME );
-	   
 		new name[ 50 ];
 		get_user_name( id, name, 49 );
-	   
 		new showSz[ 50 ];
 		num_to_str( xpplayer[ id ], showSz, 49 );
-	   
 		nvault_set( vault, name, showSz );
 		nvault_close( vault );
-	   
 		xpplayer[ id ] = 0;
 		setting[ id ] = 0;
 		}
@@ -190,13 +181,10 @@
 	   
 		if( is_user_connected(Killer)&&Killer != Victim )
 		{
-			if( headshot )
-				xpplayer[ Killer ] += HSXP;
-			else
-				xpplayer[ Killer ] += KILLXP;
+			if( headshot )	xpplayer[ Killer ] += HSXP;
+			else	xpplayer[ Killer ] += KILLXP;
 			   
 			new level = xpplayer[ Killer ] / LEVELUPXP;
-			   
 			client_print( Killer, print_center, "%s XP %i / %i",PLUG_TAG, xpplayer[ Killer ], LEVELUPXP * ( level + 1 ) );
 		}
 	}
@@ -212,8 +200,7 @@
 
 	public SetLevel( id, level, cid )
 	{
-		if (!cmd_access(id,level,cid,2))
-			return PLUGIN_HANDLED
+		if (!cmd_access(id,level,cid,2))	return PLUGIN_HANDLED
 		   
 		new name[ 50 ];
 		read_argv( 1, name, 49 );
@@ -236,8 +223,7 @@
 	}
 	public SetXP( id, level, cid )
 	{
-		if (!cmd_access(id,level,cid,2))
-			return PLUGIN_HANDLED
+		if (!cmd_access(id,level,cid,2))	return PLUGIN_HANDLED
 		   
 		new name[ 50 ];
 		read_argv( 1, name, 49 );
