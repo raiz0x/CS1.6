@@ -110,7 +110,8 @@
 		register_clcmd( "say /xp", "ShowDetails" );
 		register_clcmd( "say_team /xp", "ShowDetails" );
 
-		register_clcmd( "amx_setlevel", "SetLevel", ADMIN_RCON, "<tinta> <valoare>" );
+		register_clcmd( "amx_sethatslevel", "SetLevel", ADMIN_RCON, "<tinta> <valoare>" );
+		register_clcmd( "amx_sethatsxp", "SetXP", ADMIN_RCON, "<tinta> <valoare>" );
 
 
 		register_clcmd ("say", "hook_say")
@@ -210,6 +211,30 @@
 	}
 
 	public SetLevel( id, level, cid )
+	{
+		if (!cmd_access(id,level,cid,2))
+			return PLUGIN_HANDLED
+		   
+		new name[ 50 ];
+		read_argv( 1, name, 49 );
+		new valSz[ 50 ], val;
+		read_argv( 2, valSz, 49 );
+		val = str_to_num( valSz );
+
+		if(equali(name,"")||equali(valSz,""))	return PLUGIN_HANDLED
+		if(val<=0)	return PLUGIN_HANDLED
+	   
+		new user = cmd_target( id, name, CMDTARGET_NO_BOTS );
+
+		if(!user)	return PLUGIN_HANDLED
+
+		new level = xpplayer[ user ] / LEVELUPXP;
+		if(level+val>MAXLEVEL)	return PLUGIN_HANDLED
+		level+=val
+	   
+		return PLUGIN_HANDLED;
+	}
+	public SetXP( id, level, cid )
 	{
 		if (!cmd_access(id,level,cid,2))
 			return PLUGIN_HANDLED
