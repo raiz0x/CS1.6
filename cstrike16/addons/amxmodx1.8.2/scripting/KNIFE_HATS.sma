@@ -1,4 +1,4 @@
-//EDIT 1
+//EDIT 2
 
 	#include <amxmodx>
 	#include <amxmisc>
@@ -228,14 +228,17 @@
 		//setting[ id ] = 0;
 	   
 		new menu = menu_create( "Choose your knife skin", "menuhandler1" );
-		new level = xpplayer[ id ] / LEVELUPXP;
+		//new level = xpplayer[ id ] / LEVELUPXP;
 	   
 		for( new i; i < sizeof skinNames; i++ )
 		{
-			for(new x=0;x<=sizeof HatsLevels;x++)
+/*
+			for(new x;x<sizeof HatsLevels;x++)
 			{
 				menu_additem( menu, skinNames[ i ], _, level>=HatsLevels[x], menuCB );
 			}
+*/
+			menu_additem( menu, skinNames[ i ], _, _, menuCB );
 		}
 	   
 		menu_display( id, menu,0 );
