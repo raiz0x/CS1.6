@@ -1,3 +1,5 @@
+//EDIT 1
+
 	#include <amxmodx>
 	#include <amxmisc>
 	#include <fakemeta>
@@ -24,7 +26,7 @@
 
 
 	#define MAXLEVEL 19
-	new const skinNames[ MAXLEVEL ][ ] =
+	new const skinNames[ MAXLEVEL ][128] =
 	{
 		"Default skin",
 		"[angel2] lvl 30",
@@ -230,19 +232,21 @@
 	   
 		for( new i; i < sizeof skinNames; i++ )
 		{
-			for(new x;x<=sizeof HatsLevels;x++)
+			for(new x=0;x<=sizeof HatsLevels;x++)
 			{
-				menu_additem( menu, skinNames[ i ], _, level>=str_to_num(HatsLevels[x]), menuCB );
+				menu_additem( menu, skinNames[ i ], _, level>=HatsLevels[x], menuCB );
 			}
 		}
 	   
 		menu_display( id, menu,0 );
 	}
 	 
-	public menuhandler1( id, menu, item )  
+	public menuhandler1( id, menu, item )
 	{
 		setting[ id ] = item;
 		Set_Hat( id, item );
+
+		client_print(id,print_chat, "%s The hat you chose is: %s",PLUG_TAG, skinNames[item]);
 	}
 	 
 	public menucallback1( id, menu, item )
