@@ -1,4 +1,4 @@
-//EDIT 2
+//EDIT 3
 
 	#include <amxmodx>
 	#include <amxmisc>
@@ -115,39 +115,29 @@
 		register_clcmd( "amx_setlevel", "SetLevel", ADMIN_RCON, "<tinta> <valoare>" );
 	}
 
-	public CmdGetLevel( player )
-	{
-		new message[ 1000 ];
-		new level = xpplayer[ player ] / LEVELUPXP;
-		
-		format( message, 999, "[Knife : %s]<br>[Level : %i]<br>[Experience : %i / %i]<br>[Ordinary : %i]<br>[%i kills for new level]", skinNames[ setting[ player ] ], level, xpplayer[ player ], LEVELUPXP * ( level + 1 ), level / SKINLEVELCHANGE + 1, ( LEVELUPXP * ( level + 1 ) - xpplayer[ player ] ) / KILLXP );
-		show_motd( player, message );
-	}
-
-	public SetLevel( id, level, cid )
-	{
-		if (!cmd_access(id,level,cid,2))
-			return PLUGIN_HANDLED
-		   
-		new name[ 50 ];
-		read_argv( 1, name, 49 );
-		new valSz[ 50 ], val;
-		read_argv( 2, valSz, 49 );
-		val = str_to_num( valSz );
-
-		if(equali(name,"")||equali(valSz,""))	return PLUGIN_HANDLED
-		if(val<=0)	return PLUGIN_HANDLED
-	   
-		new user = cmd_target( id, name, CMDTARGET_NO_BOTS );
-
-		if(!user)	return PLUGIN_HANDLED
-
-		xpplayer[ user ] += val
-	   
-		return PLUGIN_HANDLED;
-	}
-
 	public plugin_precache()	for( new i; i < sizeof Vnames; i++ )	precache_model( Vnames[ i ] );
+
+	public client_putinserver( id )
+	{
+		if(is_user_connected(id)&&get_user_team(id)!=3&&!is_user_bot(id))
+		{
+		xpplayer[ id ] = 0;
+		setting[ id ] = 0;
+		set_task( 5.0, "SkinSelect", id );
+	   
+		new vault = nvault_open( VAULTNAME );
+	   
+		new name[ 50 ], useless;
+		get_user_name( id, name, 49 );
+	   
+		new showSz[ 50 ];
+		nvault_lookup( vault, name, showSz, 49, useless );
+	   
+		xpplayer[ id ] = str_to_num( showSz );
+	   
+		nvault_close( vault );
+		}
+	}
 
 	public client_disconnect( id )
 	{
@@ -187,6 +177,38 @@
 			client_print( Killer, print_center, "XP %i / %i", xpplayer[ Killer ], LEVELUPXP * ( level + 1 ) );
 		}
 	}
+
+	public CmdGetLevel( player )
+	{
+		new message[ 1000 ];
+		new level = xpplayer[ player ] / LEVELUPXP;
+		
+		format( message, 999, "[Knife : %s]<br>[Level : %i]<br>[Experience : %i / %i]<br>[Ordinary : %i]<br>[%i kills for new level]", skinNames[ setting[ player ] ], level, xpplayer[ player ], LEVELUPXP * ( level + 1 ), level / SKINLEVELCHANGE + 1, ( LEVELUPXP * ( level + 1 ) - xpplayer[ player ] ) / KILLXP );
+		show_motd( player, message );
+	}
+
+	public SetLevel( id, level, cid )
+	{
+		if (!cmd_access(id,level,cid,2))
+			return PLUGIN_HANDLED
+		   
+		new name[ 50 ];
+		read_argv( 1, name, 49 );
+		new valSz[ 50 ], val;
+		read_argv( 2, valSz, 49 );
+		val = str_to_num( valSz );
+
+		if(equali(name,"")||equali(valSz,""))	return PLUGIN_HANDLED
+		if(val<=0)	return PLUGIN_HANDLED
+	   
+		new user = cmd_target( id, name, CMDTARGET_NO_BOTS );
+
+		if(!user)	return PLUGIN_HANDLED
+
+		xpplayer[ user ] += val
+	   
+		return PLUGIN_HANDLED;
+	}
 	 
 	public ShowDetails(id)
 	{
@@ -200,37 +222,13 @@
 
 		client_print(id,print_chat,"[Knife : %s][Level : %i][Experience : %i / %i][Ordinary : %i][%i kills for new level]", skinNames[ setting[ id ] ], level, xpplayer[ id ], LEVELUPXP * ( level + 1 ), level / SKINLEVELCHANGE + 1, ( LEVELUPXP * ( level + 1 ) - xpplayer[ id ] ) / KILLXP)
 	}
-	 
-	public client_putinserver( id )
-	{
-		if(is_user_connected(id)&&get_user_team(id)!=3&&!is_user_bot(id))
-		{
-		xpplayer[ id ] = 0;
-		setting[ id ] = 0;
-		set_task( 5.0, "SkinSelect", id );
-	   
-		new vault = nvault_open( VAULTNAME );
-	   
-		new name[ 50 ], useless;
-		get_user_name( id, name, 49 );
-	   
-		new showSz[ 50 ];
-		nvault_lookup( vault, name, showSz, 49, useless );
-	   
-		xpplayer[ id ] = str_to_num( showSz );
-	   
-		nvault_close( vault );
-		}
-	}
 	   
 	public SkinSelect( id )
 	{
-		//setting[ id ] = 0;
-	   
 		new menu = menu_create( "Choose your knife skin", "menuhandler1" );
 		//new level = xpplayer[ id ] / LEVELUPXP;
 	   
-		for( new i; i < sizeof skinNames; i++ )
+		for( new i=0; i < sizeof skinNames; i++ )
 		{
 /*
 			for(new x;x<sizeof HatsLevels;x++)
@@ -241,40 +239,51 @@
 			menu_additem( menu, skinNames[ i ], _, _, menuCB );
 		}
 	   
-		menu_display( id, menu,0 );
+		menu_display( id, menu);
 	}
 	 
 	public menuhandler1( id, menu, item )
 	{
-		setting[ id ] = item;
+		if(item == MENU_EXIT)
+		{
+			menu_destroy(menu)
+			return PLUGIN_HANDLED
+		}
+
 		Set_Hat( id, item );
 
 		client_print(id,print_chat, "%s The hat you chose is: %s",PLUG_TAG, skinNames[item]);
+
+		return PLUGIN_HANDLED
 	}
 	 
 	public menucallback1( id, menu, item )
 	{
+		static szInfo[8], iAccess, iCallback;
+		menu_item_getinfo(menu, item, iAccess, szInfo, charsmax(szInfo), .callback = iCallback);
+		static iType;
+		iType = str_to_num(szInfo);
 		new level = xpplayer[ id ] / LEVELUPXP;
+		if( item > level / SKINLEVELCHANGE||item == setting[id] )	return ITEM_DISABLED;
 	   
-		if( item > level / SKINLEVELCHANGE )
-			return ITEM_DISABLED;
-	   
-		return ITEM_IGNORE;
+		return ITEM_ENABLED;//IGNORED
 	}
 	 
-	public Set_Hat(player, imodelnum) {
-		if (imodelnum == 0)	if(g_HatEnt[player] > 0)	fm_set_entity_visibility(g_HatEnt[player], 0)
-		else
-		{
-			if(g_HatEnt[player] < 1) {
-				g_HatEnt[player] = engfunc(EngFunc_CreateNamedEntity, engfunc(EngFunc_AllocString, "info_target"))
-				if(g_HatEnt[player] > 0) {
-					set_pev(g_HatEnt[player], pev_movetype, MOVETYPE_FOLLOW)
-					set_pev(g_HatEnt[player], pev_aiment, player)
-					set_pev(g_HatEnt[player], pev_rendermode, kRenderNormal)
-					engfunc(EngFunc_SetModel, g_HatEnt[player], Vnames[imodelnum])
-				}
-			} 
-			else	engfunc(EngFunc_SetModel, g_HatEnt[player], Vnames[imodelnum])
+	public Set_Hat(player, imodelnum)
+	{
+		if(!is_user_alive(player)||get_user_team(player)==3)	return PLUGIN_HANDLED
+		setting[ player ] = imodelnum;
+
+		if(g_HatEnt[player] < 1) {
+			g_HatEnt[player] = engfunc(EngFunc_CreateNamedEntity, engfunc(EngFunc_AllocString, "info_target"))
+			if(g_HatEnt[player] > 0) {
+				set_pev(g_HatEnt[player], pev_movetype, MOVETYPE_FOLLOW)
+				set_pev(g_HatEnt[player], pev_aiment, player)
+				set_pev(g_HatEnt[player], pev_rendermode, kRenderNormal)
+				engfunc(EngFunc_SetModel, g_HatEnt[player], Vnames[imodelnum])
+			}
 		}
+		else	engfunc(EngFunc_SetModel, g_HatEnt[player], Vnames[imodelnum])
+
+		return PLUGIN_HANDLED
 	}
