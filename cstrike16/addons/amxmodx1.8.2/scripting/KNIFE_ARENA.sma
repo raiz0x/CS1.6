@@ -2,13 +2,9 @@
 #include <amxmisc>
 #include <cstrike>
 #include <hamsandwich>
-#include <fakemeta>
 #include <fakemeta_util>
 #include <fun>
 #include <engine>
-#include <xs>
-#include <csx>
-#include <fun>
 #include <colorchat>
 #include <dhudmessage>
 #include <adv_vault>
