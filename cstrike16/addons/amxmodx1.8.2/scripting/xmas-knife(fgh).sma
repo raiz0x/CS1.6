@@ -227,7 +227,7 @@
 	{
 	gravity[id]=true
 	set_user_gravity(id, get_cvar_float("cadou_grav")/get_cvar_float("sv_gravity"))
-	show_hudmessage(id, "[XMAS Gift] Mosul ti-a oferit -%i Gravitatie !",get_cvar_num("cadou_grav"));
+	show_hudmessage(id, "[XMAS Gift] Mosul ti-a oferit -%d Gravitatie !",get_cvar_num("cadou_grav"));
 	}
 	} 
 	case 2: 
@@ -236,7 +236,7 @@
 	{
 	speed[id]=true
 	set_user_maxspeed(id,get_cvar_float("cadou_vite"))
-	show_hudmessage(id, "[XMAS Gift] Mosul ti-a oferit +%i Viteza !",get_cvar_num("cadou_vite"));
+	show_hudmessage(id, "[XMAS Gift] Mosul ti-a oferit +%d Viteza !",get_cvar_num("cadou_vite"));
 	}
 	} 
 	case 3: 
