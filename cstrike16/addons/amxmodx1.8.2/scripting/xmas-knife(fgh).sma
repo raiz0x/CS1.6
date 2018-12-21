@@ -150,7 +150,7 @@
 	XGIFTS_Create( fOrigin ); 
 	}
 
-	public client_PreThink(id)
+	public client_PostThink(id)
 	{
 		if(is_user_alive(id))
 		{
