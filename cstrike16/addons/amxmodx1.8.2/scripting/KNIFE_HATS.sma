@@ -64,7 +64,7 @@
 	};
 	new const Vnames[ MAXLEVEL ][ ] =
 	{
-		"models/hat/default.mdl",//DEFAULT HAT/NONE/0  (model vizibil....)
+		"",//DEFAULT HAT/NONE/0  (model vizibil....)
 		"models/hat/afro.mdl",
 		"models/hat/angel2.mdl",
 		"models/hat/arrow.mdl",
@@ -133,7 +133,7 @@
 		write_file( szFile, ";Numele sa fie exact( ex: Askhanar va fi Askhanar nu askhanar ! ) ", -1 );
 		}
 
-		for( new i; i < sizeof Vnames; i++ )	precache_model( Vnames[ i ] );
+		for( new i; i < sizeof Vnames; i++ )	if( !equal( Vnames[ i ], "" ) )	precache_model( Vnames[ i ] );
 	}
 
 	public client_putinserver( id )
@@ -141,7 +141,7 @@
 		if(is_user_connected(id)&&!is_user_bot(id))
 		{
 		xpplayer[ id ] = 0;
-		setting[ id ] = 0;
+		setting[ id ] = 0;//def hat
 	   
 		new vault = nvault_open( VAULTNAME );
 		new name[ 50 ], useless;
@@ -194,7 +194,7 @@
 		new message[ 1000 ];
 		new level = xpplayer[ player ] / LEVELUPXP;
 		
-		format( message, 999, "[Knife : %s]<br>[Level : %i]<br>[Experience : %i / %i]<br>[Ordinary : %i]<br>[%i kills for new level]", skinNames[ setting[ player ] ], level, xpplayer[ player ], LEVELUPXP * ( level + 1 ), level / SKINLEVELCHANGE + 1, ( LEVELUPXP * ( level + 1 ) - xpplayer[ player ] ) / KILLXP );
+		format( message, 999, "[Hat : %s]<br>[Level : %i]<br>[Experience : %i / %i]<br>[Ordinary : %i]<br>[%i kills for new level]", skinNames[ setting[ player ] ], level, xpplayer[ player ], LEVELUPXP * ( level + 1 ), level / SKINLEVELCHANGE + 1, ( LEVELUPXP * ( level + 1 ) - xpplayer[ player ] ) / KILLXP );
 		show_motd( player, message );
 	}
 
@@ -215,9 +215,7 @@
 
 		if(!user)	return PLUGIN_HANDLED
 
-		new level = xpplayer[ user ] / LEVELUPXP;
-		//if(level+val>MAXLEVEL)	return PLUGIN_HANDLED
-		level+=val
+		xpplayer[ user ] = val * 400;
 	   
 		return PLUGIN_HANDLED;
 	}
@@ -246,12 +244,12 @@
 	public ShowDetails(id)
 	{
 		new level = xpplayer[ id ] / LEVELUPXP;
-		client_print(id,print_chat,"%s [Knife : %s][Level : %i][Experience : %i / %i][Ordinary : %i][%i kills for new level]",PLUG_TAG, skinNames[ setting[ id ] ], level, xpplayer[ id ], LEVELUPXP * ( level + 1 ), level / SKINLEVELCHANGE + 1, ( LEVELUPXP * ( level + 1 ) - xpplayer[ id ] ) / KILLXP)
+		client_print(id,print_chat,"%s [Hat : %s][Level: %i][Experience: %i/%i][Ordinary: %i][%i kills for new level]",PLUG_TAG, skinNames[ setting[ id ] ], level, xpplayer[ id ], LEVELUPXP * ( level + 1 ), level / SKINLEVELCHANGE + 1, ( LEVELUPXP * ( level + 1 ) - xpplayer[ id ] ) / KILLXP)
 	}
 	   
 	public SkinSelect( id )
 	{
-		new menu = menu_create( "Choose your knife skin", "menuhandler1" );
+		new menu = menu_create( "Choose your hat skin", "menuhandler1" );
 		//new level = xpplayer[ id ] / LEVELUPXP;
 	   
 		for( new i=0; i < sizeof skinNames; i++ )
