@@ -46,6 +46,28 @@
 		"[clonetrooper_big] lvl 510",
 		"[cross] lvl 540"
 	};
+	new const HatsLevels[MAXLEVEL] =
+	{
+		0,
+		30,
+		60,
+		90,
+		120,
+		150,
+		180,
+		210,
+		240,
+		270,
+		300,
+		330,
+		360,
+		390,
+		420,
+		450,
+		480,
+		510,
+		540
+	};
 	new const Vnames[ MAXLEVEL ][ ] =
 	{
 		"models/hat/default.mdl",//DEFAULT HAT
@@ -204,9 +226,15 @@
 		//setting[ id ] = 0;
 	   
 		new menu = menu_create( "Choose your knife skin", "menuhandler1" );
+		new level = xpplayer[ id ] / LEVELUPXP;
 	   
 		for( new i; i < sizeof skinNames; i++ )
-			menu_additem( menu, skinNames[ i ], _, _, menuCB );
+		{
+			for(new x=0;x<=sizeof HatsLevels;x++)
+			{
+				menu_additem( menu, skinNames[ i ], _, level==HatsLevels[x], menuCB );
+			}
+		}
 	   
 		menu_display( id, menu );
 	}
