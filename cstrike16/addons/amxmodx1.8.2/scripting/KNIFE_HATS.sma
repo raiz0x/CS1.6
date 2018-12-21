@@ -1,9 +1,8 @@
-//EDIT 3
+//EDIT 4
 
 	#include <amxmodx>
 	#include <amxmisc>
 	#include <fakemeta>
-	#include <cstrike>
 	#include <nvault>
 
 	#define PLUGIN "XP Plugin"
@@ -254,6 +253,8 @@
 
 		client_print(id,print_chat, "%s The hat you chose is: %s",PLUG_TAG, skinNames[item]);
 
+		menu_destroy(menu);
+
 		return PLUGIN_HANDLED
 	}
 	 
@@ -264,7 +265,7 @@
 		static iType;
 		iType = str_to_num(szInfo);
 		new level = xpplayer[ id ] / LEVELUPXP;
-		if( item > level / SKINLEVELCHANGE||item == setting[id] )	return ITEM_DISABLED;
+		if( item > level / SKINLEVELCHANGE/*||item == setting[id]*/ )	return ITEM_DISABLED;
 	   
 		return ITEM_ENABLED;//IGNORED
 	}
