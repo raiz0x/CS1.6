@@ -79,6 +79,8 @@
 	   
 		register_clcmd( "say /hat", "SkinSelect" );
 		register_clcmd( "say /hats", "SkinSelect" );
+		register_clcmd( "say_team /hat", "SkinSelect" );
+		register_clcmd( "say_team /hats", "SkinSelect" );
 		
 		register_clcmd( "say /level", "CmdGetLevel" );
 		register_clcmd( "say_team /level", "CmdGetLevel" );
@@ -86,7 +88,7 @@
 		register_clcmd( "say /xp", "ShowDetails" );
 		register_clcmd( "say_team /xp", "ShowDetails" );
 
-		register_clcmd( "amx_setlevel", "SetLevel", ADMIN_RCON, "<valoare> <tinta>" );
+		register_clcmd( "amx_setlevel", "SetLevel", ADMIN_RCON, "<tinta> <valoare>" );
 	}
 
 	public CmdGetLevel( player )
@@ -199,11 +201,11 @@
 	   
 	public SkinSelect( id )
 	{
-		setting[ id ] = 0;
+		//setting[ id ] = 0;
 	   
 		new menu = menu_create( "Choose your knife skin", "menuhandler1" );
 	   
-		for( new i = 0 ; i < MAXLEVEL ; i++ )
+		for( new i; i < sizeof skinNames; i++ )
 			menu_additem( menu, skinNames[ i ], _, _, menuCB );
 	   
 		menu_display( id, menu );
