@@ -216,7 +216,7 @@
 		if(!user)	return PLUGIN_HANDLED
 
 		new level = xpplayer[ user ] / LEVELUPXP;
-		if(level+val>MAXLEVEL)	return PLUGIN_HANDLED
+		//if(level+val>MAXLEVEL)	return PLUGIN_HANDLED
 		level+=val
 	   
 		return PLUGIN_HANDLED;
