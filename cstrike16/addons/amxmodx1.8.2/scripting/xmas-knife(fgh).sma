@@ -76,7 +76,7 @@
 
 	public plugin_init( ) 
 	{ 
-	register_plugin( "XMAS GIFTS", "2.3.2", "KronoS" ); 
+	register_plugin( "XMAS GIFTS", "2.3.2", "KronoS" ); //Adryyy edit
 
 	// Eventuri 
 	register_event( "HLTV", "spawn_gifts", "a", "1=0", "2=0" ); 
