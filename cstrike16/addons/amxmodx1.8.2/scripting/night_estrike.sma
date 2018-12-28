@@ -11,8 +11,9 @@ public plugin_init()
 public players_check()
 {
 	new b[6]
-	get_time("%H", b, 5)
-	if(get_playersnum(1)<13&&str_to_num(b)==23)	allow_night=true
+	get_time("%H", a, 5)
+	get_time("%M", b, 5)
+	if(get_playersnum(1)<13&&(str_to_num(a)>=22&&str_to_num(b)>58))	allow_night=true
 }
 
 public task_check_time()
@@ -23,7 +24,7 @@ public task_check_time()
 
 	if(allow_night)
 	{
-		chat_color(0, "!g[AMXX] !nServerul trece pe setarile de noapte.")
+		if(equal(a, "22:59"))	chat_color(0, "!g[AMXX] !nServerul trece pe setarile de noapte.")
 		if(!equal(cm,"de_dust2x2"))	server_cmd("amx_map de_dust2x2")
 		server_cmd("mp_timelimit 0")
 		//server_cmd("amx_pausecfg stop adminvote")
@@ -37,7 +38,7 @@ public task_check_time()
 		server_cmd("amx_pausecfg enable mapchooser")
 		server_cmd("mp_timelimit 30")
 	}
-	if (equal(a, "08:00"))	chat_color(0, "!g[AMXX] !nEste ora !g08:00 !nserverul trece pe setarile de zi.")
+	if (equal(a, "08:00"))	chat_color(0, "!g[AMXX]!n Serverul trece pe setarile de zi.")
 }
 
 stock chat_color(const id, const input[], any:...)
