@@ -32,14 +32,16 @@ public task_check_time()
 		if(!equal(cm,"de_dust2x2"))	server_cmd("amx_map de_dust2x2")
 		server_cmd("mp_timelimit 0")
 		//server_cmd("amx_pausecfg stop adminvote")
-		server_cmd("amx_pausecfg stop mapchooser")
 		//server_cmd("amx_pausecfg stop mapsmenu")
+		pause("d","mapchooser.amxx")
+		pause("d","rtv.amxx")
 		allow_night=false
 	}
 
 	if (equal(a, "07:59"))
 	{
-		server_cmd("amx_pausecfg enable mapchooser")
+		unpause("a","mapchooser.amxx")
+		unpause("a","rtv.amxx")
 		server_cmd("mp_timelimit 30")
 	}
 	if (equal(a, "08:00"))	chat_color(0, "!g[AMXX]!n Serverul trece pe setarile de zi.")
