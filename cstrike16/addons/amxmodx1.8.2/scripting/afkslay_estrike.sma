@@ -1,36 +1,63 @@
 #include <amxmodx>
 #include <hamsandwich>
-#include <fakemeta>
+#include <engine>
 
-#define TIME 35.0
+#define CHECK_FREQ 10
 
-new Float:player_origin[3][33];
+new g_oldangles[33][3],g_afktime[33],bool:g_spawned[33] = {true, ...}
 
-public plugin_init()	RegisterHam(Ham_Spawn, "player", "e_Spawn", 1);
- 
-public e_Spawn(id)
+public plugin_init()
 {
-     if(is_user_alive(id)&&!task_exists(id+69))
-     {
-           pev(id, pev_origin, player_origin[id]);
-           set_task(TIME, "check_afk", id+69);
-     }
+	register_cvar("mp_afktime", "45")	// Dupa cat timp va da slay jucatorilor
+	set_task(float(CHECK_FREQ),"checkPlayers",_,_,_,"b")
+	RegisterHam(Ham_Spawn, "player", "e_Spawn", 1);
 }
-public check_afk(id)
-{
-	if(is_user_alive(id)&&!is_user_bot(id)&&same_origin(id)&&task_exists(id+69))
+
+public checkPlayers() {
+	for (new i = 0; i <= get_maxplayers(); i++) {
+		if (is_user_alive(i) && !is_user_bot(i)) {
+			new newangle[3]
+			get_user_origin(i, newangle)
+
+			if ( (newangle[0] == g_oldangles[i][0] && newangle[1] == g_oldangles[i][1] && newangle[2] == g_oldangles[i][2])) {
+				g_afktime[i] += CHECK_FREQ
+				check_afktime(i)
+				} else {
+				g_oldangles[i][0] = newangle[0]
+				g_oldangles[i][1] = newangle[1]
+				g_oldangles[i][2] = newangle[2]
+				g_afktime[i] = 0
+			}
+		}
+	}
+	return PLUGIN_HANDLED
+}
+
+check_afktime(id) {
+	if(!is_user_alive(id))	return
+	if (g_afktime[id] >= get_cvar_num("mp_afktime"))	user_kill(id,1);
+}
+
+public client_disconnect(id) {
+	if(!is_user_bot(id))
 	{
-		user_kill(id,1);
-		remove_task(id+69)
+	g_afktime[id] = 0
+	g_spawned[id]=false
 	}
 }
-public same_origin(id)
-{
-       new Float:origin[3];
-       pev(id, pev_origin, origin);
 
-       for(new i = 0; i < 3; i++)	if(origin[i] != player_origin[i][id])	return 0;
-       return 1;
+public client_putinserver(id) {
+	if(is_user_connected(id)&&!is_user_bot(id))
+	{
+	g_afktime[id] = 0
+	g_spawned[id]=false
+	}
 }
 
-public client_disconnect(id)	if(!is_user_bot(id)&&task_exists(id+69))	remove_task(id+69)
+public e_Spawn(id) {
+	if(is_user_alive(id)&&!is_user_bot(id)&&get_user_team(id)!=3)
+	{
+	g_spawned[id] = true
+	get_user_origin(id, g_oldangles[id])
+	}
+}
