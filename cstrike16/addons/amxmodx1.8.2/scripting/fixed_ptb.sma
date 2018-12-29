@@ -53,6 +53,7 @@
 #include <amxmodx>
 #include <amxmisc>
 #include <cstrike>
+#include <colorchat>
 
 // Uncomment for support immunity on VIP
 //#define PTB_VIP_IMMUNITY
@@ -60,13 +61,15 @@
 // Uncomment to activate log debug messages.
 //#define PTB_DEBUG
 
-// team ids
-#define UNASSIGNED	 	0
-#define TS 			1
-#define CTS			2
-#define AUTO_TEAM 		5
+// fcks ids
+#define UNASSIGNED 0
+#define TS 1
+#define CTS 2
+#define SPECs 3
+#define AUTO_TEAM 5
+//#define MANUAL_SWITCH
 
-new const PTB_VERSION[] = "1.8b3"
+new const PTB_VERSION[] = "1.8b3_fixed"
 
 // team selection control
 new bool:PTB_LIMITJOIN = false // set limits on team joining
@@ -154,7 +157,7 @@ new access_level
 new show_in_hlsw
 
 public plugin_init(){
-	register_plugin("Team Balancer",PTB_VERSION,"Ptahhotep")
+	register_plugin("Team Balancer",PTB_VERSION,"Ptahhotep")//Adryyy force
 	register_cvar("amx_ptb_version",PTB_VERSION,FCVAR_SERVER|FCVAR_EXTDLL|FCVAR_UNLOGGED|FCVAR_SPONLY)
 	
 	saychat = register_cvar("ptb_saychat", "0")
@@ -165,8 +168,8 @@ public plugin_init(){
 	access_level = register_cvar("ptb_access_level", "l")
 	show_in_hlsw = register_cvar("ptb_show_in_hlsw", "0")
 	
-	register_menucmd(register_menuid("Team_Select",1),(1<<0)|(1<<1)|(1<<4),"teamselect")
-	register_event("ShowMenu","menuclass","b","4&CT_Select","4&Terrorist_Select")
+	//register_menucmd(register_menuid("Team_Select",1),(1<<0)|(1<<1)|(1<<4),"teamselect")//ahhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+	//register_event("ShowMenu","menuclass","b","4&CT_Select","4&Terrorist_Select")//spec
 	//register_clcmd("jointeam","jointeam")
 	//register_clcmd("team_join","team_join")
 #if defined PTB_DEBUG
@@ -233,8 +236,8 @@ doTypesay(string[], duration, r, g, b) {
 
 say(string[]){
 	if(get_pcvar_num(saychat) == 1 || get_pcvar_num(saychat) == 3){
-		client_print(0,print_chat,string)
-		server_print(string)
+		ColorChat(0,NORMAL,string)
+		//server_print(string)
 	}
 }
 
@@ -285,7 +288,7 @@ transferPlayer(id){
 	
 #if defined PTB_DEBUG
 	log_amx("Transfer player: %s lastRoundSwitched[id]: %i roundCounter:%i", name, lastRoundSwitched[id], roundCounter)
-	client_print(0,print_chat,"Transfer player: %s lastRoundSwitched[id]: %i roundCounter:%i", name, lastRoundSwitched[id], roundCounter)
+	ColorChat(0,NORMAL,"^1[^4ESTRIKE^1]: Transfer player:^4 %s^1 lastRoundSwitched[id]:^4 %i^1 roundCounter:^4 %i", name, lastRoundSwitched[id], roundCounter)
 #endif
 }
 
@@ -294,7 +297,7 @@ public check_lasttransfer(id) {
 	new lasttransfer, text[255]
 	lasttransfer = lastRoundSwitched[id]
 	
-	format(text,255,"LastRound transfered: %i", lasttransfer)
+	format(text,255,"^1[^4ESTRIKE^1]: LastRound transfered:^4 %i", lasttransfer)
 	say(text)
 }
 #endif
@@ -308,7 +311,7 @@ actAtEndOfRound(){
 	// skip switching for a small number of players
 	if (get_playersnum() < PTB_SWITCHMIN) return
 	
-	say("PTB: Round ended, checking teams.")
+	say("^1[^4ESTRIKE^1]: Round ended, checking teams.")
 	checkTeamBalance()
 	if (winnerTeam) {
 		sortTeam(CTS)
@@ -398,27 +401,30 @@ Float:score(team, toBeAdded=0, toBeRemoved=0){
 }
 
 doSwitch() {
-	new text[256]
+	new text[256],text2[256]
 	//displayStatistics(0,true)
 	// don't switch, if at least one team is empty
 	if ( teamCounts[winnerTeam] == 0 || teamCounts[loserTeam] == 0 ) {
 		copy(text,255, "PTB: Can't switch players, need players in each team.")
 		doTypesay(text, 5, 0, 255, 0)
-		say(text)
+		copy(text2,255, "^1[^4ESTRIKE^1]: Can't switch players, need players in each team.")
+		say(text2)
 		return
 	}
 	// don't switch, if winner is alone (RULER!!!)
 	if (teamCounts[winnerTeam] == 1) {
 		copy(text,255, "PTB: Won't switch players, best player makes the winning team.")
 		doTypesay(text, 5, 0, 255, 0)
-		say(text)
+		copy(text2,255, "^1[^4ESTRIKE^1]: Won't switch players, best player makes the winning team.")
+		say(text2)
 		return
 	}
 	// don't switch, if both teams are full
 	if (teamCounts[winnerTeam] >= PTB_MAXSIZE && teamCounts[loserTeam] >= PTB_MAXSIZE) {
 		copy(text,255, "PTB: Can't switch players, both teams are full.")
 		doTypesay(text, 5, 0, 255, 0)
-		say(text)
+		copy(text2,255, "^1[^4ESTRIKE^1]: Can't switch players, both teams are full.")
+		say(text2)
 		return
 	}
 	if (!PTB_DEADONLY || couldNotSwitchCounter > PTB_FORCESWITCH) {
@@ -430,7 +436,8 @@ doSwitch() {
 			++couldNotSwitchCounter
 			copy(text,255, "PTB: Can't switch players, need valid target in each team.")
 			doTypesay(text, 5, 0, 255, 0)
-			say(text)
+			copy(text2,255, "^1[^4ESTRIKE^1]: Can't switch players, need valid target in each team.")
+			say(text2)
 			return
 		}
 	}
@@ -441,13 +448,14 @@ doSwitch() {
 
 		if (validTargetCounts[winnerTeam] == 0 || validTargetCounts[loserTeam] == 0) {
 			if (++couldNotSwitchCounter > PTB_FORCESWITCH) {
-				say("PTB: Couldn't switch dead, switching alive.")
+				say("^1[^4ESTRIKE^1]: Couldn't switch dead, switching alive.")
 				doSwitch()
 				return
 			}
 			copy(text, 255,"PTB: Can't switch players, need valid target in each team.")
 			doTypesay(text, 5, 0, 255, 0)
-			say(text)
+			copy(text2,255, "^1[^4ESTRIKE^1]: Can't switch players, need valid target in each team.")
+			say(text2)
 			return
 		}
 	}
@@ -471,7 +479,8 @@ doSwitch() {
 	if (winner == 0 && loser == 0) {
 		copy(text, 255,"PTB: No switch would improve team balancing.")
 		doTypesay(text, 5, 0, 255, 0)
-		say(text)
+		copy(text2,255, "^1[^4ESTRIKE^1]: No switch would improve team balancing.")
+		say(text2)
 		return
 	}
 	couldNotSwitchCounter = 0
@@ -497,27 +506,29 @@ doSwitch() {
 		//show_hudmessage(0, text )
 		set_hudmessage(0, 255, 0, 0.05, 0.25, 0, 6.0, 5.0 , 0.5, 0.15, -1)
 		ShowSyncHudMsg(0, g_MyMsgSync, "%s", text)
-		client_print(0,print_chat,"PTB: Switching %s with %s.",winnerName,loserName)
+		ColorChat(0,NORMAL,"^1[^4ESTRIKE^1]: Switching^4 %s^1 with^4 %s",winnerName,loserName)
 	}else{
 		doTypesay(text, 5, 0, 255, 0)
-		client_print(0,print_chat,"PTB: Switching %s with %s.",winnerName,loserName)
+		ColorChat(0,NORMAL,"^1[^4ESTRIKE^1]: Switching^4 %s^1 with^4 %s",winnerName,loserName)
 		//say(text)
 	}
 }
 
 doTransfer() {
 	//displayStatistics(0,true)
-	new text[256]
+	new text[256],text2[256]
 	if (teamCounts[winnerTeam] == 0) {
 			copy(text,255, "PTB: Can't switch players, need players in each team.")
 			doTypesay(text, 5, 0, 255, 0)
-			say(text)
+			copy(text2,255, "^1[^4ESTRIKE^1]: Can't switch players, need players in each team.")
+			say(text2)
 			return
 	}
 	if (teamCounts[loserTeam] >= PTB_MAXSIZE) {
 		copy(text,255, "PTB: Can't transfer player, losing team is full.")
 		doTypesay(text, 5, 0, 255, 0)
-		say(text)
+		copy(text2,255, "^1[^4ESTRIKE^1]: Can't transfer player, losing team is full.")
+		say(text2)
 		return
 	}
 	if (!PTB_DEADONLY || couldNotSwitchCounter > PTB_FORCESWITCH) {
@@ -525,7 +536,8 @@ doTransfer() {
 		if (validTargetCounts[winnerTeam] == 0) {
 			copy(text,255, "PTB: Can't transfer player, no valid target in winning team.")
 			doTypesay(text, 5, 0, 255, 0)
-			say(text)
+			copy(text2,255, "^1[^4ESTRIKE^1]: Can't transfer player, no valid target in winning team.")
+			say(text2)
 			++couldNotSwitchCounter
 			return
 		}
@@ -535,13 +547,14 @@ doTransfer() {
 		createValidTargets(winnerTeam, true)
 		if (validTargetCounts[winnerTeam] == 0) {
 			if (++couldNotSwitchCounter > PTB_FORCESWITCH) {
-				say("PTB: Couldn't transfer dead, transferring alive.")
+				say("^1[^4ESTRIKE^1]: Couldn't transfer dead, transferring alive.")
 				doTransfer()
 				return
 			}
 			copy(text,255, "PTB: Can't transfer player, no valid target in winning team.")
 			doTypesay(text, 5, 0, 255, 0)
-			say(text)
+			copy(text2,255, "^1[^4ESTRIKE^1]: Can't transfer player, no valid target in winning team.")
+			say(text2)
 			return
 		}
 	}
@@ -559,7 +572,8 @@ doTransfer() {
 	if (winner == 0) {
 		copy(text, 255,"PTB: No transfer would improve team balancing.")
 		doTypesay(text, 5, 0, 255, 0)
-		say(text)
+		copy(text2,255, "^1[^4ESTRIKE^1]: No transfer would improve team balancing.")
+		say(text2)
 		return
 	}
 	couldNotSwitchCounter = 0
@@ -570,15 +584,15 @@ doTransfer() {
 	format(text,255,"PTB: Transfering %s to the %s",winnerName, (winnerTeam == CTS) ? "Ts" : "CTs")
 	
 	if(get_pcvar_num(saychat) == 2 || get_pcvar_num(saychat) == 3){
-	//say(text)
+		//say(text)
 		//set_hudmessage(0, 255, 0, 0.05, 0.25, 0, 6.0, 5.0 , 0.5, 0.15, 1)
 		//show_hudmessage(0, text )
 		set_hudmessage(0, 255, 0, 0.05, 0.25, 0, 6.0, 5.0 , 0.5, 0.15, -1)
 		ShowSyncHudMsg(0, g_MyMsgSync, "%s", text)
-		client_print(0,print_chat,"PTB: Transfering %s to the %s",winnerName, (winnerTeam == CTS) ? "Ts" : "CTs")
+		ColorChat(0,NORMAL,"^1[^4ESTRIKE^1]: Transfering^4 %s^1 to the^4 %s",winnerName, (winnerTeam == CTS) ? "Ts" : "CTs")
 	}else{
 		doTypesay(text, 5, 0, 255, 0)
-		client_print(0,print_chat,"PTB: Transfering %s to the %s",winnerName, (winnerTeam == CTS) ? "Ts" : "CTs")
+		ColorChat(0,NORMAL,"^1[^4ESTRIKE^1]: Transfering^4 %s^1 to the^4 %s",winnerName, (winnerTeam == CTS) ? "Ts" : "CTs")
 		//say(text)
 	}
 }
@@ -648,8 +662,11 @@ manageWtjFile(id) {
 
 public menuclass(id) {
 	if (!isBeingTransfered[id]) return PLUGIN_CONTINUE
+
 	client_cmd(id,"slot1")
+
 	isBeingTransfered[id] = false
+
 	return PLUGIN_CONTINUE
 }
 
@@ -690,8 +707,8 @@ checkTeamSwitch(id,iNewTeam) {
 	// prevent unwanted rejoining of the same team ...
 	if (iNewTeam == iOldTeam) {
 		//say("Preventing rejoining of the same team.")
-		client_print(id,print_chat,"PTB: Joining to the same team is not allowed...")
-#if !defined MANUAL_SWITCH
+		ColorChat(id,NORMAL,"^1[^4ESTRIKE^1]: Joining to the same team is not^4 allowed^1...")
+#if defined MANUAL_SWITCH
 		engclient_cmd(id,"chooseteam") // display menu again
 #endif
 		return PLUGIN_HANDLED
@@ -708,45 +725,48 @@ checkTeamSwitch(id,iNewTeam) {
 		if ( teamCounts[iNewTeam]&&(teamCounts[iOldTeam]<PTB_MAXSIZE)&&
 			((iNewTeam==winnerTeam)||(teamCounts[iNewTeam]>=teamCounts[iOldTeam])) ) {
 			// player is wtjing
-			new text[256],name[32]
+			new text[256],name[32],text2[256]
 			get_user_name(id,name,31)
 			// Kick wtj player if reached set limit
 			if (++wtjCount[id] >= PTB_WTJKICK && PTB_KICK) {
 				format(text, 255, "PTB: Kicking %s for a WTJ count %d of %d.", name, wtjCount[id],PTB_WTJKICK )
 				doTypesay(text, 5, 0, 255, 0)
-				say(text)
-				server_cmd("kick #%d",get_user_userid(id))
+				format(text2,255, "^1[^4ESTRIKE^1]: Kicking^4 %s&1 for a WTJ count^4 %d^1 of^4 %d")
+				say(text2)
+				//server_cmd("kick #%d",get_user_userid(id))
 				return PLUGIN_HANDLED
 			}
 			// Announce about WTJ
 			if (PTB_TELLWTJ) {
 				if (iNewTeam == CTS) {
 					format(text, 255, "PTB: The CTs are strong enough, %s (WTJ: %d/%d).", name, wtjCount[id],PTB_WTJKICK)
+					format(text2, 255, "^1[^4ESTRIKE^1]: The CTs are strong enough,^4 %s^1 (WTJ:^4 %d^1/^4%d^1)", name, wtjCount[id],PTB_WTJKICK)
 					doTypesay(text, 5, 0, 50, 255)
 				}
 				else {
 					format(text, 255, "PTB: The Ts are strong enough, %s (WTJ: %d/%d).", name, wtjCount[id],PTB_WTJKICK)
+					format(text2, 255, "^1[^4ESTRIKE^1]: The Ts are strong enough,^4 %s^1 (WTJ:^4 %d^1/^4%d^1)", name, wtjCount[id],PTB_WTJKICK)
 					doTypesay(text, 5, 255, 50, 0)
 				}
-				say(text)
+				say(text2)
 			}
-#if !defined MANUAL_SWITCH
+#if defined MANUAL_SWITCH
 			engclient_cmd(id,"chooseteam") // display menu again
 #endif
 			return PLUGIN_HANDLED
 		}
 		// check for maximum team size
 		if (teamCounts[iNewTeam] >= PTB_MAXSIZE) {
-			client_print(id,print_chat,"PTB: Maximum team size prohibits team change.")
-#if !defined MANUAL_SWITCH
+			ColorChat(id,NORMAL,"^1[^4ESTRIKE^1]: Maximum team size prohibits team change.")
+#if defined MANUAL_SWITCH
 			engclient_cmd(id,"chooseteam") // display menu again
 #endif
 			return PLUGIN_HANDLED
 		}
 		// check team size difference limits
 		if ( teamCounts[iNewTeam]+1-teamCounts[iOldTeam] >= PTB_MAXDIFF ) {
-			client_print(id,print_chat,"PTB: Maximum team size difference prohibits team change.")
-#if !defined MANUAL_SWITCH
+			ColorChat(id,NORMAL,"^1[^4ESTRIKE^1]: Maximum team size difference prohibits team change.")
+#if defined MANUAL_SWITCH
 			engclient_cmd(id,"chooseteam") // display menu again
 #endif
 			return PLUGIN_HANDLED
@@ -762,30 +782,31 @@ checkTeamSwitch(id,iNewTeam) {
 		// and his team is bettter then opposite or has more players
 		if (teamCounts[iNewTeam] && teamCounts[opposingTeam]<PTB_MAXSIZE &&
 				 (iNewTeam==winnerTeam||(!winnerTeam&&teamCounts[iNewTeam]>teamCounts[opposingTeam]))) {
-			new text[256],name[32]
+			new text[256],text2[256],name[32]
 			get_user_name(id,name,31)
 			if (++wtjCount[id] >= PTB_WTJKICK && PTB_KICK) {
 				format(text, 255, "PTB: Kicking %s for a WTJ count %d of %d.", name, wtjCount[id],PTB_WTJKICK)
 				doTypesay(text, 5, 0, 255, 0)
-				say(text)
-				server_cmd("kick #%d", get_user_userid(id))
+				format(text2, 255, "^1[^4ESTRIKE^1]: Kicking^4 %s^1 for a WTJ count^4 %d^1 of^4 %d", name, wtjCount[id],PTB_WTJKICK)
+				say(text2)
+				//server_cmd("kick #%d", get_user_userid(id))
 				return PLUGIN_HANDLED
 			}
 			if (iNewTeam==CTS) {
 				if (wtjCount[id]>=PTB_WTJAUTO && is_user_connected(id)) {
 					manageWtjFile(id)
 					format(text, 255, "PTB: Forcing %s to the Ts (WTJ: %d/%d).", name, wtjCount[id],PTB_WTJKICK)
-
 					engclient_cmd(id,"jointeam","1")
-
 					doTypesay(text, 5, 255, 50, 0)
-					say(text)
+					format(text2, 255, "^1[^4ESTRIKE^1]: Forcing^4 %s^1 to the^4 T^1s (WTJ:^4 %d^1/^4%d^1)", name, wtjCount[id],PTB_WTJKICK)
+					say(text2)
 				}
 				else if (PTB_TELLWTJ) {
 					format(text, 255, "PTB: The CTs are strong enough, %s (WTJ: %d/%d).", name, wtjCount[id],PTB_WTJKICK)
 					doTypesay(text, 5, 0, 50, 255)
-					say(text)
-#if !defined MANUAL_SWITCH
+					format(text2, 255, "^1[^4ESTRIKE^1]: The^4 CT^1s are strong enough,^4 %s^1 (WTJ:^4 %d^1/^4%d^1)", name, wtjCount[id],PTB_WTJKICK)
+					say(text2)
+#if defined MANUAL_SWITCH
 					engclient_cmd(id,"chooseteam") // display menu again
 #endif
 				}
@@ -794,17 +815,17 @@ checkTeamSwitch(id,iNewTeam) {
 				if (wtjCount[id]>=PTB_WTJAUTO) {
 					manageWtjFile(id)
 					format(text, 255, "PTB: Forcing %s to the CTs (WTJ: %d/%d).", name, wtjCount[id],PTB_WTJKICK)
-
 					engclient_cmd(id,"jointeam","2")
-
 					doTypesay(text, 5, 0, 50, 255)
-					say(text)
+					format(text2, 255, "^1[^4ESTRIKE^1]: Forcing^4 %s^1 to the^4 CT^1s (WTJ:^4 %d^1/^4%d^1)", name, wtjCount[id],PTB_WTJKICK)
+					say(text2)
 				}
 				else if (PTB_TELLWTJ) {
 					format(text, 255, "PTB: The Ts are strong enough, %s (WTJ: %d/%d).", name, wtjCount[id],PTB_WTJKICK)
 					doTypesay(text, 5, 255, 50, 0)
-					say(text)
-#if !defined MANUAL_SWITCH
+					format(text2, 255, "^1[^4ESTRIKE^1]: The^4 T^1s are strong enough,^4 %s^1 (WTJ:^4 %d^1/^4%d^1)", name, wtjCount[id],PTB_WTJKICK)
+					say(text2)
+#if defined MANUAL_SWITCH
 					engclient_cmd(id,"chooseteam") // display menu again
 #endif
 				}
@@ -813,16 +834,16 @@ checkTeamSwitch(id,iNewTeam) {
 		}
 		// check for maximum team size
 		if (teamCounts[iNewTeam] >= PTB_MAXSIZE) {
-			client_print(id,print_chat,"PTB: Maximum team size prohibits team join.")
-#if !defined MANUAL_SWITCH
+			ColorChat(id,NORMAL,"^1[^4ESTRIKE^1]: Maximum team size prohibits team join.")
+#if defined MANUAL_SWITCH
 			engclient_cmd(id,"chooseteam") // display menu again
 #endif
 			return PLUGIN_HANDLED
 		}
 		// check team size difference limits
 		if ( teamCounts[iNewTeam]-teamCounts[opposingTeam] >= PTB_MAXDIFF) {
-			client_print(id,print_chat,"PTB: Maximum team size difference prohibits team join.")
-#if !defined MANUAL_SWITCH
+			ColorChat(id,NORMAL,"^1[^4ESTRIKE^1]: Maximum team size difference prohibits team join.")
+#if defined MANUAL_SWITCH
 			engclient_cmd(id,"chooseteam") // display menu again
 #endif
 			return PLUGIN_HANDLED
@@ -837,10 +858,10 @@ checkTeamSwitch(id,iNewTeam) {
 		if (teamCounts[opposingTeam] && ( (teamCounts[opposingTeam]>=PTB_MAXSIZE)
 				|| (iOldTeam==loserTeam) || (!loserTeam&&teamCounts[iOldTeam]<=teamCounts[opposingTeam])
 				|| (teamCounts[opposingTeam]+1-teamCounts[iOldTeam]>=PTB_MAXDIFF)) ) {
-			client_print(id,print_chat,"PTB: You have better stay in your current team...")
+			ColorChat(id,NORMAL,"^1[^4ESTRIKE^1]: You have better stay in your current team...")
 			return PLUGIN_HANDLED
 		}
-		client_print(id,print_chat,"PTB: You have been auto-assigned...")
+		ColorChat(id,NORMAL,"^1[^4ESTRIKE^1]: You have been^4 auto-assigned^1...")
 
 		engclient_cmd(id,"jointeam",(opposingTeam==CTS)?"2":"1")
 
@@ -869,13 +890,13 @@ checkTeamSwitch(id,iNewTeam) {
 		else iNewTeam = (random_num(0,100) < 50) ? CTS : TS
 		// check for maximum team size
 		if (teamCounts[iNewTeam]>=PTB_MAXSIZE) {
-			client_print(id,print_chat,"PTB: Maximum team size prohibits team join.") // ??? - only a spectator???
-#if !defined MANUAL_SWITCH
+			ColorChat(id,NORMAL,"^1[^4ESTRIKE^1]: Maximum team size prohibits team join.") // ??? - only a spectator???
+#if defined MANUAL_SWITCH
 			engclient_cmd(id,"chooseteam") // display menu again
 #endif
 			return PLUGIN_HANDLED
 		}
-		client_print(id,print_chat,"PTB: You have been auto-assigned...")
+		ColorChat(id,NORMAL,"^1[^4ESTRIKE^1]: You have been auto-assigned...")
 
 		engclient_cmd(id,"jointeam",(iNewTeam==CTS)?"2":"1")
 
@@ -1011,32 +1032,39 @@ calcTeamScores() {
 
 announceStatus() {
 	if (!PTB_ANNOUNCE) return
+
 	checkTeamBalance()
-	new text[256]
+
+	new text[256],text2[256]
 	if (winnerTeam == TS) {
 		format(text, 255, "PTB: The COUNTER-TERRORIST team could use some support.")
 		doTypesay(text, 5, 0, 50, 255)
-		say("PTB: The COUNTER-TERRORIST team could use some support.")
+		format(text2, 255, "^1[^4ESTRIKE^1]: The^4 COUNTER-TERRORIST^1 team could use some support.")
+		say(text2)
 	}
 	else if (winnerTeam == CTS) {
 		format(text, 255, "PTB: The TERRORIST team could use some support.")
 		doTypesay(text, 5, 255, 50, 0)
-		say("PTB: The TERRORIST team could use some support.")
+		format(text2, 255, "^1[^4ESTRIKE^1]: The^4 TERRORIST^1 team could use some support.")
+		say(text2)
 	}
 	else if (wtConditions[TS] > wtConditions[CTS]) {
 		format(text, 255, "PTB: Observing TERRORIST team advantage.")
 		doTypesay(text, 5, 255, 50, 0)
-		say("PTB: Observing TERRORIST team advantage.")
+		format(text2, 255, "^1[^4ESTRIKE^1]: Observing^4 TERRORIST^1 team advantage.")
+		say(text2)
 	}
 	else if (wtConditions[CTS] > wtConditions[TS]) {
 		format(text, 255, "PTB: Observing COUNTER-TERRORIST team advantage.")
 		doTypesay(text, 5, 0, 50, 255)
-		say("PTB: Observing COUNTER-TERRORIST team advantage.")
+		format(text2, 255, "^1[^4ESTRIKE^1]: Observing^4 COUNTER-TERRORIST^1 team advantage.")
+		say(text2)
 	}
 	else if (PTB_SAYOK) {
 		format(text, 255, "PTB: Teams look fine, no action required.")
 		doTypesay(text, 5, 200, 100, 0)
-		say("PTB: Teams look fine, no action required.")
+		format(text2, 255, "^1[^4ESTRIKE^1]: Teams look fine, no action required.")
+		say(text2)
 	}
 }
 
