@@ -10,7 +10,7 @@
 	#define HSXP 200
 	#define LEVELUPXP 400
 	#define SKINLEVELCHANGE 30
-	#define PLUG_TAG "HATS"
+	#define PLUG_TAG "HATS:"//for chat
 
 	stock fm_set_entity_visibility(index, visible = 1) set_pev(index, pev_effects, visible == 1 ? pev(index, pev_effects) & ~EF_NODRAW : pev(index, pev_effects) | EF_NODRAW)
 
@@ -199,7 +199,7 @@ public LoadData(id){
 		new message[ 1000 ];
 		new level = xpplayer[ player ] / LEVELUPXP;
 		
-		format( message, 999, "[Hat : %s]<br>[Level : %i]<br>[Experience : %i / %i]<br>[Ordinary : %i]<br>[%i kills for new level]", skinNames[ setting[ player ] ], level, xpplayer[ player ], LEVELUPXP * ( level + 1 ), level / SKINLEVELCHANGE + 1, ( LEVELUPXP * ( level + 1 ) - xpplayer[ player ] ) / KILLXP );
+		format( message, 999, "[Current Hat : %s]<br>[Level : %i]<br>[Experience : %i / %i]<br>[Ordinary : %i]<br>[%i kills for new level]", skinNames[ setting[ player ] ], level, xpplayer[ player ], LEVELUPXP * ( level + 1 ), level / SKINLEVELCHANGE + 1, ( LEVELUPXP * ( level + 1 ) - xpplayer[ player ] ) / KILLXP );
 		show_motd( player, message );
 	}
 
@@ -249,7 +249,7 @@ public LoadData(id){
 	public ShowDetails(id)
 	{
 		new level = xpplayer[ id ] / LEVELUPXP;
-		client_print(id,print_chat,"%s [Hat : %s][Level: %i][Experience: %i/%i][Ordinary: %i][%i kills for new level]",PLUG_TAG, skinNames[ setting[ id ] ], level, xpplayer[ id ], LEVELUPXP * ( level + 1 ), level / SKINLEVELCHANGE + 1, ( LEVELUPXP * ( level + 1 ) - xpplayer[ id ] ) / KILLXP)
+		client_print(id,print_chat,"%s [CurrentHat : %s][Level: %i][Experience: %i/%i][Ordinary: %i][%i kills for new level]",PLUG_TAG, skinNames[ setting[ id ] ], level, xpplayer[ id ], LEVELUPXP * ( level + 1 ), level / SKINLEVELCHANGE + 1, ( LEVELUPXP * ( level + 1 ) - xpplayer[ id ] ) / KILLXP)
 	}
 	   
 	public SkinSelect( id )
