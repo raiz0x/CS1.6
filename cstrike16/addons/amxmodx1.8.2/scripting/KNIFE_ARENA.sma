@@ -1,4 +1,4 @@
-//EDIT 1
+//EDIT 2
 
 #include <amxmodx>
 #include <amxmisc>
@@ -2023,10 +2023,10 @@ public Ask_handler( id, menu, item )
  
 public Player_Killed(victim, attacker, shouldgib)
 {
-    if(is_user_connected(his_challenger[victim]) && !is_user_connected(attacker))	if(!check_teams(victim,attacker))	return HAM_IGNORED
-
     if(!is_user_connected(victim)||is_in_duel[victim] != 2||!is_user_connected(attacker)||attacker == victim||is_in_duel[attacker] != 2
 	|| is_in_duel[victim] != 2)	return HAM_IGNORED;
+
+    if(is_user_connected(his_challenger[victim]) && !is_user_connected(attacker))	if(!check_teams(victim,attacker))	return HAM_IGNORED
    
     if(his_challenger[victim] == attacker || his_challenger[attacker] == victim )
     {
@@ -2415,15 +2415,13 @@ public wait_for_enemy_loop(id)
  
 public hud_displayer(id)
 {
-    if(is_user_connected(id)&& is_user_connected(his_challenger[id]))
+    if(is_user_connected(id)&& is_user_connected(his_challenger[id])&&is_in_duel[id] == 2&&is_in_duel[his_challenger[id]] == 2)
     {
-        //if(is_in_duel[id] == 2)
-        //{
             new name[64],his_name[64];
             get_user_name(id,name,charsmax(name))
             get_user_name(his_challenger[id],his_name,charsmax(his_name))
 
-            set_dhudmessage(0, 255, 0, -1.0, 0.2, 0, 6.0, 1.0,0.1,0.2)
+            set_dhudmessage(0, 255, 0, -1.0, 0.2, 0, 6.0, 12.0,0.1,0.2)
 
             show_dhudmessage(id, "Arena: %s | Rounds: %d/%d ^n%s -- %d/%d (HS:%d)^nVS^n%s -- %d/%d (HS:%d)"
 				,arena_names[arena_number[id]]
@@ -2434,6 +2432,7 @@ public hud_displayer(id)
 				,MAX_KILLS,his_HS[his_challenger[id]]
 			)
 
+/*
            show_dhudmessage(his_challenger[id], "Arena: %s | Rounds: %d/%d ^n%s -- %d/%d (HS:%d)^nVS^n%s -- %d/%d (HS:%d)"
 				,arena_names[arena_number[id]]
 				,rounds[arena_number[id]]
@@ -2442,9 +2441,8 @@ public hud_displayer(id)
 				,name,his_wins[id]
 				,MAX_KILLS,his_HS[id]
 			)
-           
-            set_task(1.0,"hud_displayer",id+360,_,_,"b")
-        //}
+*/
+            set_task(0.1,"hud_displayer",id+360,_,_,"b")
     }
 }
 
