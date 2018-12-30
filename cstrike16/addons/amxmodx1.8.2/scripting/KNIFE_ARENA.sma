@@ -1,3 +1,5 @@
+//EDIT 1
+
 #include <amxmodx>
 #include <amxmisc>
 #include <cstrike>
@@ -194,7 +196,7 @@ new MAXPLAYERS
  
 #define CHAT_TAG "^3[^4KnifeDuels^3]^1 " // add a space right after if you want one between the tag and the messages
  
- 
+
 #define ARENA_ENT_NAME "entity_arena" // this is the arena's entity name
  
  
@@ -214,7 +216,6 @@ enum
     SCOREATTRIB_ARG_PLAYERID = 1,
     SCOREATTRIB_ARG_FLAGS
 }
- 
 enum ( <<= 1 )
 {
     SCOREATTRIB_FLAG_NONE = 0,
@@ -332,8 +333,7 @@ new HuDForEver
 new g_motd[ 8000 ]
 new Duel_logs[ 54 ];
 new bool:gBackStabing[33];
- 
- 
+
 static const szg_Pbk[] = "models/p_knife.mdl"
 static const szg_Vbk[] = "models/v_knife.mdl"
  
@@ -344,6 +344,7 @@ const OFFSET_LINUX_WEAPONS = 4
 #define P_VERS "2.0.5"
 #define P_AUTH "ALLIED"
 #define P_REQ "- Global Knife Arena -"
+
 new killed_forward;
 new cvar_gamename;
  
@@ -351,12 +352,16 @@ new cvar_gamename;
    
 public plugin_init()
 {
- 
     register_plugin(P_NAME, P_VERS, P_AUTH)
+
     register_clcmd("say /origin","print_coords")
     register_clcmd("say /arena","editor_menu")
-    register_clcmd("say /Duel", "menu_principal");
+    register_clcmd("say /duel", "menu_principal");
     register_clcmd("say /reset","Duels_Reset",ADMIN_BAN);
+    register_clcmd("say_team /origin","print_coords")
+    register_clcmd("say_team /arena","editor_menu")
+    register_clcmd("say_team /duel", "menu_principal");
+    register_clcmd("say_team /reset","Duels_Reset",ADMIN_BAN);
  
     fvault = adv_vault_open("DuelsTop", false)
  
@@ -445,11 +450,8 @@ public plugin_init()
 
 public FW_Prethink(id)
 {
-    if (pev(id,pev_button) & IN_RELOAD && pev(id,pev_button) & IN_USE)
-        menu_principal(id)
- 
-    if (pev(id,pev_button) & IN_ATTACK && pev(id,pev_button) & IN_ATTACK2)
-        menu_principal(id)
+    if (pev(id,pev_button) & IN_RELOAD && pev(id,pev_button) & IN_USE)	menu_principal(id)
+    if (pev(id,pev_button) & IN_ATTACK && pev(id,pev_button) & IN_ATTACK2)	menu_principal(id)
 }
  
 public Duel_Rank(victim,attacker,shouldgib)
@@ -457,8 +459,7 @@ public Duel_Rank(victim,attacker,shouldgib)
     new wid,bh
        
     if(!is_user_connected(victim)||is_in_duel[victim] != 2||!is_user_connected(attacker)||
-	attacker == victim||is_in_duel[attacker] != 2 || is_in_duel[victim] != 2)
-        return HAM_IGNORED
+	attacker == victim||is_in_duel[attacker] != 2 || is_in_duel[victim] != 2)	return HAM_IGNORED
        
     if(is_user_connected(his_challenger[victim]) && !is_user_connected(attacker))	if(!check_teams(victim,attacker))	return HAM_IGNORED
  
@@ -502,12 +503,14 @@ public fwd_EmitSound(id, channel, const sound[])
         iHitCount[id] = 0;
         g_fHit[id] = fGmTime;
     }
+
     ++iHitCount[id];
     g_fHit[id] = fGmTime;
    
     if((iHitCount[id] >= get_pcvar_num(cvar_count)))
     {
-        menu_principal(id)     
+        menu_principal(id)
+
         iHitCount[id] = 0;
     }
     return FMRES_IGNORED;
@@ -527,7 +530,6 @@ public menu_principal( id )
  
     menu_display(id, gMenu, 0)
 }
- 
 public menu_principal1(id, menu, item)      
 {
     if ( item == MENU_EXIT )    
@@ -569,10 +571,9 @@ public menu_principal1(id, menu, item)
 public MessageScoreAttrib( iMsgId, iDest, iReceiver )
 {
     new id= get_msg_arg_int( SCOREATTRIB_ARG_PLAYERID );
-    if(!is_user_connected(id))
-        return;
-    if(!is_user_alive(id))
-        return;
+
+    if(!is_user_connected(id)||!is_user_alive(id))	return;
+
     set_msg_arg_int( SCOREATTRIB_ARG_FLAGS, ARG_BYTE, SCOREATTRIB_FLAG_NONE);
 }
  
@@ -607,6 +608,7 @@ public Player_Respawn_pre(id)
 public plugin_natives()
 {
     register_library("knife_duels")
+
     register_native("is_user_in_duel","_is_user_in_duel")
     register_native("is_user_dueling_user","_is_user_dueling_user")
 }
@@ -614,75 +616,38 @@ public plugin_natives()
 public get_non_duelers_alive()
 {
     new count = 0
-    for(new id; id < MAXPLAYERS;id++)
-    {
-        if(is_user_connected(id))
-        {
-            if(is_user_alive(id) && !is_in_duel[id])
-            {
-                count++
-            }
-        }
-    }
+
+    for(new id; id < MAXPLAYERS;id++)	if(is_user_connected(id))	if(is_user_alive(id) && !is_in_duel[id])	count++
+
     return count
 }
  
-public respawn_everyone(taskid)
-{
-    for(new id;id < MAXPLAYERS;id++)
-    {
-        if(is_user_connected(id))
-        {
-            if(is_in_duel[id] !=2 && !is_user_alive(id))
-            {
-                if(cs_get_user_team(id) == CS_TEAM_CT || cs_get_user_team(id) == CS_TEAM_T)
-                {
-                    ExecuteHam(Ham_CS_RoundRespawn, id);
-                }
-            }
-        }
-    }
-}
+public respawn_everyone(taskid)	for(new id;id < MAXPLAYERS;id++)	if(is_user_connected(id))	if(is_in_duel[id] !=2 && !is_user_alive(id))	if(cs_get_user_team(id) == CS_TEAM_CT || cs_get_user_team(id) == CS_TEAM_T)	ExecuteHam(Ham_CS_RoundRespawn, id);
  
 public get_non_duelers_alive_CT()
 {
     new count = 0
-    for(new id; id < MAXPLAYERS;id++)
-    {
-        if(is_user_connected(id))
-        {
-            if(is_user_alive(id) && !is_in_duel[id] && cs_get_user_team(id) == CS_TEAM_CT)
-            {
-                count++
-            }
-        }
-    }
+
+    for(new id; id < MAXPLAYERS;id++)	if(is_user_connected(id))	if(is_user_alive(id) && !is_in_duel[id] && cs_get_user_team(id) == CS_TEAM_CT)	count++
     return count
 }
  
 public get_non_duelers_alive_T()
 {
     new count = 0
-    for(new id; id < MAXPLAYERS;id++)
-    {
-        if(is_user_connected(id))
-        {
-            if(is_user_alive(id) && !is_in_duel[id] && cs_get_user_team(id) == CS_TEAM_T)
-            {
-                count++
-            }
-        }
-    }
+
+    for(new id; id < MAXPLAYERS;id++)	if(is_user_connected(id))	if(is_user_alive(id) && !is_in_duel[id] && cs_get_user_team(id) == CS_TEAM_T)	count++
     return count
 }
  
 public _is_user_in_duel(plugin, iParams)
 {
     new id = get_param(1)
-    if(!is_user_connected(id))
-        return PLUGIN_CONTINUE
-    if(is_in_duel[id] == 2)
-        return PLUGIN_HANDLED
+
+    if(!is_user_connected(id))	return PLUGIN_CONTINUE
+
+    if(is_in_duel[id] == 2)	return PLUGIN_HANDLED
+
     return PLUGIN_CONTINUE
 }
  
@@ -690,35 +655,25 @@ public _is_user_dueling_user(plugin, iParams)
 {
     new id = get_param(1)
     new enemy = get_param(2)
-    if(!is_user_connected(id))
-        return PLUGIN_CONTINUE
-    if(!is_user_connected(enemy))
-        return PLUGIN_CONTINUE
-    if(is_in_duel[id] != 2 || is_in_duel[enemy] != 2)
-        return PLUGIN_CONTINUE
-    if(id == his_challenger[enemy] && enemy == his_challenger[id])
-        return PLUGIN_HANDLED
+
+    if(!is_user_connected(id)||!is_user_connected(enemy))	return PLUGIN_CONTINUE
+
+    if(is_in_duel[id] != 2 || is_in_duel[enemy] != 2)	return PLUGIN_CONTINUE
+
+    if(id == his_challenger[enemy] && enemy == his_challenger[id])	return PLUGIN_HANDLED
+
     return PLUGIN_CONTINUE
 }
  
 public forward_touch(ent, id)
 {
-    if(!pev_valid(id))
-        return;
-    if(!pev_valid(ent))
-        return;
-    if(is_user_alive(id) && get_user_noclip(id))
-        return;
+    if(!pev_valid(id)||!pev_valid(ent)||is_user_alive(id) && get_user_noclip(id))	return;
  
     static class[32]
     pev(ent,pev_classname,class,charsmax(class));
     if(equal(class,ARENA_ENT_NAME))
     {
- 
-        if(is_in_duel[id] && !gBackStabing[id])
-        {
-            gBackStabing[id] = true;
-        }
+        if(is_in_duel[id] && !gBackStabing[id])	gBackStabing[id] = true;
         if(is_user_alive(id) && !gBackStabing[id])
         {
                 gBackStabing[id] = false;
@@ -727,32 +682,25 @@ public forward_touch(ent, id)
  
                 user_slap(id,0)
                 user_slap(id,0)
-         
         }
     }
 }
 
-public Ham_TraceAttack_player(victim, attacker, Float:Damage, Float:Direction[3], ptr, Damagebits)
-{
-    if(is_user_connected(attacker) && is_user_connected(victim))
-    {
-        Head_shot[attacker][victim] = bool:( get_tr2(ptr, TR_iHitgroup) == 1 )
-    }
-}
+public Ham_TraceAttack_player(victim, attacker, Float:Damage, Float:Direction[3], ptr, Damagebits)	if(is_user_connected(attacker) && is_user_connected(victim))	Head_shot[attacker][victim] = bool:( get_tr2(ptr, TR_iHitgroup) == 1 )
  
 public editor_menu(id)
 {
-    if(!is_user_connected(id))
-        return PLUGIN_HANDLED
+    if(!is_user_connected(id))	return PLUGIN_HANDLED
+
     new flags = get_user_flags(id)
     if(!(flags & ADMIN_RCON))
     {
         client_print(id,print_chat,"You have no access to this command")
         return PLUGIN_HANDLED
     }
+
     new menu
     menu = menu_create( "\rArena spawner:", "Arenaspawner_handler" );
-   
     new nameu[32];
    
     formatex(nameu,charsmax(nameu), "Add");
@@ -865,15 +813,9 @@ public Arenaspawner_handler( id, menu, item )
             remove_the_fake_arena()
             load_arena_coords(id)
         }
-        else
-        {
-            client_print_color(id,"%s ^3No arenas found.",CHAT_TAG)
-        }
+        else	client_print_color(id,"%s ^3No arenas found.",CHAT_TAG)
     }
-    if(!arenas_found && fakes_count())
-    {
-        next_selection()
-    }
+    if(!arenas_found && fakes_count())	next_selection()
     menu_destroy( menu );
     editor_menu(id)
     return PLUGIN_CONTINUE;
@@ -881,16 +823,13 @@ public Arenaspawner_handler( id, menu, item )
  
 stock next_selection()
 {
-    if(selected == -1)
-    {
-        selected = 1
-    }
+    if(selected == -1)	selected = 1
+
     new size = MAX_ARENAS*3
     for(new slct=0;slct < size;slct++)
     {
         selected++
-        if(selected > MAX_ARENAS)
-            selected = 1
+        if(selected > MAX_ARENAS)	selected = 1
         if(fake_arena_exists(selected))
         {
             select_the_fake_arena(EXTRA_CODE+selected)
@@ -908,10 +847,8 @@ public fake_arena_exists(code)
         if(entity_get_int(arenas_ent,EV_INT_iuser2) == CENTER_CODE && entity_get_int(arenas_ent,EV_INT_iuser1) == FAKE_CODE)
         {
             code_ent = entity_get_int(arenas_ent,EV_INT_iuser3)-EXTRA_CODE
-            if(code_ent == code)
-            {
-                return PLUGIN_HANDLED
-            }
+
+            if(code_ent == code)	return PLUGIN_HANDLED
         }
     }
     return PLUGIN_CONTINUE
@@ -921,40 +858,24 @@ public fakes_count()
 {
     new arenas_ent = -1
     new found = 0
-    while((arenas_ent=engfunc(EngFunc_FindEntityByString,arenas_ent,"classname",ARENA_ENT_NAME)))
-    {
-        if(entity_get_int(arenas_ent,EV_INT_iuser2) == CENTER_CODE && entity_get_int(arenas_ent,EV_INT_iuser1) == FAKE_CODE)
-        {
-            found++
-        }
-    }
+    while((arenas_ent=engfunc(EngFunc_FindEntityByString,arenas_ent,"classname",ARENA_ENT_NAME)))	if(entity_get_int(arenas_ent,EV_INT_iuser2) == CENTER_CODE && entity_get_int(arenas_ent,EV_INT_iuser1) == FAKE_CODE)	found++
+
     return found
 }
  
 public arenas_count()
 {
     new found = 0
-    for(new id;id < MAXPLAYERS;id++)
-    {
-        if(is_user_connected(id))
-        {
-            if(is_in_duel[id] == 2)
-                found++
-        }
-    }
+    for(new id;id < MAXPLAYERS;id++)	if(is_user_connected(id))	if(is_in_duel[id] == 2)	found++
+
     return found/2
 }
  
 public delay_build(id)
 {
-    for(new i=1;i < total_arenas+1;i++)
-    {
-        start_fake_build(id,i)
-    }
-    if(fakes_count())
-    {
-        next_selection()
-    }
+    for(new i=1;i < total_arenas+1;i++)	start_fake_build(id,i)
+
+    if(fakes_count())	next_selection()
 }
 
 public move_menu(id,code)
@@ -1059,8 +980,7 @@ public save_arena_coords(id)
     get_mapname(mapname, charsmax(mapname))
     formatex(urlfile, charsmax(urlfile), ARENA_FILE, cfgdir, mapname)
  
-    if (file_exists(urlfile))
-        delete_file(urlfile)
+    if (file_exists(urlfile))	delete_file(urlfile)
    
     new lineset[128]
     new Float:origin[3]
@@ -1076,8 +996,7 @@ public save_arena_coords(id)
            
         }
     }
-    if(!found)
-        client_print_color(id, "%s Couldn't save:^3No arenas found.",CHAT_TAG)
+    if(!found)	client_print_color(id, "%s Couldn't save:^3No arenas found.",CHAT_TAG)
     else client_print_color(id,"%s %d ^3Arena coords saved.",CHAT_TAG,found)
 }
  
@@ -1091,20 +1010,21 @@ public print_coords(id)
  
 public start_fake_build(id,zecode)
 {
-    if(!is_user_connected(id))
-        return PLUGIN_HANDLED
+    if(!is_user_connected(id))	return PLUGIN_HANDLED
+
     new ext_code
     if(zecode == -1)
     {
         ext_code = next_fake_arena()
-        if(ext_code == -1)
-            return PLUGIN_HANDLED
+
+        if(ext_code == -1)	return PLUGIN_HANDLED
     }
     else ext_code = zecode
+
     ext_code+=EXTRA_CODE
+
     static Float:origin[3];
-    if(zecode == -1)
-        get_user_hitpoint(id,origin)
+    if(zecode == -1)	get_user_hitpoint(id,origin)
     else
     {
         origin[0]=arena_coord[zecode][0]
@@ -1234,15 +1154,14 @@ public select_the_fake_arena(code)
 {
     new num;
     num = code-EXTRA_CODE
+
     new arenas_ent=-1;
     while((arenas_ent=engfunc(EngFunc_FindEntityByString,arenas_ent,"classname",ARENA_ENT_NAME)))
     {
         if(entity_get_int(arenas_ent,EV_INT_iuser1) == FAKE_CODE)
         {
-            if(num == -1)
-                set_rendering(arenas_ent,kRenderFxGlowShell,250,0,0,kRenderNormal,10)
-            else if(entity_get_int(arenas_ent,EV_INT_iuser3) == code)
-                set_rendering(arenas_ent,kRenderFxGlowShell,250,0,0,kRenderNormal,10)
+            if(num == -1)	set_rendering(arenas_ent,kRenderFxGlowShell,250,0,0,kRenderNormal,10)
+            else if(entity_get_int(arenas_ent,EV_INT_iuser3) == code)	set_rendering(arenas_ent,kRenderFxGlowShell,250,0,0,kRenderNormal,10)
         }
     }
     unselect_the_fake_arena(code)
@@ -1252,20 +1171,18 @@ public unselect_the_fake_arena(code)
 {
     new num;
     num = code-EXTRA_CODE
-    if(num == -1)
-        return;
+
+    if(num == -1)	return;
+
     new arenas_ent=-1;
-    while((arenas_ent=engfunc(EngFunc_FindEntityByString,arenas_ent,"classname",ARENA_ENT_NAME)))
-    {
-        if(entity_get_int(arenas_ent,EV_INT_iuser1) == FAKE_CODE && entity_get_int(arenas_ent,EV_INT_iuser3) != code)
-            set_rendering(arenas_ent,kRenderFxGlowShell,50,50,50,kRenderTransAdd,120)
-    }
+    while((arenas_ent=engfunc(EngFunc_FindEntityByString,arenas_ent,"classname",ARENA_ENT_NAME)))	if(entity_get_int(arenas_ent,EV_INT_iuser1) == FAKE_CODE && entity_get_int(arenas_ent,EV_INT_iuser3) != code)	set_rendering(arenas_ent,kRenderFxGlowShell,50,50,50,kRenderTransAdd,120)
 }
  
 public delete_the_fake_arena(code)
 {
     new arenas_ent=-1;
     new found = 0
+
     while((arenas_ent=engfunc(EngFunc_FindEntityByString,arenas_ent,"classname",ARENA_ENT_NAME)))
     {
         if(entity_get_int(arenas_ent,EV_INT_iuser1) == FAKE_CODE && entity_get_int(arenas_ent,EV_INT_iuser3) == code)
@@ -1274,10 +1191,8 @@ public delete_the_fake_arena(code)
             found++
         }
     }
-    if(found)
-    {
-        fakes--
-    }
+
+    if(found)	fakes--
 }
  
 public load_arena_coords(id)
@@ -1293,7 +1208,6 @@ public load_arena_coords(id)
     if (file_exists(filepath))
     {
         new file = fopen(filepath,"rt"), row[4][6]
-       
         while (file && !feof(file))
         {
             fgets(file, linedata, charsmax(linedata))
@@ -1302,10 +1216,7 @@ public load_arena_coords(id)
             if(!linedata[0] || str_count(linedata,' ') < 2) continue;
            
             arena++
-            if (arena > MAX_ARENAS)
-            {
-                break
-            }
+            if (arena > MAX_ARENAS)	break
            
             // get spawn point data
             parse(linedata,row[0],5,row[1],5,row[2],5)
@@ -1313,33 +1224,27 @@ public load_arena_coords(id)
             // origin
             arena_coord[arena][0] = floatstr(row[0])
             arena_coord[arena][1] = floatstr(row[1])
-            if(bugged_map())
-                arena_coord[arena][2] = MAP_FIX_Z_COORD[map_id]
+            if(bugged_map())	arena_coord[arena][2] = MAP_FIX_Z_COORD[map_id]
             else arena_coord[arena][2] = floatstr(row[2])
  
             total_arenas = arena
         }
+
         if (file) fclose(file)
     }
+
     if(id != -1)
     {
-        if(!total_arenas)
-        {
-            client_print_color(id,"%sCouldn't load: ^3No arenas found.",CHAT_TAG)
-        }
-        else
-        {
-            client_print_color(id,"%s%d ^3arena%s loaded.",CHAT_TAG,total_arenas, (total_arenas > 1 ? "s" : ""))
-        }
+        if(!total_arenas)	client_print_color(id,"%sCouldn't load: ^3No arenas found.",CHAT_TAG)
+        else	client_print_color(id,"%s%d ^3arena%s loaded.",CHAT_TAG,total_arenas, (total_arenas > 1 ? "s" : ""))
     }
 }
  
 stock bugged_map()
 {
-    if(!MAP_FIX_ENABLED)
-        return PLUGIN_CONTINUE
-    if(IS_BUGGED_MAP)
-        return PLUGIN_HANDLED
+    if(!MAP_FIX_ENABLED)	return PLUGIN_CONTINUE
+    if(IS_BUGGED_MAP)	return PLUGIN_HANDLED
+
     return PLUGIN_CONTINUE
 }
  
@@ -1347,11 +1252,7 @@ stock str_count(const str[], searchchar)
 {
     new count, i, len = strlen(str)
    
-    for (i = 0; i <= len; i++)
-    {
-        if(str[i] == searchchar)
-            count++
-    }
+    for (i = 0; i <= len; i++)	if(str[i] == searchchar)	count++
    
     return count;
 }
@@ -1366,17 +1267,17 @@ public Player_spawn_post(id)
             set_task(1.0,"get_spawn_origin",id)
             return;
         }
-        if(is_in_duel[id] == 2)
-            spawn_back(id)
+
+        if(is_in_duel[id] == 2)	spawn_back(id)
     }
 }
- 
 public spawn_back(id)
 {
     entity_set_origin(id,his_spawn[id])
     set_user_health(id,map_default_hp)
     set_user_armor(id,0)
     set_user_godmode(id, 0)
+
     if(is_user_connected(his_challenger[id]))
     {
         check_teams(id,his_challenger[id])
@@ -1403,10 +1304,7 @@ public update_cvars()
 stock remove_allarenas()
 {
     new arenas_ent=-1;
-    while((arenas_ent=engfunc(EngFunc_FindEntityByString,arenas_ent,"classname",ARENA_ENT_NAME)))
-    {
-        engfunc(EngFunc_RemoveEntity,arenas_ent)
-    }
+    while((arenas_ent=engfunc(EngFunc_FindEntityByString,arenas_ent,"classname",ARENA_ENT_NAME)))	engfunc(EngFunc_RemoveEntity,arenas_ent)
     fakes = 0
 }
  
@@ -1428,53 +1326,32 @@ public get_all_arena_coords(id)
 public remove_the_fake_arena()
 {
     new arenas_ent=-1;
-    while((arenas_ent=engfunc(EngFunc_FindEntityByString,arenas_ent,"classname",ARENA_ENT_NAME)))
-    {
-        if(entity_get_int(arenas_ent,EV_INT_iuser1) == FAKE_CODE)
-            engfunc(EngFunc_RemoveEntity,arenas_ent)
-    }
+    while((arenas_ent=engfunc(EngFunc_FindEntityByString,arenas_ent,"classname",ARENA_ENT_NAME)))	if(entity_get_int(arenas_ent,EV_INT_iuser1) == FAKE_CODE)	engfunc(EngFunc_RemoveEntity,arenas_ent)
+
     fakes = 0
 }
- 
 public next_fake_arena()
 {
-    if(fakes_count() >= MAX_ARENAS)
-        return -1
-    for(new i=1;i < MAX_ARENAS+1;i++)
-    {
-        if(!fake_arena_exists(i))
-        {
-            return i
-        }
-    }
+    if(fakes_count() >= MAX_ARENAS)	return -1
+
+    for(new i=1;i < MAX_ARENAS+1;i++)	if(!fake_arena_exists(i))	return i
+
     return -1
     /*new num = fakes
     num++
     return num*/
 }
- 
+
+
 public remove_the_arena(code)
 {
     new arenas_ent=-1;
-    while((arenas_ent=engfunc(EngFunc_FindEntityByString,arenas_ent,"classname",ARENA_ENT_NAME)))
-    {
-        if(entity_get_int(arenas_ent,EV_INT_iuser1) == code)
-            engfunc(EngFunc_RemoveEntity,arenas_ent)
-    }
+    while((arenas_ent=engfunc(EngFunc_FindEntityByString,arenas_ent,"classname",ARENA_ENT_NAME)))	if(entity_get_int(arenas_ent,EV_INT_iuser1) == code)	engfunc(EngFunc_RemoveEntity,arenas_ent)
 }
- 
 public start_build(id)
 {
-    if(!is_user_connected(id))
-        return PLUGIN_HANDLED
-    if(is_in_duel[id] != 2)
-        return PLUGIN_HANDLED
-    if(!his_challenger[id])
-        return PLUGIN_HANDLED
-    if(!total_arenas)
-    {
-        return PLUGIN_HANDLED
-    }
+    if(!is_user_connected(id)||is_in_duel[id] != 2||!his_challenger[id]||!total_arenas)	return PLUGIN_HANDLED
+
     static Float:origin[3];
     //get_user_hitpoint(id,origin)
     /*origin[0] = 1002.911376
@@ -1483,10 +1360,12 @@ public start_build(id)
     origin[0] = arena_coord[arena_number[id]][0]
     origin[1] = arena_coord[arena_number[id]][1]
     origin[2] = arena_coord[arena_number[id]][2]
+
     new Float:fake_origin[3]
     static size
     size = sizeof(ARENA_COORDS)
     new ent_code = arena_number[id]+ARENA_CODE
+
     for(new coords;coords < size; coords++)
     {
         fake_origin[0] = origin[0]
@@ -1506,20 +1385,15 @@ public start_build(id)
         entity_set_int(ent, EV_INT_movetype, MOVETYPE_NONE);
         entity_set_int(ent,EV_INT_iuser1,ent_code)
         engfunc(EngFunc_SetOrigin,ent,fake_origin);
+
         static Float:rvec[3];
         pev(ent,pev_v_angle,rvec);
        
         rvec[0]=90.0;
         set_pev(ent,pev_angles,rvec);
        
-        if(ARENA_COORDS[coords][0] == 0.0 && ARENA_COORDS[coords][1] == 100.0)
-        {
-            create_wall(LEFT_SIDE,0,SOLID_BBOX,ent_code,0,0,fake_origin)
-        }
-        if(ARENA_COORDS[coords][0] == 0.0 && ARENA_COORDS[coords][1] == -100.0)
-        {
-            create_wall(RIGHT_SIDE,0,SOLID_BBOX,ent_code,0,0,fake_origin)
-        }
+        if(ARENA_COORDS[coords][0] == 0.0 && ARENA_COORDS[coords][1] == 100.0)	create_wall(LEFT_SIDE,0,SOLID_BBOX,ent_code,0,0,fake_origin)
+        if(ARENA_COORDS[coords][0] == 0.0 && ARENA_COORDS[coords][1] == -100.0)	create_wall(RIGHT_SIDE,0,SOLID_BBOX,ent_code,0,0,fake_origin)
         if(ARENA_COORDS[coords][0] == 0.0 && ARENA_COORDS[coords][1] == 0.0)
         {
             create_wall(TOP_SIDE,0,SOLID_BBOX,ent_code,0,0,fake_origin)
@@ -1528,33 +1402,17 @@ public start_build(id)
         else if(ARENA_COORDS[coords][0] == 200.0 && ARENA_COORDS[coords][1] == 0.0)
         {
             create_wall(BLUE_SIDE,0,SOLID_BBOX,ent_code,0,0,fake_origin)
-            if(cs_get_user_team(id) == CS_TEAM_CT)
-            {
-                set_spawn_positions(id,BLUE_SIDE,fake_origin,rvec)
-            }                                                                              
-            else
-            {
-                if(his_challenger[id])
-                {
-                    set_spawn_positions(his_challenger[id],BLUE_SIDE,fake_origin,rvec)
-                }
-            }
+
+            if(cs_get_user_team(id) == CS_TEAM_CT)	set_spawn_positions(id,BLUE_SIDE,fake_origin,rvec)                                                                           
+            else	if(his_challenger[id])	set_spawn_positions(his_challenger[id],BLUE_SIDE,fake_origin,rvec)
             //set_rendering(ent,kRenderFxGlowShell,0,0,200,kRenderNormal,10)
         }
         else if(ARENA_COORDS[coords][0] == -100.0 && ARENA_COORDS[coords][1] == 0.0)
         {
             create_wall(RED_SIDE,0,SOLID_BBOX,ent_code,0,0,fake_origin)
-            if(cs_get_user_team(id) == CS_TEAM_T)
-            {
-                set_spawn_positions(id,RED_SIDE,fake_origin,rvec)
-            }                                                                              
-            else
-            {
-                if(his_challenger[id])
-                {
-                    set_spawn_positions(his_challenger[id],RED_SIDE,fake_origin,rvec)
-                }
-            }
+
+            if(cs_get_user_team(id) == CS_TEAM_T)	set_spawn_positions(id,RED_SIDE,fake_origin,rvec)                                                                           
+            else	if(his_challenger[id])	set_spawn_positions(his_challenger[id],RED_SIDE,fake_origin,rvec)
             //set_rendering(ent,kRenderFxGlowShell,200,0,0,kRenderNormal,10)
         }
         spawn_back(id)
@@ -1565,19 +1423,19 @@ public start_build(id)
  
 public set_spawn_positions(id,side,Float:origin[3],Float:angle[3])
 {
-    if(side == BLUE_SIDE)
-        his_spawn[id][0] = origin[0]-20.0
+    if(side == BLUE_SIDE)	his_spawn[id][0] = origin[0]-20.0
     else his_spawn[id][0] = origin[0]-120.0
+
     his_spawn[id][1] = origin[1]
     his_spawn[id][2] = origin[2]+50.0
     entity_get_vector(id, EV_VEC_angles,his_angle[id])
+
     switch(side)
     {
         case RED_SIDE:
         {
             his_angle[id][1] = 0.0
             his_angle[id][0] = 0.0
-           
         }
         case BLUE_SIDE:
         {
@@ -1591,16 +1449,7 @@ public set_spawn_positions(id,side,Float:origin[3],Float:angle[3])
 public stuck_check(Float:origin[3],Float:radius)
 {
     new player=-1;
-    while((player = find_ent_in_sphere(player,origin,radius)) != 0)
-    {
-        if(is_user_alive(player))
-        {
-            if(is_player_stuck(player) && is_in_duel[player] != 2)
-            {
-                back_to_the_spawn(player)
-            }
-        }
-    }
+    while((player = find_ent_in_sphere(player,origin,radius)) != 0)	if(is_user_alive(player))	if(is_player_stuck(player) && is_in_duel[player] != 2)	back_to_the_spawn(player)
 }
  
 stock is_player_stuck(id)
@@ -1610,8 +1459,7 @@ stock is_player_stuck(id)
    
     engfunc(EngFunc_TraceHull, originF, originF, 0, (pev(id, pev_flags) & FL_DUCKING) ? HULL_HEAD : HULL_HUMAN, id, 0)
    
-    if (get_tr2(0, TR_StartSolid) || get_tr2(0, TR_AllSolid) || !get_tr2(0, TR_InOpen))
-        return true;
+    if (get_tr2(0, TR_StartSolid) || get_tr2(0, TR_AllSolid) || !get_tr2(0, TR_InOpen))	return true;
    
     return false;
 }
@@ -1623,6 +1471,7 @@ public create_wall(type,alpha,solidity,code,code1,code2,Float:origin[3])
     new Float:rvec[3];
     new ent=engfunc(EngFunc_CreateNamedEntity,engfunc(EngFunc_AllocString,"func_wall"));
     pev(ent,pev_v_angle,rvec);
+
     switch(type)
     {
         case BLUE_SIDE:
@@ -1691,14 +1540,10 @@ public create_wall(type,alpha,solidity,code,code1,code2,Float:origin[3])
     //set_rendering(ent, kRenderFxGlowShell, 255, 100, 0, kRenderTransColor, 1);
 }
  
-public get_spawn_origin(id)
-{
-    pev(id,pev_origin,his_original_spawn[id]);
-}
+public get_spawn_origin(id)	pev(id,pev_origin,his_original_spawn[id]);
  
 stock get_user_hitpoint(id,Float:hOrigin[3])  {
-    if(!is_user_alive(id))
-        return 0;
+    if(!is_user_alive(id))	return 0;
  
     new Float:fOrigin[3],Float:fvAngle[3],Float:fvOffset[3],Float:fvOrigin[3],Float:feOrigin[3];
     new Float:fTemp[3];
@@ -1724,6 +1569,7 @@ public plugin_precache()
 {
     new size;
     size = sizeof(ARENA_MODELS)
+
     for(new i; i< size; i++)
     {
         engfunc(EngFunc_PrecacheModel,ARENA_MODELS[i]);
@@ -1731,44 +1577,27 @@ public plugin_precache()
         precache_model("models/p_knife.mdl")
     }
  
-    if(!file_exists("addons/amxmodx/data/lang/boost_manager.txt"))
-    {
-        for(new i=0;i< sizeof LANG_FILE;i++)
-    {
-        write_file("addons/amxmodx/data/lang/boost_manager.txt", LANG_FILE[i]);
-    }
-    }
- 
+    if(!file_exists("addons/amxmodx/data/lang/boost_manager.txt"))	for(new i=0;i< sizeof LANG_FILE;i++)	write_file("addons/amxmodx/data/lang/boost_manager.txt", LANG_FILE[i]);
 }
- 
- 
+
 public round_start_event()
 {
     update_cvars();
     // using a variable to store player's names instead of regenerating it all the time...
-    for(new id;id < MAXPLAYERS;id++)
-    {
-        if(is_user_connected(id))
-        {
-            get_user_name(id,his_name[id],charsmax(his_name))
-        }
-    }
+    for(new id;id < MAXPLAYERS;id++)	if(is_user_connected(id))	get_user_name(id,his_name[id],charsmax(his_name))
 }
  
 public Advertise(task)
 {
-    client_print_color(0,"^3[^4Global Knife^3] ^1Plugin ^3%s ^1Specially Made For ^4%s ^1by ^3%s",P_NAME,P_REQ,P_AUTH)
     client_print_color(0,"^3[^4Global Knife^3] ^1Bind ^3(E+R) ^1or ^3(mouse1 + mouse2) ^1to open ^4Duel Menu")
+
     set_task(100.0,"Advertise",TASK_AD)
 }
- 
- 
+
 public Cmd_start(id,hndle)
 {
-    if(!is_user_alive(id))
-        return FMRES_IGNORED
-    if(!is_frozen[id])
-        return FMRES_IGNORED
+    if(!is_user_alive(id)||!is_frozen[id])	return FMRES_IGNORED
+
     new Buttons = get_uc(hndle,UC_Buttons)
     if(Buttons & IN_ATTACK)
     {
@@ -1809,14 +1638,12 @@ public client_putinserver(id)
     his_offline[id] = 0
     his_previous_team[id] = 0
     set_task(1.0, "duel_showhud", id, _, _, "b")
- 
-    return PLUGIN_CONTINUE
 }
  
 public client_disconnect(id)
 {
     end_his_duel(id)
- 
+
     Vault(id, 1)
 }
  
@@ -1842,12 +1669,14 @@ public times_up_duel(id)
     if(his_challenger[id])
     {
         if(arena_number[id] == arena_number[his_challenger[id]])	remove_the_arena(arena_number[id] +ARENA_CODE)
+
         user_kill(id,1)
         user_kill(his_challenger[id],1)
         //back_to_the_spawn(id)
         //back_to_the_spawn(his_challenger[id])
         reset_values(his_challenger[id])
     }
+
     reset_values(id)
 }
  
@@ -1962,7 +1791,7 @@ public duel_players_list(id)
         return PLUGIN_HANDLED
     }
 
-    new menu,menuformat[64];
+    new menu,menuformat[555];
     formatex(menuformat,charsmax(menuformat),"\w[\rGlobal Knife\w] \yKnifeDuels ^n\dArenas Free: %d/%d \w",arenas_count(),total_arenas)
     menu = menu_create( menuformat, "Duel_handler" );
 
@@ -1998,7 +1827,7 @@ public duel_players_list(id)
             {
                 if(is_in_duel[tempid] == 2)
                 {
-                    formatex(nameu,charsmax(nameu), "%s \w[\rInDuel\w] \r[\yArena %s\r]", szName, arena_names[arena_number[id]]);
+                    formatex(nameu,charsmax(nameu), "%s \w[\rIn Duel\w] \r[\yArena %s\r]", szName, arena_names[arena_number[id]]);
                     menu_additem(menu, nameu, szUserId);
                 }
                 else if(is_in_duel[tempid] == 1)
@@ -2102,35 +1931,28 @@ stock available_duelers(asker)
 {
     new num;
     num = 0 // just incase...
-    for(new id;id < MAXPLAYERS;id++)
-    {
-        if(is_user_alive(id))
-        {
-            if(/*!is_in_duel[id] && */id != asker && !is_user_bot(id))
-            {
-                num++
-            }
-        }
-    }
+
+    for(new id;id < MAXPLAYERS;id++)	if(is_user_alive(id))	if(/*!is_in_duel[id] && */id != asker && !is_user_bot(id))	num++
+
     return num
 }
  
 public ask_player(id)
 {
-    if(!is_user_alive(id))
-    {
-        return PLUGIN_HANDLED
-    }
+    if(!is_user_alive(id))	return PLUGIN_HANDLED
+
     new asker_name[32],menu_title[64];
     get_user_name(his_asker[id],asker_name,charsmax(asker_name))
-    formatex(menu_title,charsmax(menu_title),"\rAccept Duel \y%s\r?",asker_name)
+    formatex(menu_title,charsmax(menu_title),"\rAccept Duel with \y%s\r ?",asker_name)
+
     new menu
     menu = menu_create( menu_title, "Ask_handler" );
    
-    menu_additem(menu, "Yes! Da!", "user_said_yes", 0);
-    menu_additem(menu, "No! Nu!","user_said_no", 0);
+    menu_additem(menu, "Yes!", "user_said_yes", 0);
+    menu_additem(menu, "No!","user_said_no", 0);
    
-    menu_display(id, menu, 0 );
+    menu_display(id, menu);
+
     return PLUGIN_HANDLED
 }
  
@@ -2142,11 +1964,11 @@ public Ask_handler( id, menu, item )
         return PLUGIN_HANDLED;
     }
    
-    new szData[32], szName[64];
+    new szData[65], szName[64];
     new _access, item_callback;
     menu_item_getinfo( menu, item, _access, szData,charsmax( szData ), szName,charsmax( szName ), item_callback );
    
-    if(equali(szData,"user_said_yes"))
+    if(equal(szData,"user_said_yes"))
     {
 		if(!is_user_alive(id))
 		{
@@ -2154,19 +1976,23 @@ public Ask_handler( id, menu, item )
         client_print_color(his_asker[id],"%sDuel challenge ^3canceled^1,^4 %s ^1is dead..",CHAT_TAG,his_name[his_asker[his_asker[id]]])
         reset_values(his_asker[id])
         reset_values(id)
+		menu_destroy( menu );
+		return PLUGIN_HANDLED
 		}
         if(get_next_arena() == -1)
         {
             client_print_color(his_asker[id],"%sMaximum arenas reached.",CHAT_TAG)
             reset_values(his_asker[id])
             reset_values(id)
+			menu_destroy( menu );
 			return PLUGIN_HANDLED
         }
-        else if(is_in_duel[his_asker[id]] == 1)
+		if(is_in_duel[his_asker[id]] == 1)
         {
             manage_battle(id)
             check_teams(id,his_challenger[id])
             begin_the_battle(id,his_challenger[id])
+			menu_destroy( menu );
 			return PLUGIN_HANDLED
         }
 		else
@@ -2174,46 +2000,33 @@ public Ask_handler( id, menu, item )
             client_print_color(id,"%s%s either canceled the duel or chosen someone else to duel.",CHAT_TAG,his_name[his_asker[id]])
             reset_values(his_asker[id])
             reset_values(id)
+			menu_destroy( menu );
 			return PLUGIN_HANDLED
         }
 		menu_destroy( menu );
     }
-    else if(equali(szData,"user_said_no"))
+    if(equal(szData,"user_said_no"))
     {
         if(is_user_connected(his_asker[id]))
         {
             client_print_color(0,"%s^4%s ^1rejected ^4%s^1's challenge.",CHAT_TAG,his_name[id],his_name[his_asker[id]])
             reset_values(his_asker[id])
             reset_values(id)
+			menu_destroy( menu );
 			return PLUGIN_HANDLED
         }
 		menu_destroy( menu );
     }
-    menu_destroy( menu );
+    //menu_destroy( menu );
     return PLUGIN_CONTINUE;
 }
  
 public Player_Killed(victim, attacker, shouldgib)
 {
-    if(!is_user_connected(victim))
-        return HAM_IGNORED;
-       
-    if(is_in_duel[victim] != 2)
-        return HAM_IGNORED
-       
-    if(is_user_connected(his_challenger[victim]) && !is_user_connected(attacker))
-    {
-        if(!check_teams(victim,attacker))
-            return HAM_IGNORED
-    }
-    if(!is_user_connected(attacker))
-        return HAM_IGNORED
-       
-    if(attacker == victim)
-        return HAM_IGNORED
-   
-    if(is_in_duel[attacker] != 2 || is_in_duel[victim] != 2)
-        return HAM_IGNORED
+    if(is_user_connected(his_challenger[victim]) && !is_user_connected(attacker))	if(!check_teams(victim,attacker))	return HAM_IGNORED
+
+    if(!is_user_connected(victim)||is_in_duel[victim] != 2||!is_user_connected(attacker)||attacker == victim||is_in_duel[attacker] != 2
+	|| is_in_duel[victim] != 2)	return HAM_IGNORED;
    
     if(his_challenger[victim] == attacker || his_challenger[attacker] == victim )
     {
@@ -2283,8 +2096,7 @@ public fake_death(attacker,victim)
     write_string("knife")
     message_end()
 }
- 
- 
+
 public delay_respawn(id)
 {
     if(is_user_connected(id))
@@ -2310,9 +2122,11 @@ public Check_Results(id,enemy)
 {
     reset_teams(id)
     reset_teams(enemy)
+
     new id_name[64],enemy_name[64];
     get_user_name(id,id_name,charsmax(id_name))
     get_user_name(enemy,enemy_name,charsmax(enemy_name))
+
     new mapname[32]
     get_mapname(mapname,31)
  
@@ -2332,6 +2146,7 @@ public Check_Results(id,enemy)
     else
     {
         client_print_color(0,"^3[^4Arena: %s^3] ^4%s ^1and ^4%s ^1ended in a ^3draw match.",arena_names[arena_number[id]],id_name,enemy_name)
+
         if(SOUNDS_ENABLED)
         {
             client_cmd(id,"spk ^"%s^"",DUEL_SOUNDS[2])
@@ -2343,12 +2158,18 @@ public Check_Results(id,enemy)
             user_kill(enemy,1)
         }
     }
+
     //client_print_color(0, DontChange,"%s^3Headshots: ^4%s^1:^3%d ^4%s^1:^3%d^1.",CHAT_TAG,id_name,his_HS[id],enemy_name,his_HS[enemy])
     if(arena_number[id] == arena_number[enemy])	remove_the_arena(arena_number[id] +ARENA_CODE)
+
     back_to_the_spawn(id)
     back_to_the_spawn(enemy)
+
     reset_values(enemy)
     reset_values(id)
+
+	if(task_exists(id+360))	remove_task(id+360)
+	if(task_exists(enemy+360))	remove_task(enemy+360)
 }
  
 public back_to_the_spawn(id)
@@ -2367,20 +2188,29 @@ public back_to_the_spawn(id)
 public manage_battle(id)
 {
     is_in_duel[id] = 2
+    is_in_duel[his_challenger[id]] = 2
+
     his_challenger[id] = his_asker[id]
     his_challenger[his_challenger[id]] = id
-    is_in_duel[his_challenger[id]] = 2
+
     his_asker[id] = 0
+    his_asker[his_challenger[id]] = 0
+
     his_wins[id] = 0
-    user_can_spawn[id] = 0
     his_wins[his_challenger[id]] = 0
+
+    user_can_spawn[id] = 0
+    user_can_spawn[his_challenger[id]] = 0
+
     new aren_code = get_next_arena()
     arena_number[id] = aren_code
     arena_number[his_challenger[id]] = aren_code
     rounds[aren_code] = 0
+
     new CsTeams:teamid,CsTeams:teamenemy;
     teamid = cs_get_user_team(id)
     teamenemy = cs_get_user_team(his_challenger[id])
+
     if(teamid == CS_TEAM_T)	his_previous_team[id] = 2
     else if(teamid == CS_TEAM_CT)	his_previous_team[id] = 1
     else his_previous_team[id] = 0
@@ -2388,68 +2218,90 @@ public manage_battle(id)
     if(teamenemy == CS_TEAM_T)	his_previous_team[his_challenger[id]] = 2
     else if(teamenemy == CS_TEAM_CT)	his_previous_team[his_challenger[id]] = 1
     else his_previous_team[his_challenger[id]] = 0
+
+    start_build(id)
     start_build(his_challenger[id])
+
     if(SOUNDS_ENABLED)
     {
         client_cmd(id,"spk ^"%s^"",DUEL_SOUNDS[4])
         client_cmd(his_challenger[id],"spk ^"%s^"",DUEL_SOUNDS[4])
     }
+
     battle_timer(id)
     battle_timer(his_challenger[id])
-    //hud_displayer(id)
-    //hud_displayer(his_challenger[id])
+
+    hud_displayer(id)
+    hud_displayer(his_challenger[id])
+
     strip_user_weapons(his_challenger[id])
     give_item(his_challenger[id],"weapon_knife")
-    set_pev(id, pev_viewmodel, g_allocVmod)  
+
+    strip_user_weapons(id)
+    give_item(id,"weapon_knife")
+
+    set_pev(id, pev_viewmodel, g_allocVmod)
     set_pev(id, pev_weaponmodel, g_allocPmod)
+
+    set_pev(his_challenger[id], pev_viewmodel, g_allocVmod)
+    set_pev(his_challenger[id], pev_weaponmodel, g_allocPmod)
+
     client_print_color(0,"%s^4%s^1 accepted ^4%s^1's challenge!",CHAT_TAG,his_name[id],his_name[his_challenger[id]])
 }
  
-public begin_the_battle(id,enemy)
-{
-    start_new_round(id,enemy)
-}
- 
+public begin_the_battle(id,enemy)	start_new_round(id,enemy)
 public start_new_round(id,enemy)
 {
     his_timer[id] = 0
     his_timer[enemy] = 0
+
     is_frozen[id] = 1
     is_frozen[enemy] = 1
+
     his_countdown[id] = MAX_COUNTDOWN
     his_countdown[enemy] = MAX_COUNTDOWN
+
     countdown(id)
     countdown(enemy)
+
     strip_user_weapons(his_challenger[id])
     give_item(his_challenger[id],"weapon_knife")
+
     strip_user_weapons(his_challenger[enemy])
     give_item(his_challenger[enemy],"weapon_knife")
+
     set_pev(his_challenger[id], pev_viewmodel, g_allocVmod)  
     set_pev(his_challenger[id], pev_weaponmodel, g_allocPmod)
+
     set_pev(his_challenger[enemy], pev_viewmodel, g_allocVmod)  
     set_pev(his_challenger[enemy], pev_weaponmodel, g_allocPmod)
 }
- 
 public countdown(id)
 {
     if(is_user_connected(id))
     {
         his_countdown[id]--
+
         if(0 >= his_countdown[id])
         {
             is_frozen[id] = 0
+
             unfreeze_player(id)
-            if(SOUNDS_ENABLED)
-                client_cmd(id,"spk ^"%s^"",DUEL_SOUNDS[6])
+
+            if(SOUNDS_ENABLED)	client_cmd(id,"spk ^"%s^"",DUEL_SOUNDS[6])
+
             client_print(id,print_center,"Fight!")
+
             return PLUGIN_HANDLED
         }
         else
         {
             freeze_player(id)
-            if(SOUNDS_ENABLED)
-                client_cmd(id,"spk ^"%s^"",DUEL_SOUNDS[5])
+
+            if(SOUNDS_ENABLED)	client_cmd(id,"spk ^"%s^"",DUEL_SOUNDS[5])
+
             client_print(id,print_center,"%d",his_countdown[id])
+
             if(!is_frozen[id]) // we prevent it from spamming
                 is_frozen[id] = 1
         }
@@ -2460,50 +2312,40 @@ public countdown(id)
  
 public reset_teams(id)
 {
-    if(his_previous_team[id] == 1)
-    {
-        cs_set_user_team(id,CS_TEAM_CT)
-    }
-    else if(his_previous_team[id] == 2)
-    {
-        cs_set_user_team(id,CS_TEAM_T)
-    }
+    if(his_previous_team[id] == 1)	cs_set_user_team(id,CS_TEAM_CT)
+    else if(his_previous_team[id] == 2)	cs_set_user_team(id,CS_TEAM_T)
+
     return PLUGIN_CONTINUE
 }
  
 public check_teams(id,enemy)
 {
-    if(!is_user_connected(id) || !is_user_connected(enemy))
-        return PLUGIN_CONTINUE;
+    if(!is_user_connected(id) || !is_user_connected(enemy))	return PLUGIN_CONTINUE;
+
     new CsTeams:teamid,CsTeams:teamenemy;
     teamid = cs_get_user_team(id)
     teamenemy = cs_get_user_team(enemy)
-    if(!users_in_same_team(id,enemy) && !is_in_false_team(id) && !is_in_false_team(enemy))
-        return PLUGIN_HANDLED
-    if(teamid == CS_TEAM_CT && teamenemy == CS_TEAM_CT )
-    {
-        cs_set_user_team(id,CS_TEAM_T)
-    } else if(teamid == CS_TEAM_T && teamenemy == CS_TEAM_T)
-    {
-        cs_set_user_team(id,CS_TEAM_CT)
-    }
+
+    if(!users_in_same_team(id,enemy) && !is_in_false_team(id) && !is_in_false_team(enemy))	return PLUGIN_HANDLED
+
+    if(teamid == CS_TEAM_CT && teamenemy == CS_TEAM_CT )	cs_set_user_team(id,CS_TEAM_T)
+	else if(teamid == CS_TEAM_T && teamenemy == CS_TEAM_T)	cs_set_user_team(id,CS_TEAM_CT)
     else
     {
         Check_Results(id,enemy)
+
         return PLUGIN_CONTINUE
     }
     return PLUGIN_HANDLED
 }
 stock is_in_false_team(id)
 {
-    if(cs_get_user_team(id) == CS_TEAM_SPECTATOR || cs_get_user_team(id) == CS_TEAM_UNASSIGNED)
-        return PLUGIN_HANDLED
+    if(cs_get_user_team(id) == CS_TEAM_SPECTATOR || cs_get_user_team(id) == CS_TEAM_UNASSIGNED)	return PLUGIN_HANDLED
     return PLUGIN_CONTINUE
 }
 stock users_in_same_team(id,enemy)
 {
-    if(cs_get_user_team(id) == cs_get_user_team(enemy))
-        return PLUGIN_HANDLED
+    if(cs_get_user_team(id) == cs_get_user_team(enemy))	return PLUGIN_HANDLED
     return PLUGIN_CONTINUE
 }
  
@@ -2517,11 +2359,14 @@ stock get_next_arena()
             if(arena_number[id] == next_empty_arena)
             {
                 next_empty_arena++
+
                 if(next_empty_arena > total_arenas)	return -1
             }
         }
     }
+
     if(next_empty_arena > total_arenas)	return -1
+
     return next_empty_arena
 }
  
@@ -2537,10 +2382,11 @@ stock reset_values(id)
     got_spawn[id] = 0
     his_timer[id] = 0
     user_can_spawn[id] = 1
+
+	if(task_exists(id+360))	remove_task(id+360)
 }
  
 public freeze_player(id)	set_user_maxspeed(id,1.0)
-
 public unfreeze_player(id)	set_user_maxspeed(id,250.0)
  
 public wait_for_enemy_loop(id)
@@ -2556,6 +2402,7 @@ public wait_for_enemy_loop(id)
                     if(is_user_alive(his_challenger[id]))
                     {
                         begin_the_battle(id,his_challenger[id])
+
                         return PLUGIN_HANDLED
                     }
                     set_task(0.1,"wait_for_enemy_loop",id)
@@ -2568,66 +2415,52 @@ public wait_for_enemy_loop(id)
  
 public hud_displayer(id)
 {
-    if(is_user_connected(id))
+    if(is_user_connected(id)&& is_user_connected(his_challenger[id]))
     {
-        if(is_in_duel[id] == 2 && is_user_connected(his_challenger[id]))
-        {
+        //if(is_in_duel[id] == 2)
+        //{
             new name[64],his_name[64];
             get_user_name(id,name,charsmax(name))
             get_user_name(his_challenger[id],his_name,charsmax(his_name))
-            set_dhudmessage(0, 255, 0, -1.0, 0.0, 0, 6.0, 0.1)
+
+            set_dhudmessage(0, 255, 0, -1.0, 0.2, 0, 6.0, 1.0,0.1,0.2)
+
             show_dhudmessage(id, "Arena: %s | Rounds: %d/%d ^n%s -- %d/%d (HS:%d)^nVS^n%s -- %d/%d (HS:%d)"
-            ,arena_names[arena_number[id]]
-            ,rounds[arena_number[id]]
-            ,MAX_ROUNDS,name,his_wins[id]
-            ,MAX_KILLS,his_HS[id]
-            ,his_name,his_wins[his_challenger[id]]
-            ,MAX_KILLS,his_HS[his_challenger[id]])
+				,arena_names[arena_number[id]]
+				,rounds[arena_number[id]]
+				,MAX_ROUNDS,name,his_wins[id]
+				,MAX_KILLS,his_HS[id]
+				,his_name,his_wins[his_challenger[id]]
+				,MAX_KILLS,his_HS[his_challenger[id]]
+			)
+
+           show_dhudmessage(his_challenger[id], "Arena: %s | Rounds: %d/%d ^n%s -- %d/%d (HS:%d)^nVS^n%s -- %d/%d (HS:%d)"
+				,arena_names[arena_number[id]]
+				,rounds[arena_number[id]]
+				,MAX_ROUNDS,his_name,his_wins[his_challenger[id]]
+				,MAX_KILLS,his_HS[his_challenger[id]]
+				,name,his_wins[id]
+				,MAX_KILLS,his_HS[id]
+			)
            
-            set_task(0.1,"hud_displayer",id)
-        }
+            set_task(1.0,"hud_displayer",id+360,_,_,"b")
+        //}
     }
 }
- 
+
 stock Set_Entity_Invisible(ent, Invisible = 1)
 {
-    if(!pev_valid(ent))
-        return
+    if(!pev_valid(ent))	return
     set_pev(ent, pev_effects, Invisible == 0 ? pev(ent, pev_effects) & ~EF_NODRAW : pev(ent, pev_effects) | EF_NODRAW)
 }
- 
-stock client_print_color(const id, const input[], any:...)  
-{  
-    new count = 1, players[32];  
-    static msg[191];  
-    vformat(msg, 190, input, 3);
-    replace_all(msg, 190, "!g", "^x04"); // Green Color  
-    replace_all(msg, 190, "!y", "^x01"); // Default Color  
-    replace_all(msg, 190, "!t", "^x03"); // Team Color  
-    if (id) players[0] = id; else get_players(players, count, "ch");  
-    {  
-        for (new i = 0; i < count; i++)  
-        {  
-            if (is_user_connected(players[i]))  
-            {  
-                message_begin(MSG_ONE_UNRELIABLE, get_user_msgid("SayText"), _, players[i]);  
-                write_byte(players[i]);  
-                write_string(msg);  
-                message_end();  
- 
-            }  
-        }  
-    }  
-}
- 
+
 public DuelRank(id)
 {  
         static host_name[32], motd[1501], len, authid[32], szName[32], szIP[32], Rank_position;
- 
         get_user_name(id, szName, charsmax(szName))
         get_user_authid(id, authid, 31)
         get_user_ip(id, szIP, charsmax(szIP), 1)
-    get_cvar_string("hostname", host_name, 31);
+		get_cvar_string("hostname", host_name, 31);
    
         Rank_position = adv_vault_sort_key(fvault, Sort, 0, g_name[id])
    
@@ -2652,55 +2485,55 @@ public DuelRank(id)
    
     return 0;
 }
- 
+
 public GameDesc( ) {
     static gamename[32];
     get_pcvar_string( cvar_gamename, gamename, 31 );
+
     forward_return( FMV_STRING, gamename );
+
     return FMRES_SUPERCEDE;
 }
- 
- 
- 
+
 public duel_status(id)
 {
-        new name[32],pid = read_data(2)
-        get_user_name(pid,name,31)
+    new name[32],pid = read_data(2)
+    get_user_name(pid,name,31)
+
     new idAiming, iBodyPart
     get_user_aiming(id, idAiming, iBodyPart)
    
-    if(is_user_alive(idAiming) && is_user_alive(id) ,get_pcvar_num(cvar_teaminfo))
+    if(is_user_alive(idAiming) && is_user_alive(id) && get_pcvar_num(cvar_teaminfo))
     {
         if(cs_get_user_team(id) == CS_TEAM_CT && cs_get_user_team(idAiming) == CS_TEAM_CT)
         {
             set_hudmessage(238,201,0,-1.0,0.70,1, 0.01, 3.0, 0.01, 0.01, -1)
             show_hudmessage(id, "%s ^n [ Kills: %d - Deaths %d ] ^n [ Winns: %d - Loss: %d ]", name,g_kills[pid],g_deaths[pid],g_winns[pid],g_loss[pid])
         }
-        else
-        if(cs_get_user_team(id) == CS_TEAM_T && cs_get_user_team(idAiming) == CS_TEAM_T)
+        else if(cs_get_user_team(id) == CS_TEAM_T && cs_get_user_team(idAiming) == CS_TEAM_T)
         {
             set_hudmessage(238,201,0,-1.0,0.70,1, 0.01, 3.0, 0.01, 0.01, -1)
             show_hudmessage(id, "%s ^n [ Kills: %d - Deaths %d ] ^n [ Winns: %d - Loss: %d ]", name,g_kills[pid],g_deaths[pid],g_winns[pid],g_loss[pid])
         }
     }
 }
- 
+
 public duel_statusx(id)
 {
-        new name[32],pid = read_data(2)
-        get_user_name(pid,name,31)
+    new name[32],pid = read_data(2)
+    get_user_name(pid,name,31)
+
     new idAiming, iBodyPart
     get_user_aiming(id, idAiming, iBodyPart)
    
-    if(is_user_alive(idAiming) && is_user_alive(id) ,get_pcvar_num(cvar_allinfo))
+    if(is_user_alive(idAiming) && is_user_alive(id) && get_pcvar_num(cvar_allinfo))
     {
         if(cs_get_user_team(id) == CS_TEAM_T && cs_get_user_team(idAiming) == CS_TEAM_CT)
         {
             set_hudmessage(238,201,0,-1.0,0.70,1, 0.01, 3.0, 0.01, 0.01, -1)
             show_hudmessage(id, "%s ^n [ Kills: %d - Deaths %d ] ^n [ Winns: %d - Loss: %d ]", name,g_kills[pid],g_deaths[pid],g_winns[pid],g_loss[pid])
         }
-        else
-        if(cs_get_user_team(id) == CS_TEAM_CT && cs_get_user_team(idAiming) == CS_TEAM_T)
+        else if(cs_get_user_team(id) == CS_TEAM_CT && cs_get_user_team(idAiming) == CS_TEAM_T)
         {
             set_hudmessage(238,201,0,-1.0,0.70,1, 0.01, 3.0, 0.01, 0.01, -1)
             show_hudmessage(id, "%s ^n [ Kills: %d - Deaths %d ] ^n [ Winns: %d - Loss: %d ]", name,g_kills[pid],g_deaths[pid],g_winns[pid],g_loss[pid])
@@ -2708,7 +2541,7 @@ public duel_statusx(id)
  
     }
 }
- 
+
 public duel_showhud(id)
 {
     if (is_user_connected(id) && is_user_alive(id) ,get_pcvar_num(cvar_yourinfo) )
@@ -2717,8 +2550,7 @@ public duel_showhud(id)
     ShowSyncHudMsg( id, HuDForEver,"[ Winns: %d - Loss: %d ]",g_winns[id], g_loss[id]);
    }
 }
- 
- 
+
 public client_authorized(Index)
 {
     get_user_name(Index, g_name[Index], charsmax(g_name[]))
@@ -2729,8 +2561,7 @@ public client_authorized(Index)
         g_headshots[Index] = 0
     Vault(Index, 2)
 }
- 
- 
+
 public Menu_TOP(Index)
 {
  
@@ -2796,12 +2627,9 @@ public menu_top(Index, Menu, item)
     Menu_TOP(Index)
     return PLUGIN_HANDLED
 }
- 
- 
- 
+
 public Vault(Index, Guardar_Cargar)
 {
- 
     static Nick[32]; get_user_name(Index, Nick, charsmax(Nick))
     if(Guardar_Cargar == 1)
     {
@@ -2816,8 +2644,7 @@ public Vault(Index, Guardar_Cargar)
     }
     else if(Guardar_Cargar == 2)
     {
-        if(!adv_vault_get_prepare(fvault, 0, g_name[Index]))
-            return
+        if(!adv_vault_get_prepare(fvault, 0, g_name[Index]))	return
        
         g_winns[Index] = adv_vault_get_field(fvault, RANKS[WINNS])
         g_loss[Index] = adv_vault_get_field(fvault, RANKS[LOSS])
@@ -2928,3 +2755,28 @@ public HowToBoost(id, item)
 }
  
 public Advertisment() ColorChat(0, GREEN, "^3[^4Boost Manager^3]^1 %L", LANG_PLAYER, "BOOST_ADVERTISMENT"), set_task(get_pcvar_float(AdvTime), "Advertisment");
+
+stock client_print_color(const id, const input[], any:...)
+{
+    new count = 1, players[32];
+
+    static msg[191];
+    vformat(msg, 190, input, 3);
+    replace_all(msg, 190, "!g", "^x04"); // Green Color  
+    replace_all(msg, 190, "!y", "^x01"); // Default Color  
+    replace_all(msg, 190, "!t", "^x03"); // Team Color
+
+    if (id) players[0] = id; else get_players(players, count, "ch");
+    {
+        for (new i = 0; i < count; i++)
+        {
+            if (is_user_connected(players[i]))
+            {
+                message_begin(MSG_ONE_UNRELIABLE, get_user_msgid("SayText"), _, players[i]);
+                write_byte(players[i]);
+                write_string(msg);
+                message_end();
+            }
+        }
+    }
+}
