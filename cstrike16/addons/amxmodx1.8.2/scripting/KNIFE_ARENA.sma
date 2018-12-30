@@ -200,8 +200,7 @@ new MAXPLAYERS
  
 // here you can set the maximum number of arenas that can be used ingame
 #define MAX_ARENAS 4
- 
- 
+
 new const arena_names[][] = {
     "",
     "A",    // 1st arena
@@ -274,7 +273,8 @@ enum {
  
 new const ARENA_FILE[] = "%s/duel_arena/%s.cfg"
 new user_can_spawn[33];
-// if you want to disable a sound, rename it with "common/null.wav"
+
+// if you want to disable a sound, rename it with "common/null.wav"|or delete??
 new const DUEL_SOUNDS[][] = {
     "ambience/goal_1.wav",       // 0 round win
     "x/nih_die2.wav",       // 1 round lose
@@ -342,7 +342,7 @@ const OFFSET_LINUX_WEAPONS = 4
  
 #define P_NAME "Knife Duels"//edit by Adryyy
 #define P_VERS "2.0.5"
-#define P_AUTH ""
+#define P_AUTH "ALLIED"
 #define P_REQ "- Global Knife Arena -"
 new killed_forward;
 new cvar_gamename;
@@ -416,11 +416,9 @@ public plugin_init()
     }
  
     MAXPLAYERS = get_maxplayers();
-    if(containi(map_name,"35hp") != -1)
-        map_default_hp = 35
-    else if(containi(map_name,"1hp") != -1)
-        map_default_hp = 1
+    if(containi(map_name,"1hp") != -1)	map_default_hp = 1
     else map_default_hp = 35
+
     load_arena_coords(-1)
    
     new cfgdir[32], urlfile[64]
@@ -431,25 +429,22 @@ public plugin_init()
         mkdir(urlfile)
         server_print("%sCreated new folder: %s",CHAT_TAG,urlfile)
     }
+
     killed_forward = CreateMultiForward("duel_player_killed", ET_IGNORE, FP_CELL,FP_CELL);
     set_task(25.0,"Advertise",TASK_AD)
     register_message( get_user_msgid( "ScoreAttrib" ), "MessageScoreAttrib" );
     update_cvars();
     HuDForEver = CreateHudSyncObj()
  
-    for(new i=0;i< sizeof COMMANDS;i++)
-        register_clcmd(COMMANDS[i], "ChooseState");
+    for(new i=0;i< sizeof COMMANDS;i++)	register_clcmd(COMMANDS[i], "ChooseState");
    
     AdvTime = register_cvar("htbs_bym_vreme_reklame","120.0");     
     set_task(get_pcvar_float(AdvTime), "Advertisment");
     register_dictionary("boost_manager.txt")
- 
 }
- 
- 
+
 public FW_Prethink(id)
 {
-           
     if (pev(id,pev_button) & IN_RELOAD && pev(id,pev_button) & IN_USE)
         menu_principal(id)
  
@@ -460,26 +455,12 @@ public FW_Prethink(id)
 public Duel_Rank(victim,attacker,shouldgib)
 {
     new wid,bh
- 
-    if(!is_user_connected(victim))
-        return HAM_IGNORED;
        
-    if(is_in_duel[victim] != 2)
+    if(!is_user_connected(victim)||is_in_duel[victim] != 2||!is_user_connected(attacker)||
+	attacker == victim||is_in_duel[attacker] != 2 || is_in_duel[victim] != 2)
         return HAM_IGNORED
        
-    if(is_user_connected(his_challenger[victim]) && !is_user_connected(attacker))
-    {
-        if(!check_teams(victim,attacker))
-            return HAM_IGNORED
-    }
-    if(!is_user_connected(attacker))
-        return HAM_IGNORED
-       
-    if(attacker == victim)
-        return HAM_IGNORED
-   
-    if(is_in_duel[attacker] != 2 || is_in_duel[victim] != 2)
-        return HAM_IGNORED
+    if(is_user_connected(his_challenger[victim]) && !is_user_connected(attacker))	if(!check_teams(victim,attacker))	return HAM_IGNORED
  
     static Float:FOrigin3[3]
     pev(victim, pev_origin, FOrigin3)
@@ -504,19 +485,14 @@ public Duel_Rank(victim,attacker,shouldgib)
     cs_set_user_deaths(victim, deaths + 1)  
     ExecuteHamB( Ham_AddPoints, attacker, 1, true );
      
-    if(bh==HIT_HEAD)  
-            g_headshots[attacker]++
-        return PLUGIN_CONTINUE
+    if(bh==HIT_HEAD)	g_headshots[attacker]++
+
+    return PLUGIN_CONTINUE
 }
- 
- 
+
 public fwd_EmitSound(id, channel, const sound[])
 {
-    if(!is_user_alive(id))
-        return FMRES_IGNORED;
-   
-    if(!equal(sound, g_szKnifeSound))
-        return FMRES_IGNORED;
+    if(!equal(sound, g_szKnifeSound)||!is_user_alive(id))	return FMRES_IGNORED;
    
     static Float:fGmTime;
     fGmTime = get_gametime();
@@ -536,8 +512,7 @@ public fwd_EmitSound(id, channel, const sound[])
     }
     return FMRES_IGNORED;
 }
- 
- 
+
 public menu_principal( id )
 {
     new gMenu = menu_create("\y[\r Duel Menu\y ]", "menu_principal1")
@@ -1986,21 +1961,21 @@ public duel_players_list(id)
         client_print_color(id,"%s^4Maximum arenas reached.",CHAT_TAG)
         return PLUGIN_HANDLED
     }
+
     new menu,menuformat[64];
     formatex(menuformat,charsmax(menuformat),"\w[\rGlobal Knife\w] \yKnifeDuels ^n\dArenas Free: %d/%d \w",arenas_count(),total_arenas)
     menu = menu_create( menuformat, "Duel_handler" );
-   
-    new tempid;
-   
-    new szName[32], szUserId[32],nameu[92],CsTeams:team;
+
+    new szName[32], szUserId[32],nameu[92],CsTeams:team,tempid
     formatex(nameu,charsmax(nameu), "\yRefresh");
     menu_additem(menu, nameu,"rf_c", 0);
     menu_addblank(menu,0)
+
     //get_players( players, pnum, "c" );
     for ( new e; e<MAXPLAYERS; e++ )
     {
-        if(!is_user_connected(e))
-            continue;
+        if(!is_user_alive(e)||e==id&&!is_user_bot(e))	continue;
+
         tempid = e
         team = cs_get_user_team(tempid)
        
@@ -2008,6 +1983,7 @@ public duel_players_list(id)
         {
             get_user_name(tempid, szName, charsmax(szName));
             formatex(szUserId, charsmax(szUserId), "%d", get_user_userid(tempid));
+
             if(his_offline[tempid])
             {
                 formatex(nameu,charsmax(nameu), "%s \w[\dOffline\w]", szName);
@@ -2038,11 +2014,10 @@ public duel_players_list(id)
             }
         }
     }
-   
-    menu_display(id, menu, 0 );
+    menu_display(id, menu);
+
     return PLUGIN_HANDLED
 }
- 
 public Duel_handler( id, menu, item )
 {
     if ( item == MENU_EXIT )
@@ -2054,12 +2029,15 @@ public Duel_handler( id, menu, item )
     new szData[32], szName[64];
     new _access, item_callback;
     menu_item_getinfo( menu, item, _access, szData,charsmax( szData ), szName,charsmax( szName ), item_callback );
+
     if(equali(szData,"rf_c"))
     {
         menu_destroy( menu );
         duel_players_list(id)
+
         return PLUGIN_CONTINUE
     }
+
     new userid = str_to_num( szData );
     //spam_hud(id)
     new enem = find_player("k", userid); // flag "k" : find player from userid
@@ -2075,7 +2053,7 @@ public Duel_handler( id, menu, item )
             client_print_color(id,"%sYou can't challenge dead players.",CHAT_TAG)
 			return PLUGIN_HANDLED
         }
-        else if(his_offline[enem])
+        if(his_offline[enem])
         {
             client_print_color(id,"%sYou can't challenge offline players.",CHAT_TAG)
 			return PLUGIN_HANDLED
@@ -2092,7 +2070,8 @@ public Duel_handler( id, menu, item )
                 ask_player(enem)
                 client_print_color(0,"%s^4%s^1 has challenged ^4%s^1 for a ^3duel^1!",CHAT_TAG,his_name[id],his_name[enem])
                
-                set_task(10.0,"taken_long",id)
+                set_task(5.0,"taken_long",enem)
+
 				return PLUGIN_HANDLED
             }
             else
@@ -2103,14 +2082,15 @@ public Duel_handler( id, menu, item )
         }
     }
     menu_destroy( menu );
+
     return PLUGIN_CONTINUE;
 }
- 
 public taken_long(id)
 {
     if(is_in_duel[id] == 1)
     {
-        client_print_color(0,"%s^4%s ^1has taken ^3too long to respond ^1to ^4%s^1's challenge.",CHAT_TAG,his_name[his_asker[id]],his_name[id])
+		show_menu( id, 0, "^n", 1 );
+        //client_print_color(0,"%s^4%s ^1has taken ^3too long to respond ^1to ^4%s^1's challenge.",CHAT_TAG,his_name[his_asker[id]],his_name[id])
         user_can_spawn[id] = 1
         user_can_spawn[his_asker[id]] = 1
         reset_values(his_asker[id])
