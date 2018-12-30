@@ -2,10 +2,10 @@
 	#include <amxmisc>
 	#include <cstrike>
 	#include <fakemeta>
-	#include <nvault>
+	#include <fvault>
 	#include <colorchat>
 
-	#define VAULTNAME "XPVAULT"
+	new const VAULTNAME[]= "XPVAULT"
 	#define KILLXP 100
 	#define HSXP 200
 	#define LEVELUPXP 400
@@ -14,7 +14,7 @@
 
 	stock fm_set_entity_visibility(index, visible = 1) set_pev(index, pev_effects, visible == 1 ? pev(index, pev_effects) & ~EF_NODRAW : pev(index, pev_effects) | EF_NODRAW)
 
-	new g_HatEnt[33],xpplayer[ 33 ],setting[ 33 ],menuCB;
+	new g_HatEnt[33],xpplayer[ 33 ],setting[ 33 ],menuCB,authid[32],data[ 65 ], szXp[ 32 ];
 
 
 	#define MAXLEVEL 19//0|1 -def/none
@@ -140,38 +140,43 @@
 	{
 		if(is_user_connected(id)&&!is_user_bot(id))
 		{
-		xpplayer[ id ] = 0;
-		setting[ id ] = 0;//def hat
-	   
-		new vault = nvault_open( VAULTNAME );
-		new name[ 50 ], useless;
-		get_user_name( id, name, 49 );
-		new showSz[ 50 ];
-		nvault_lookup( vault, name, showSz, 49, useless );
-		xpplayer[ id ] = str_to_num( showSz );
-		nvault_close( vault );
+			LoadData(id)
 
 
-		PlayerHasTag[ id ] = false;
-		LoadPlayerTag( id );
+			PlayerHasTag[ id ] = false;
+			LoadPlayerTag( id );
 		}
 	}
-
 	public client_disconnect( id )
 	{
 		if(!is_user_bot(id))
 		{
-		new vault = nvault_open( VAULTNAME );
-		new name[ 50 ];
-		get_user_name( id, name, 49 );
-		new showSz[ 50 ];
-		num_to_str( xpplayer[ id ], showSz, 49 );
-		nvault_set( vault, name, showSz );
-		nvault_close( vault );
-		xpplayer[ id ] = 0;
-		setting[ id ] = 0;
+			if(xpplayer[id]>0)
+			{
+				SaveData(id)
+				xpplayer[ id ] = 0;
+			}
+
+			setting[ id ] = 0;
 		}
 	}
+public SaveData(id){
+	get_user_name(id, authid, 31)
+
+	formatex( data, sizeof( data ) - 1, "%d",xpplayer[ id ]);
+	fvault_set_data(VAULTNAME, authid, data );
+}
+public LoadData(id){
+	get_user_name(id,authid,31)
+
+	if( fvault_get_data(VAULTNAME, authid, data, sizeof( data ) - 1 ) )
+	{
+		parse( data, szXp, sizeof( szXp ) - 1 );
+
+		xpplayer[id] = str_to_num( szXp );
+	}
+	else	xpplayer[id]=0
+}
 	 
 	public hook_death()
 	{
@@ -444,9 +449,9 @@
 			{
 				switch( cs_get_user_team( id ) )
 				{
-						case CS_TEAM_T:		ColorChat( iPlayer, RED, "^1%s(Terrorist) [Level:^4 %d^1] ^3*^4%s^3* %s^1: %s", is_user_alive( id ) ? "" : "*DEAD* ",level,PlayerTag[ id ], szName, szChat );
-						case CS_TEAM_CT:	ColorChat( iPlayer, BLUE, "^1%s(Counter-Terrorist) [Level:^4 %d^1] ^3*^4%s^3* %s^1: %s", is_user_alive( id ) ? "" : "*DEAD* ",level,PlayerTag[ id ], szName, szChat );
-						case CS_TEAM_SPECTATOR:	ColorChat( iPlayer, GREY, "^1(Spectator) [Level:^4 %d^1] ^3*^4%s^3*^3 %s^1: %s",level,PlayerTag[ id ], szName, szChat );
+						case CS_TEAM_T:		ColorChat( iPlayer, RED, "^1%s(Terrorist) [Level:^4 %d^1]^3 *^4%s^3* %s^1: %s", is_user_alive( id ) ? "" : "*DEAD* ",level,PlayerTag[ id ], szName, szChat );
+						case CS_TEAM_CT:	ColorChat( iPlayer, BLUE, "^1%s(Counter-Terrorist) [Level:^4 %d^1]^3 *^4%s^3* %s^1: %s", is_user_alive( id ) ? "" : "*DEAD* ",level,PlayerTag[ id ], szName, szChat );
+						case CS_TEAM_SPECTATOR:	ColorChat( iPlayer, GREY, "^1(Spectator) [Level:^4 %d^1]^3 *^4%s^3* %s^1: %s",level,PlayerTag[ id ], szName, szChat );
 				}
 			}
 			else if( cs_get_user_team( id ) == cs_get_user_team( iPlayer ) && !PlayerHasTag[ id ] )
