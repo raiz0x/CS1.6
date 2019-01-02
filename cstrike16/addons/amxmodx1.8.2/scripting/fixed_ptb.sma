@@ -181,7 +181,7 @@ public plugin_init(){
 	register_event("RoundTime", "new_round", "bc") // Round Time
 	register_event("DeathMsg","death_msg","a") // Kill
 	register_event("TeamInfo","team_assign","a") // Team Assigment (also UNASSIGNED and SPECTATOR)
-	register_event("TextMsg","team_join","a","1=1","2&Game_join_te","2&Game_join_ct") // Team Joining+spec?
+	register_event("TextMsg","team_join","a","1=1","2&Game_join_te","2&Game_join_ct","2&Game_join_spec") // Team Joining+spec?
 	register_event("TextMsg","game_restart","a","1=4","2&#Game_C","2&#Game_w") // Game restart
 
 	register_concmd("amx_ptb","admin_ptb",get_access_level_flag(),"- displays PTB options")
@@ -259,6 +259,7 @@ check_param_num(param[],n){
 
 transferPlayer(id){
 	if (!is_user_connected(id)||isBeingTransfered[id]||cs_get_user_team(id)==CS_TEAM_SPECTATOR) return
+
 	isBeingTransfered[id] = false
 	
 	new name[32], player_steamid[50], team_pre_transfer[12]
@@ -353,10 +354,13 @@ createValidTargets(theTeam, bool:deadonly) {
 #endif
 		// Protection for admins if ptb_switch_immunity 1
 		if (get_user_flags(sortedTeams[theTeam][i])&get_immunity_level_flag() && (get_pcvar_num(switch_immunity) == 1)) continue
+
 		// Dead only condition
 		if ( deadonly && is_user_alive(sortedTeams[theTeam][i]) ) continue
+
 		// Already switched or in PTB_PLAYERFREQ time condition
 		if ((lastRoundSwitched[sortedTeams[theTeam][i]] == roundCounter) ||(roundCounter - lastRoundSwitched[sortedTeams[theTeam][i]] < PTB_PLAYERFREQ))	continue
+
 		sortedValidTargets[theTeam][n++] = sortedTeams[theTeam][i]
 	}
 	validTargetCounts[theTeam] = n
@@ -922,6 +926,7 @@ public win_streaks(param[]){
 		winStreaks[winner]++
 		winStreaks[looser]--
 	}
+
 	actAtEndOfRound()
 }
 
@@ -945,7 +950,9 @@ public round_end(){
 public new_round() {
 	//if ( floatround(get_cvar_float("mp_roundtime") * 60.0) != read_data(1) ) return
 	if ( floatround(get_cvar_float("mp_roundtime") * 60.0,floatround_floor) != read_data(1) ) return
+
 	++roundCounter
+
 	announceStatus()
 }
 
@@ -954,7 +961,7 @@ public team_join() {
 	new arg[32]
 	read_data(3,arg,31)
 
-	lastRoundSwitched[ get_user_index(arg) ] = roundCounter
+	if(is_user_connected(get_user_index(arg))&&!is_user_bot(get_user_index(arg)))	lastRoundSwitched[ get_user_index(arg) ] = roundCounter
 }
 
 // Can happen at begin of round or team select
@@ -965,6 +972,8 @@ public team_assign() {
 	if ( arg[0] == 'C'  )	team = CTS
 	else if ( arg[0] == 'T' )	team = TS
 	else	team = UNASSIGNED
+
+	if(!is_user_connected(i)||is_user_bot(i))	return
 
 	teamCounts[playerTeam[i]]-- // Unregister from old team
 	teamCounts[team]++ // Increase ammount in new team
@@ -1316,6 +1325,8 @@ stock displayStatistics(id,bool:toLog = false) {
 }
 
 public client_connect(id){
+	if(!is_user_bot(id)||!is_user_hltv(id))
+	{
 	kills[id] = 0
 	deaths[id] = 0
 	isBeingTransfered[id] = false
@@ -1324,11 +1335,12 @@ public client_connect(id){
 	wtjCount[id] = 0
 	get_user_info(id,"_vgui_menus",clientVGUIMenu[id],1)
 	clientVGUIMenu[id][0] = '0'
-
-	return PLUGIN_CONTINUE
+	}
 }
 
 public client_disconnect(id) {
+	if(!is_user_bot(id)||!is_user_hltv(id))
+	{
 	kills[id] = 0
 	deaths[id] = 0
 	isBeingTransfered[id] = false
@@ -1347,6 +1359,5 @@ public client_disconnect(id) {
 		set_user_info( id, "_vgui_menus", clientVGUIMenu[id] )
 		clientVGUIMenu[id][0] = '0'
 	}
-
-	return PLUGIN_CONTINUE
+	}
 }
