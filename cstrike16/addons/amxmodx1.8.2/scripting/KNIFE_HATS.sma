@@ -414,7 +414,7 @@
 		new menu = menu_create( "What you want?", "menuhandler" );
 	   
 		menu_additem( menu, "HATS", "1" );
-		menu_additem( menu, "KNIVES", "0" )
+		menu_additem( menu, "KNIVES", "2" )
 
 		menu_setprop( menu, MPROP_EXIT, MEXIT_ALL );
 		menu_display( id, menu,0);
