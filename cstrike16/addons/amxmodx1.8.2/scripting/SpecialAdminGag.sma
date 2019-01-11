@@ -55,7 +55,7 @@ new SaveDataFile [ 128 ], g_admin[ 32 ];
 
 public plugin_init( ) 
 {
-	register_plugin( PLUGIN, PLUGIN, "Cristi .C" );
+	register_plugin( PLUGIN, PLUGIN, "Cristi .C" );//Adryyy fix
 	
 	register_concmd( "amx_gag", "CommandGag" ); 
 	register_concmd( "amx_ungag", "CommandUngag" );
