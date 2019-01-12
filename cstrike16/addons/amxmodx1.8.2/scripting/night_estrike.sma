@@ -13,11 +13,11 @@ public players_check()
 	new b[6]
 	get_time("%H", a, 5)
 	get_time("%M", b, 5)
-	if((str_to_num(a)>=22&&str_to_num(b)>58))
+	if((str_to_num(a)>=22&&str_to_num(b)>59))
 	{
 		if(get_playersnum(1)<13)	allow_night=true
 	}
-	else if((str_to_num(a)>=07&&str_to_num(b)>50))	allow_night=false
+	else if((str_to_num(a)>=07&&str_to_num(b)>58))	allow_night=false
 }
 
 public task_check_time()
@@ -28,20 +28,20 @@ public task_check_time()
 
 	if(allow_night)
 	{
-		if(equal(a, "22:59"))	chat_color(0, "!g[AMXX] !nServerul trece pe setarile de noapte.")
+		if(equal(a, "22:58"))	chat_color(0, "!g[AMXX] !nServerul trece pe setarile de noapte.")
 		if(!equal(cm,"de_dust2x2"))	server_cmd("amx_map de_dust2x2")
 		server_cmd("mp_timelimit 0")
 		//server_cmd("amx_pausecfg stop adminvote")
 		//server_cmd("amx_pausecfg stop mapsmenu")
-		pause("d","mapchooser.amxx")
-		pause("d","rtv.amxx")
-		allow_night=false
+		pause("dc","mapchooser.amxx")
+		pause("dc","rtv.amxx")
+		//allow_night=false
 	}
 
 	if (equal(a, "07:59"))
 	{
-		unpause("a","mapchooser.amxx")
-		unpause("a","rtv.amxx")
+		unpause("ac","mapchooser.amxx")
+		unpause("ac","rtv.amxx")
 		server_cmd("mp_timelimit 30")
 	}
 	if (equal(a, "08:00"))	chat_color(0, "!g[AMXX]!n Serverul trece pe setarile de zi.")
