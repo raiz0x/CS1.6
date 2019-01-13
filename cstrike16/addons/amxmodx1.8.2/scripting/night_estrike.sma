@@ -13,10 +13,8 @@ public players_check()
 	new b[6]
 	get_time("%H", a, 5)
 	get_time("%M", b, 5)
-	if((str_to_num(a)>=22&&str_to_num(b)>59))
-	{
-		if(get_playersnum(1)<13)	allow_night=true
-	}
+	
+	if((str_to_num(a)>=22&&str_to_num(b)>59))	if(get_playersnum(1)<13)	allow_night=true
 	else if((str_to_num(a)>=07&&str_to_num(b)>58))	allow_night=false
 }
 
