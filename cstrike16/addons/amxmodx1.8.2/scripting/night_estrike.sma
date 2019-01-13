@@ -26,22 +26,21 @@ public task_check_time()
 	get_mapname(cm,charsmax(cm))
 	get_time("%H:%M", a, 5)
 
+	if(equal(a, "22:58"))	chat_color(0, "!g[AMXX] !nServerul trece pe setarile de noapte.")
+	
 	if(allow_night)
 	{
-		if(equal(a, "22:58"))	chat_color(0, "!g[AMXX] !nServerul trece pe setarile de noapte.")
 		if(!equal(cm,"de_dust2x2"))	server_cmd("amx_map de_dust2x2")
 		server_cmd("mp_timelimit 0")
 		//server_cmd("amx_pausecfg stop adminvote")
 		//server_cmd("amx_pausecfg stop mapsmenu")
-		pause("dc","mapchooser.amxx")
-		pause("dc","rtv.amxx")
-		//allow_night=false
+		pause("dc","mapchooser4.amxx")
+		allow_night=false
 	}
 
 	if (equal(a, "07:59"))
 	{
-		unpause("ac","mapchooser.amxx")
-		unpause("ac","rtv.amxx")
+		unpause("ac","mapchooser4.amxx")
 		server_cmd("mp_timelimit 30")
 	}
 	if (equal(a, "08:00"))	chat_color(0, "!g[AMXX]!n Serverul trece pe setarile de zi.")
