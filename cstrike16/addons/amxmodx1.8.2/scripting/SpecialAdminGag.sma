@@ -206,7 +206,7 @@ public CheckGag( id )
 	new szSaid[ 300 ];
 	read_args( szSaid, charsmax( szSaid ) );
 	remove_quotes( szSaid );
-	if( !UTIL_IsValidMessage( szSaid ) )	return PLUGIN_HANDLED;
+	if( !UTIL_IsValidMessage( szSaid )||!is_user_connected(id) )	return PLUGIN_HANDLED;
 	
 	if( PlayerGagged[ id ] == 1 )
 	{
