@@ -1,8 +1,10 @@
+// timeunit_minutes - timeunit_seconds(ca sa arate si secundele) , timeunit_seconds = 0
+
 #include < amxmodx >
 #include < amxmisc >
 #include < nvault >
 #include < time >
-#include < geoip >
+#include < geoip >//special..
 
 #include "colorchat.inl"
 
