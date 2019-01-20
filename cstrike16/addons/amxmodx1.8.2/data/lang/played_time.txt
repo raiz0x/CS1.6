@@ -1,0 +1,17 @@
+[ro]
+PLAYED_TIME_NULL = Nu esti aflat in baza noastra de date inca...
+PLAYED_TIME = Ai jucat!t %s!y pe server
+PLAYED_TIME_NULLT = Nu este aflat in baza noastra de date inca...
+PLAYED_TIMET = !t%s!y a jucat!g %s!y pe server
+CON_NAME_X = Nume
+CON_TIME_X = Timp jucat
+NOT_YET_CON = Inca neinregistrat
+
+[en]
+PLAYED_TIME_NULL = Nu esti aflat in baza noastra de date inca...
+PLAYED_TIME = Ai jucat!t %s!y pe server
+PLAYED_TIME_NULLT = Nu este aflat in baza noastra de date inca...
+PLAYED_TIMET = !t%s!y a jucat!g %s!y pe server
+CON_NAME_X = Nume
+CON_TIME_X = Timp jucat
+NOT_YET_CON = Inca neinregistrat
