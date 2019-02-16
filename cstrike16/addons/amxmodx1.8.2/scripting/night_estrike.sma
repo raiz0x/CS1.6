@@ -34,13 +34,13 @@ public task_check_time()
 	{
 		if(!equali(cm,"de_dust2x2"))	server_cmd("amx_map de_dust2x2")
 		if(get_cvar_num("mp_timelimit")!=0)	server_cmd("mp_timelimit 0")
-		pause("ac","mapchooser4.amxx")
+		pause("dc","mapchooser4.amxx")
 		allow_night=false
 	}
 
 	if (equali(a, "07:59"))
 	{
-		unpause("ac","mapchooser4.amxx")
+		unpause("dc","mapchooser4.amxx")
 		if(get_cvar_num("mp_timelimit")<30)	server_cmd("mp_timelimit 30")
 	}
 	if (equal(a, "08:00"))	chat_color(0, "!g[AMXX]!n Serverul trece pe setarile de zi.")
@@ -55,19 +55,19 @@ public task_check_time()
 	get_time("%H", b, 5)
 
 	if(equal(a, "22:58"))	chat_color(0, "!g[AMXX] !nServerul trece pe setarile de noapte.")
-	if(equal(a, "22:59")||(str_to_num(b)>=23&&str_to_num(b)<7))
+	if(equal(a, "22:59")||(str_to_num(b)>=23&&str_to_num(b)<07))
 	{
 		if(!equali(cm,"de_dust2x2"))	server_cmd("amx_map de_dust2x2")
-		server_cmd("amx_cvar mp_timelimit 0")
-		server_cmd("amx_pausecfg pause mapchooser4")
+		if(get_cvar_num("mp_timelimit")>0)	server_cmd("amx_cvar mp_timelimit 0")
+		if(is_plugin_loaded("amx_pausecfg.amxx",true))	server_cmd("amx_pausecfg stop mapchooser4.amxx")
 		//server_cmd("amx_pausecfg stop adminvote")
 		//server_cmd("amx_pausecfg stop mapsmenu")
 	}
 
 	if (equal(a, "07:59"))
 	{
-		server_cmd("amx_pausecfg enable mapchooser4")
-		server_cmd("amx_cvar mp_timelimit 30")
+		if(is_plugin_loaded("amx_pausecfg.amxx",true))	server_cmd("amx_pausecfg enable mapchooser4.amxx")
+		if(get_cvar_num("mp_timelimit")!=30)	server_cmd("amx_cvar mp_timelimit 30")
 	}
 	if (equal(a, "08:00"))	chat_color(0, "!g[AMXX]!n Serverul trece pe setarile de zi.")
 }
