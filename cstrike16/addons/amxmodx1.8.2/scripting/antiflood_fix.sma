@@ -37,7 +37,7 @@
 new Float:g_Flooding[33] = {0.0, ...}
 new g_Flood[33] = {0, ...}
 
-new Float:g_nextNameChange[32],nc[33]
+new Float:g_nextNameChange[32],nc[32] = {0, ...}
 
 public plugin_init() {
 	register_plugin("Anti Flood",AMXX_VERSION_STR,"AMXX Dev Team+")
@@ -48,7 +48,7 @@ public plugin_init() {
 	register_clcmd("say_team","chkFlood")
 	
 	register_cvar("amx_flood_time","0.90")//secunde+
-	register_cvar("amx_flood_time_resay","8.0")
+	register_cvar("amx_flood_time_resay","3.0")
 	
 	register_cvar("amx_namechange_time", "10.0")
 	register_cvar("amx_namechenge_map", "3")//times-
@@ -56,8 +56,7 @@ public plugin_init() {
 	register_message(get_user_msgid("SayText"), "message_SayText")
 }
 
-public client_putinserver(id)	if(nc[id]!=0)	nc[id]=0
-public client_disconnect(id)	if(nc[id]>1)	nc[id]=0
+public client_disconnect(id)	nc[id-1]=0
 
 public message_SayText() {
 	if (get_msg_args() != 4)	return PLUGIN_CONTINUE
@@ -70,39 +69,34 @@ public message_SayText() {
 	get_msg_arg_string(3, oldName, 31)
 	get_msg_arg_string(4, newName, 31)
 	
-	if(equal(oldName, newName))	return PLUGIN_HANDLED
-	
-	//if(oldName[0])
-	//{
-	if(nc[id]>=get_cvar_num("amx_namechenge_map"))
+	if(!equal(oldName, newName))
 	{
-		client_print(id,print_chat, " [AMXX]: You can't change youre nickname anymore.")
-		
-		set_user_info(id, "name", oldName)
-		
-		return PLUGIN_HANDLED
+		if(++nc[id-1]>=get_cvar_num("amx_namechenge_map"))
+		{
+			client_print(id,print_chat, " [AMXX]: You can't change youre nickname anymore.")
+			
+			set_user_info(id, "name", oldName)
+			
+			return PLUGIN_HANDLED
+		}
+		else
+		{
+			if (get_gametime() < g_nextNameChange[id - 1]) {
+				g_nextNameChange[id - 1] = get_gametime() + get_cvar_float("amx_namechange_time")
+				
+				client_print(id,print_chat, " [AMXX]: Too fast nick changes. Wait %.1f second%s, now is %.1f..", g_nextNameChange[id - 1]-get_gametime(),g_nextNameChange[id - 1]-get_gametime()==1?"":"s",get_gametime())
+				
+				set_user_info(id, "name", oldName)
+				
+				return PLUGIN_HANDLED
+			}
+			
+			//client_print(id,print_chat, " [AMXX]: Next name change for you is %f second%s, now is %f second%s", g_nextNameChange[id - 1],g_nextNameChange[id - 1]==1?"":"s", get_gametime(), get_gametime()==1?"":"s")
+			//client_print(id,print_chat, " [AMXX]: Nick change times left: %d", get_cvar_num("amx_namechenge_map")-nc[id])
+		}
 	}
 	
-	if (get_gametime() < g_nextNameChange[id - 1]&&nc[id]<get_cvar_num("amx_namechenge_map")) {
-		g_nextNameChange[id - 1] = get_gametime() + get_cvar_float("amx_nameflood_time")
-		
-		client_print(id,print_chat, " [AMXX]: Too fast nick changes. Wait %.1f second%s", g_nextNameChange[id - 1]-get_gametime(),g_nextNameChange[id - 1]-get_gametime()==1?"":"s")
-		
-		set_user_info(id, "name", oldName)
-		
-		return PLUGIN_HANDLED
-	}
-	
-	g_nextNameChange[id - 1] = get_gametime() + get_cvar_float("amx_nameflood_time")
-	//client_print(id,print_chat, " [AMXX]: Next name change for you is %f second%s, now is %f second%s", g_nextNameChange[id - 1],g_nextNameChange[id - 1]==1?"":"s", get_gametime(), get_gametime()==1?"":"s")
-	//client_print(id,print_chat, " [AMXX]: Nick change times left: %d", get_cvar_num("amx_namechenge_map")-nc[id])
-	
-	//if(nc[id]<get_cvar_num("amx_namechenge_map"))
-	//{
-	nc[id]++
-	//}
-	
-	//}
+	g_nextNameChange[id - 1] = get_gametime() + get_cvar_float("amx_namechange_time")
 	
 	return PLUGIN_CONTINUE
 }
