@@ -22,6 +22,12 @@ new bool:e_in_program[33];
 new gConfigsDir[64];
 new gAdminsFile[64];
 
+#define MAX_PLAYERS 32
+
+new pip[MAX_PLAYERS+1][22]
+new markedIp[MAX_PLAYERS+1]
+new bool:poate_lua_warn[33]
+
 public plugin_init( )
 {
 	register_plugin( PLUGIN, VERSION, "falcao" );
@@ -46,7 +52,13 @@ public plugin_init( )
 	
 	get_configsdir(gConfigsDir, sizeof gConfigsDir - 1);
 	formatex(gAdminsFile, sizeof gAdminsFile - 1, "%s/users.ini", gConfigsDir);
+	
+	register_cvar("amx_retrytimetowarn","10")
+	register_cvar("amx_retrycounttowarn","2")
+	for(new i=0; i< MAX_PLAYERS; i++)	markedIp[i]=0;
 }
+
+public clean_markedip(index[])	markedIp[str_to_num(index)]=0;
 
 public ChekList(id)
 {
@@ -131,6 +143,31 @@ public client_disconnect( id )
 	g_iPlayerWarn[ id ]=0;
 	
 	e_in_program[id]=false;
+	
+	if ((!is_user_bot(id))) {
+		for(new i = 1; i <= MAX_PLAYERS; i++) {
+			if(pip[i][0] == 0) {
+				markedIp[i]++;
+				if (markedIp[i] == 1)
+				{		
+					new para[3];
+					format(para, 2, "%d", i);
+					set_task(60.0 * get_cvar_num("amx_retrytimetowarn"), "clean_markedip", 0, para, 1);		
+				}
+				else if (markedIp[i] == get_cvar_num("amx_retrycounttowarn"))
+				{
+					new userip[21+1];
+					get_user_ip(id, userip, 21, 0);
+					copy(pip[i], 21, userip);		
+				}
+				return PLUGIN_CONTINUE;
+			}
+		}
+	}
+	
+	poate_lua_warn[id]=false;
+	
+	return PLUGIN_CONTINUE;
 }
 
 public adaugareMinut( id )
@@ -148,9 +185,32 @@ public adaugareMinut( id )
 
 public verifyPlayer( id )
 {
+	if(!e_in_program[id])	return 1;
+	new userip[21+1];
+	new uname[33+1];
+	get_user_ip(id, userip, 21, 0);
+	get_user_name(id, uname, 33);
+	for(new i = 1; i <= MAX_PLAYERS; i++) {
+		if (equal(userip, pip[i], 21)) {
+			new userid[1];
+			userid[0] = get_user_userid(id);
+			if (markedIp[i] < get_cvar_num("amx_retrycounttowarn"))
+			{
+				return PLUGIN_CONTINUE;
+			}
+			
+			poate_lua_warn[id]=true;
+			
+			markedIp[i] = 0;
+			pip[i][0] = 0;
+			
+			return PLUGIN_CONTINUE;
+		}
+	}
+	
 	szFile = fopen( g_szFile, "rt" );
 	
-	if( !szFile||!e_in_program[id] )
+	if( !szFile )
 		return 1;
 	
 	while( !feof( szFile ) )
@@ -173,7 +233,7 @@ public verifyPlayer( id )
 				if(g_iPlayerMinutes[ id ]!=0)
 				{
 					if(g_iPlayerWarn[ id ]>=MAX_WARN)	check_access(id);
-					else
+					else if(poate_lua_warn[id])
 					{
 						g_iPlayerWarn[ id ] ++;
 						
@@ -249,6 +309,7 @@ public mesajWarn( id )
 	g_iPlayerWarn[ id ] = 0;
 	g_iPlayerMinutes[id]=0;
 	e_in_program[id]=false;
+	poate_lua_warn[id]=false;
 	remove_task(id);
 	server_cmd("amx_reloadadmins");
 	SaveData( id );
