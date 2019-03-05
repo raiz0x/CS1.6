@@ -178,6 +178,8 @@ public adaugareMinut( id )
 		else
 		{
 			g_iPlayerMinutes[ id ]=0;
+			g_iPlayerWarn[ id ]=0;
+			poate_lua_warn[id]=false;
 			remove_task(id);
 		}
 	}
@@ -226,7 +228,8 @@ public verifyPlayer( id )
 		{
 			if( g_iPlayerMinutes[ id ] >= str_to_num( szParseMIN ))
 			{
-				log_to_file( "activity_admins.log", "%s si-a respectat programul cu %d/%d minut%s.", szName[id], g_iPlayerMinutes[ id ], str_to_num( szParseMIN ),str_to_num( szParseMIN )==1?"":"e" );	
+				log_to_file( "activity_admins.log", "%s si-a respectat programul cu %d/%d minut%s.", szName[id], g_iPlayerMinutes[ id ], str_to_num( szParseMIN ),str_to_num( szParseMIN )==1?"":"e" );
+				if(g_iPlayerWarn[ id ]>0)	g_iPlayerWarn[ id ]=0;
 			}
 			else
 			{
