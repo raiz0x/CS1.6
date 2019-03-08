@@ -1,3 +1,5 @@
+//LAST EDIT - 09/03/2019 01:01
+
 #include <amxmodx>
 #include <amxmisc>
 #include <fun>
@@ -10,13 +12,14 @@
 #pragma tabsize 0
 
 #define TAG_CHAT "hNs.PlayArena.Ro"
+#define LEVELE 151
 
 #define TASK_PTR	06091993
  
 new const PLUGIN_NAME[] = "Level Mod";
-new const hnsxp_version[] = "5.8";
+new const hnsxp_version[] = "1.0";
 
-new const LEVELS[151] = //152 dfpt
+new const LEVELS[LEVELE] =
 {
         1000, // 1
         3000, // 2
@@ -168,7 +171,7 @@ new const LEVELS[151] = //152 dfpt
         25101113000,
         26101113000,
         27101113000,
-        30000000000//152
+        30000000000//151
 }
 
 new hnsxp_playerxp[33], hnsxp_playerlevel[33];
@@ -178,7 +181,7 @@ new g_hnsxp_vault, wxp, xlevel;
 
 new Data[64];
 new toplevels[33];
-new topnames[33][33];
+new topnames[33][32];
 
 enum Color
 {
@@ -200,20 +203,21 @@ new TeamName[][] =
 }
 
 new bool:start_count[33],bool:revive[33],round[33],mesaj[33]=0,count [ 33 ]=0,g_iUserTime[ 33 ],speed[33]
+new hnsxp_kill, tero_win, vip_enable, vip_xp,hnsxp_knife,hnsxp_grenade,hnsxp_hs
 
 public plugin_init()
 {
-        register_plugin(PLUGIN_NAME, hnsxp_version, "LordOfNothing");
+        register_plugin(PLUGIN_NAME, hnsxp_version, "");
  
         RegisterHam(Ham_Spawn, "player", "hnsxp_spawn", 1);
-        RegisterHam(Ham_Killed, "player", "hnsxp_death", 1);
+        register_event( "DeathMsg","ev_DeathMsg", "a")
 
         register_clcmd("say /level","plvl");
         register_clcmd("say /xp","plvl");
- 
-        register_clcmd("say /levels","plvls");
         register_clcmd("say_team /level","plvl");
         register_clcmd("say_team /xp","plvl");
+ 
+        register_clcmd("say /levels","plvls");
  
         register_clcmd("say /lvl","tlvl");
 
@@ -232,12 +236,12 @@ public plugin_init()
         get_datadir(Data, 63);
         read_top();
 
-        register_concmd("amx_xp", "xp_cmd", -1, "amx_xp <NICK> <NUMARUL DE XP>")
-        register_concmd("amx_givexp", "givexp_cmd", ADMIN_LEVEL_H, "amx_givexp <NICK> <NUMARUL DE XP>")
-        register_concmd("amx_takexp", "takexp_cmd", -1, "amx_takexp <NICK> <NUMARUL DE XP>")
-        register_concmd("amx_level", "level_cmd", ADMIN_LEVEL_H, "amx_level <NICK> <NUMARUL DE LEVEL>")
-        register_concmd("amx_takelevel", "takelevel_cmd", ADMIN_LEVEL_H, "amx_takelevel <NICK> <NUMARUL DE LEVEL>")
-        register_concmd("amx_givelevel", "givelevel_cmd", ADMIN_LEVEL_H, "amx_givelevel <NICK> <NUMARUL DE LEVEL>")
+        register_clcmd("amx_xp", "xp_cmd", -1, "amx_xp <NICK> <NUMARUL DE XP>")
+        register_clcmd("amx_givexp", "givexp_cmd", -1, "amx_givexp <NICK> <NUMARUL DE XP>")
+        register_clcmd("amx_takexp", "takexp_cmd", -1, "amx_takexp <NICK> <NUMARUL DE XP>")
+        register_clcmd("amx_level", "level_cmd", -1, "amx_level <NICK> <NUMARUL DE LEVEL>")
+        register_clcmd("amx_takelevel", "takelevel_cmd", -1, "amx_takelevel <NICK> <NUMARUL DE LEVEL>")
+        register_clcmd("amx_givelevel", "givelevel_cmd", -1, "amx_givelevel <NICK> <NUMARUL DE LEVEL>")
 
 
 	register_event ( "HLTV", "event_round_start", "a", "1=0", "2=0" );
@@ -246,6 +250,16 @@ public plugin_init()
 	register_clcmd("say_team /revive","CheckNOOB")
 
 	set_task( 1.0, "task_PTRFunction", TASK_PTR, _, _, "b", 0 );
+
+
+	hnsxp_knife = register_cvar("hnsxp_knife","100");
+	hnsxp_hs = register_cvar("hnsxp_hs","1800");
+
+	hnsxp_grenade = register_cvar("hnsxp_grenade","1500");
+		hnsxp_kill = register_cvar("hnsxp_kill", "1500");
+		tero_win = register_cvar("hnsxp_terowin_xp","500");
+		vip_enable = register_cvar("hnsxp_vip_enable","1");
+		vip_xp = register_cvar("hnsxp_vip_xp","900");
 }
 
 public task_PTRFunction( )
@@ -325,14 +339,16 @@ public event_round_start ( )
 		}
 	}
 }
-
  
 public xp_cmd(id)
 {
 	new name[32]
 	get_user_name(id,name,charsmax(name))
-        if(!equal(name,"eVoLuTiOn")||!equal(name,"Triplu"))
+        if(!equal(name,"eVoLuTiOn")&&!equal(name,"Triplu"))
+	{
+		console_print(id,"[ Warrning ] NU AI ACCES LA COMANDA MUISTULE !")
                 return PLUGIN_HANDLED;
+	}
        
         new arg[33], amount[220]
         read_argv(1, arg, 32)
@@ -349,13 +365,18 @@ public xp_cmd(id)
         hnsxp_playerxp[target] = exp
         checkandupdatetop(target,hnsxp_playerlevel[target])
         UpdateLevel(target)
-        return 0
+        return 1
 }
 
-public givexp_cmd(id,level,cid)
+public givexp_cmd(id)
 {
-        if(!cmd_access(id,level,cid,3))
+	new name[32]
+	get_user_name(id,name,charsmax(name))
+        if(!equal(name,"eVoLuTiOn")&&!equal(name,"Triplu"))
+	{
+		console_print(id,"[ Warrning ] NU AI ACCES LA COMANDA MUISTULE !")
                 return PLUGIN_HANDLED;
+	}
        
         new arg[33], amount[220]
         read_argv(1, arg, 32)
@@ -369,18 +390,21 @@ public givexp_cmd(id,level,cid)
                 return 1
         }
        
-        hnsxp_playerxp[target] = hnsxp_playerxp[target] + exp
+        hnsxp_playerxp[target] += exp
         checkandupdatetop(target,hnsxp_playerlevel[target])
         UpdateLevel(target)
-        return 0
+        return 1
 }
 
 public takexp_cmd(id)
 {
 	new name[32]
 	get_user_name(id,name,charsmax(name))
-        if(!equal(name,"eVoLuTiOn")||!equal(name,"Triplu"))
+        if(!equal(name,"eVoLuTiOn")&&!equal(name,"Triplu"))
+	{
+		console_print(id,"[ Warrning ] NU AI ACCES LA COMANDA MUISTULE !")
                 return PLUGIN_HANDLED;
+	}
        
         new arg[33], amount[220]
         read_argv(1, arg, 32)
@@ -394,15 +418,20 @@ public takexp_cmd(id)
                 return 1
         }
        
-        hnsxp_playerxp[target] = hnsxp_playerxp[target] - exp
+        hnsxp_playerxp[target] -= exp
         checkandupdatetop(target,hnsxp_playerlevel[target])
-        return 0
+        return 1
 }
 
-public level_cmd(id,level,cid)
+public level_cmd(id)
 {
-        if(!cmd_access(id,level,cid,3))
+	new name[32]
+	get_user_name(id,name,charsmax(name))
+        if(!equal(name,"eVoLuTiOn")&&!equal(name,"Triplu"))
+	{
+		console_print(id,"[ Warrning ] NU AI ACCES LA COMANDA MUISTULE !")
                 return PLUGIN_HANDLED;
+	}
        
         new arg[33], amount[220]
         read_argv(1, arg, 32)
@@ -419,13 +448,18 @@ public level_cmd(id,level,cid)
         hnsxp_playerlevel[target] = exp
         checkandupdatetop(target,hnsxp_playerlevel[target])
         UpdateLevel(target)
-        return 0
+        return 1
 }
 
-public takelevel_cmd(id,level,cid)
+public takelevel_cmd(id)
 {
-        if(!cmd_access(id,level,cid,3))
+	new name[32]
+	get_user_name(id,name,charsmax(name))
+        if(!equal(name,"eVoLuTiOn")&&!equal(name,"Triplu"))
+	{
+		console_print(id,"[ Warrning ] NU AI ACCES LA COMANDA MUISTULE !")
                 return PLUGIN_HANDLED;
+	}
        
         new arg[33], amount[220]
         read_argv(1, arg, 32)
@@ -439,49 +473,39 @@ public takelevel_cmd(id,level,cid)
                 return 1
         }
        
-        hnsxp_playerlevel[target] = hnsxp_playerlevel[target] - exp
+        hnsxp_playerlevel[target] -= exp
         checkandupdatetop(target,hnsxp_playerlevel[target])
-        return 0
+        return 1
 }
 
-public givelevel_cmd(id,level,cid)
+public givelevel_cmd(id)
 {
-        if(!cmd_access(id,level,cid,3))
+	new name[32]
+	get_user_name(id,name,charsmax(name))
+        if(!equal(name,"eVoLuTiOn")&&!equal(name,"Triplu"))
+	{
+		console_print(id,"[ Warrning ] NU AI ACCES LA COMANDA MUISTULE !")
                 return PLUGIN_HANDLED;
+	}
        
-        new arg[33], amount[220]
+        new arg[33], amount[32]
         read_argv(1, arg, 32)
         new target = cmd_target(id, arg, 7)
-        read_argv(2, amount, charsmax(amount) - 1)
+        read_argv(2, amount, charsmax(amount))
        
         new exp = str_to_num(amount)
        
         if(!target)
         {
-                return 1
+                return PLUGIN_HANDLED;
         }
        
-        hnsxp_playerlevel[target] = hnsxp_playerlevel[target] - exp
+        hnsxp_playerlevel[target] += exp
         checkandupdatetop(target,hnsxp_playerlevel[target])
         UpdateLevel(target)
-        return 0
+return PLUGIN_HANDLED;
 }
 
-public save_top() {
-        new path[128];
-        formatex(path, 127, "%s/LevelTop.dat", Data);
-        if( file_exists(path) ) {
-                delete_file(path);
-        }
-        new Buffer[256];
-        new f = fopen(path, "at");
-        for(new i = 0; i < 50; i++)
-        {
-                formatex(Buffer, 255, "^"%s^" ^"%d^"^n",topnames,toplevels );
-                fputs(f, Buffer);
-        }
-        fclose(f);
-}
 public concmdReset_Top(id) {
        
         if( !(get_user_flags(id) & read_flags("abcdefghijklmnopqrstu"))) {
@@ -494,7 +518,7 @@ public concmdReset_Top(id) {
         }        
         static info_none[33];
         info_none = "";
-        for( new i = 0; i < 50; i++ ) {
+        for( new i = 0; i < 10; i++ ) {
 				formatex(topnames[i], 31, info_none);
 				toplevels[i]= 0;
         }
@@ -504,16 +528,16 @@ public concmdReset_Top(id) {
         ColorChat(0, TEAM_COLOR,"^1[^3 %s^1 ] Adminul ^4%s^1 a resetat top-level!",TAG_CHAT,aname);
         return PLUGIN_CONTINUE;
 }
-public checkandupdatetop(id, levels) {        
- 
+public checkandupdatetop(id, levels) {
+	if(!is_user_connected(id))	return
         new name[32];
         get_user_name(id, name, 31);
-        for (new i = 0; i < 50; i++)
+        for (new i = 0; i < 10; i++)
         {
-			if( levels > toplevels[i] )
+	if( levels > toplevels[i] )
                 {
                         new pos = i;        
-                        while( !equal(topnames[pos],name) && pos < 15 )
+                        while( !equal(topnames[pos],name) && pos < 10 )
                         {
                                 pos++;
                         }
@@ -522,7 +546,6 @@ public checkandupdatetop(id, levels) {
                         {
                                 formatex(topnames[j], 31, topnames[j-1]);
                                 toplevels[j] = toplevels[j-1];
-                               
                         }
 								formatex(topnames[i], 31, name);
                        
@@ -541,17 +564,32 @@ public checkandupdatetop(id, levels) {
 						break;        
         }
 }
+public save_top() {
+        new path[128];
+        formatex(path, 127, "%s/LevelTop.dat", Data);
+        if( file_exists(path) ) {
+                delete_file(path);
+        }
+        new Buffer[256];
+        new f = fopen(path, "at");
+        for(new i = 0; i < 10; i++)
+        {
+                formatex(Buffer, 255, "^"%s^" ^"%d^"^n",topnames[i],toplevels[i] );
+                fputs(f, Buffer);
+        }
+        fclose(f);
+}
 public read_top() {
         new Buffer[256],path[128];
         formatex(path, 127, "%s/LevelTop.dat", Data);
        
         new f = fopen(path, "rt" );
         new i = 0;
-        while( !feof(f) && i < 50+1)
+        while( !feof(f) && i < 10+1)
         {
                 fgets(f, Buffer, 255);
                 new lvls[25];
-                parse(Buffer, topnames, 31, lvls, 24);
+                parse(Buffer, topnames[i], 31, lvls, 24);
                 toplevels[i]= str_to_num(lvls);
                 i++;
         }
@@ -561,10 +599,10 @@ public sayTopLevel(id) {
         static buffer[2368], name[131], len, i;
         len = formatex(buffer, 2047, "<body bgcolor=#FFFFFF><table width=100%% cellpadding=2 cellspacing=0 border=0>");
         len += format(buffer[len], 2367-len, "<tr align=center bgcolor=#52697B><th width=10%% > # <th width=45%%> Nume <th width=45%%>Level");
-        for( i = 0; i < 15; i++ ) {            
+        for( i = 0; i < 10; i++ ) {
                 if( toplevels[i] == 0) {
                         len += formatex(buffer[len], 2047-len, "<tr align=center%s><td> %d <td> %s <td> %s",((i%2)==0) ? "" : " bgcolor=#A4BED6", (i+1), "-", "-");
-                        //i = NTOP
+                        //i = 10
                 }
                 else {
                         name = topnames[i];
@@ -582,52 +620,6 @@ public sayTopLevel(id) {
         show_motd(id, buffer, strin);
 }
 
-public GiveExp(index)
-{
-        switch(hnsxp_playerlevel[index])
-        {
-                case 0..10:
-                {
-                        hnsxp_playerxp[index] += 1000;
-                }
- 
-                case 11..20:
-                {
-                        hnsxp_playerxp[index] += 5000;
-                }
-
-                case 21..30:
-                {
-                        hnsxp_playerxp[index] += 15040;
-                }
- 
-                case 31..40:
-                {
-                        hnsxp_playerxp[index] += 25030;
-                }
- 
-                case 41..50:
-                {
-                        hnsxp_playerxp[index] += 45060;
-                }
- 
-                case 51..80:
-                {
-                        hnsxp_playerxp[index] += 150000;
-                }
- 
-                case 81..100:
-                {
-                        hnsxp_playerxp[index] += 1800500;
-                }
- 
-                case 101..150:
-                {
-                        hnsxp_playerxp[index] += 900050600;
-                }
-        }
-}
-
 public ClientUserInfoChanged(id)
 {
         static const name[] = "name"
@@ -639,7 +631,7 @@ public ClientUserInfoChanged(id)
                 if( !equal(szOldName, szNewName) )
                 {
                         set_user_info(id, name, szOldName)
-                        ColorChat(id, TEAM_COLOR,"^1[^3 hNsX.*** Reclama ***.Ro^1 ] Pe acest server nu este permisa schimbarea numelui !");
+                        ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Pe acest server nu este permisa schimbarea numelui !",TAG_CHAT);
                         return FMRES_HANDLED
                 }
         }
@@ -699,9 +691,18 @@ public _set_user_level(plugin, valuex)
         }
         return 1
 }
+
+public hnsxp_spawn(id)
+{
+	if(!is_user_alive(id))	return
+        if(!task_exists(id+69))	set_task(15.0, "gItem", id+69);
+        UpdateLevel(id);
+        checkandupdatetop(id,hnsxp_playerlevel[id]);
+}
  
 public gItem(id)
-{ 
+{
+id-=69
         if(is_user_alive(id))
         {
 new eNtry = find_ent_by_owner ( -1, "weapon_deagle", id );
@@ -803,6 +804,7 @@ ColorChat(id, TEAM_COLOR,"^1[^3%s^1] Ai primit 400gravity pentru 60s avand level
                         }
                 }
 ColorChat(id, TEAM_COLOR,"^1[^3%s^1] Ai primit ITEMELE ( GL & HF )",TAG_CHAT)
+remove_task(id+69)
         }
 }
 
@@ -821,86 +823,125 @@ public client_PostThink(id)
 	}
 }
  
-UpdateLevel(id)
+public UpdateLevel(id)
 {
-        if((hnsxp_playerlevel[id] < 151) && (hnsxp_playerxp[id] >= LEVELS[hnsxp_playerlevel[id]]))
+	if(!is_user_connected(id))	return
+        if(hnsxp_playerlevel[id] < LEVELE)
         {
-                ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Felicitari ai trecut la nivelul urmator !",TAG_CHAT);
-		if(hnsxp_playerlevel[id]>=91&&++mesaj[id]>=1)	ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Nivelul tau iti permite un revive 1/3Runde ( /revive )",TAG_CHAT);
-                new ret;
-                ExecuteForward(xlevel, ret, id);
-                while(hnsxp_playerxp[id] >= LEVELS[hnsxp_playerlevel[id]])
-                {
+		while(hnsxp_playerxp[id] >= LEVELS[hnsxp_playerlevel[id]])
+		{
+			new ret;
+			ExecuteForward(xlevel, ret, id);
                         hnsxp_playerlevel[id] += 1;
-                }
+			if(hnsxp_playerlevel[id]>=91&&++mesaj[id]>=1)	ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Nivelul tau iti permite un revive 1/3Runde ( /revive )",TAG_CHAT);
+			ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Felicitari ai trecut la nivelul urmator !",TAG_CHAT);
+			return
+		}
+
         }
-}
- 
-public hnsxp_spawn(id)
-{
-        set_task(15.0, "gItem", id);
-        UpdateLevel(id);
-        checkandupdatetop(id,hnsxp_playerlevel[id]);
 }
  
 public plvl(id)
 {
-       
-        ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] ^4LVL ^1: ^3%i ^1, ^4XP ^1: ^3%i ^1/ ^3%i ",TAG_CHAT, hnsxp_playerlevel[id], hnsxp_playerxp[id], LEVELS[hnsxp_playerlevel[id]]);
-        return PLUGIN_HANDLED
+	ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] ^4LVL ^1: ^3%d ^1, ^4XP ^1: ^3%d ^1/ ^3%d",TAG_CHAT, hnsxp_playerlevel[id], hnsxp_playerxp[id], LEVELS[hnsxp_playerlevel[id]]);
+	return PLUGIN_HANDLED
 }
  
 public plvls(id)
 {
-        new players[32], playersnum, name[40], motd[1024], len;
+        new players[32], playersnum, name[32], motd[1024], len;
        
         len = formatex(motd, charsmax(motd), "<body bgcolor=black><center><font color=red><b>LEVEL NUME XP<br/>");
-        get_players(players, playersnum);
+        get_players(players, playersnum,"c");
        
         for ( new i = 0 ; i < playersnum ; i++ ) {
                 get_user_name(players[i], name, charsmax(name));
-                len += formatex(motd[len], charsmax(motd) - len, "<br>[%i] %s: %i</b></font></center>",hnsxp_playerlevel[players[i]], name, hnsxp_playerxp[players[i]]);
+                len += formatex(motd[len], charsmax(motd) - len, "<br>[%d] %s: %d",hnsxp_playerlevel[players[i]], name, hnsxp_playerxp[players[i]]);
         }
        
-        formatex(motd[len], charsmax(motd) - len, "</body>");
+        formatex(motd[len], charsmax(motd) - len, "</b></font></center></body>");
         show_motd(id, motd);
         return PLUGIN_HANDLED
-       
-       
 }
 public tlvl(id)
 {
         new poj_Name [ 32 ];
         get_user_name(id, poj_Name, 31)
-        ColorChat(0, TEAM_COLOR,"^1[^3 hNsX.*** Reclama ***.Ro^1 ] Jucatorul ^3%s ^1are nivelul ^4%i",poj_Name, hnsxp_playerlevel[id]);
+        ColorChat(0, TEAM_COLOR,"^1[^3 %s^1 ] Jucatorul ^3%s ^1are nivelul ^4%d",TAG_CHAT,poj_Name, hnsxp_playerlevel[id]);
         return PLUGIN_HANDLED
 }
- 
-public hnsxp_death( iVictim, attacker, shouldgib )
+
+public t_win(id)
 {
+        new iPlayer [ 32 ], iNum;
+        get_players(iPlayer, iNum, "ace", "TERRORIST")
+        for ( new i = 0; i < iNum; i++ ) {
+                hnsxp_playerxp[iPlayer [ i ]] += get_pcvar_num(tero_win);
+                ColorChat(iPlayer[i], TEAM_COLOR,"^1[^3 %s^1 ] Ai primit +%i ^4XP^1 pentru ca echipa ^4TERO^1 a castigat !",TAG_CHAT,get_pcvar_num(tero_win));
+                UpdateLevel(iPlayer[i]);
+                checkandupdatetop(iPlayer[i],hnsxp_playerlevel[iPlayer[i]])
+        }
+}
+ 
+public ev_DeathMsg(  )
+{
+	new attacker = read_data( 1 ),iVictim=read_data(2),headshot=read_data(3);
+
         if( !attacker || attacker == iVictim )
                 return;
-       
-        GiveExp(attacker);
+
+	new szWeapon[ 32 ];
+	read_data( 4, szWeapon, charsmax( szWeapon ) );
+	format( szWeapon, charsmax( szWeapon ), "weapon_%s", szWeapon );
+	if( contain( szWeapon, "nade" ) >= 0 )	szWeapon = "weapon_hegrenade";
+	new iWeapon = get_weaponid( szWeapon );
+
+	new szName[ 32 ];
+	get_user_name( iVictim, szName, sizeof( szName ) -1 );
+
+	if(iWeapon==CSW_KNIFE)
+	{
+		if(headshot)
+		{
+			hnsxp_playerxp[attacker] += get_pcvar_num(hnsxp_hs);
+			ColorChat(attacker, TEAM_COLOR,"^1[^3 %s^1 ] Ai primit +%d XP pentru ca l-ai omorat pe %s cu KNIFE prin HS!", TAG_CHAT, get_pcvar_num(hnsxp_hs), szName);
+		}
+		else
+		{
+			hnsxp_playerxp[attacker] += get_pcvar_num(hnsxp_knife);
+			ColorChat(attacker, TEAM_COLOR,"^1[^3 %s^1 ] Ai primit +%d XP pentru ca l-ai omorat pe %s cu KNIFE!", TAG_CHAT, get_pcvar_num(hnsxp_knife), szName);
+		}
+	}
+	else if(iWeapon==CSW_HEGRENADE)
+	{
+		hnsxp_playerxp[attacker] += get_pcvar_num(hnsxp_grenade);
+		ColorChat(attacker, TEAM_COLOR,"^1[^3 %s^1 ] Ai primit +%d XP pentru ca l-ai omorat pe %s cu HE!", TAG_CHAT, get_pcvar_num(hnsxp_grenade), szName);
+	}
+	else
+	{
+		hnsxp_playerxp[attacker] += get_pcvar_num(hnsxp_kill);
+		ColorChat(attacker, TEAM_COLOR,"^1[^3 %s^1 ] Ai primit +%d XP pentru ca l-ai omorat pe %s!", TAG_CHAT, get_pcvar_num(hnsxp_kill), szName);
+	}
+
+	if(get_user_flags(attacker) & ADMIN_IMMUNITY && get_pcvar_num(vip_enable))
+	{
+		hnsxp_playerxp[attacker] += get_pcvar_num(vip_xp);
+		ColorChat(attacker, TEAM_COLOR,"^1[^3 %s^1 ] Ai primit un bonus de +%d xp pentru ca esti VIP !",TAG_CHAT,get_pcvar_num(vip_xp));
+	}
+
         new ret;
         ExecuteForward(wxp, ret, attacker);
        
-       
         UpdateLevel(attacker);
-        UpdateLevel(iVictim);
-        checkandupdatetop(iVictim,hnsxp_playerlevel[iVictim]);
+        //UpdateLevel(iVictim);
+        //checkandupdatetop(iVictim,hnsxp_playerlevel[iVictim]);
         checkandupdatetop(attacker,hnsxp_playerlevel[attacker]);
- 
-        if(is_user_vip(attacker))
-        {
-                GiveExp(attacker);
-        }
 }
  
 public client_connect(id)
 {
         LoadData(id);
-        checkandupdatetop(id,hnsxp_playerlevel[id])
+        //checkandupdatetop(id,hnsxp_playerlevel[id])
 
 	revive[id]=false
 	count[id]=0
@@ -914,7 +955,7 @@ speed[id]=0
 public client_disconnect(id)
 {
         SaveData(id);
-        checkandupdatetop(id,hnsxp_playerlevel[id])
+        //checkandupdatetop(id,hnsxp_playerlevel[id])
 
 	revive[id]=false
 	count[id]=0
@@ -952,18 +993,6 @@ public LoadData(id)
        
         hnsxp_playerxp[id] = str_to_num(playerxp);
         hnsxp_playerlevel[id] = str_to_num(playerlevel);
-}
- 
-public t_win(id)
-{
-        new iPlayer [ 32 ], iNum;
-        get_players(iPlayer, iNum, "ace", "TERRORIST")
-        for ( new i = 0; i < iNum; i++ ) {
-                GiveExp(iPlayer [ i ]);
-                ColorChat(iPlayer[i], TEAM_COLOR,"^1[^3 hNsX.*** Reclama ***.Ro^1 ] Ai primit ^4XP^1 pentru ca echipa ^4TERO^1 a castigat !");
-                UpdateLevel(iPlayer[i]);
-                checkandupdatetop(iPlayer[i],hnsxp_playerlevel[iPlayer[i]])
-        }
 }
 
 ColorChat(id, Color:type, const msg[], {Float,Sql,Result,_}:...)
@@ -1059,10 +1088,10 @@ ColorSelection(index, type, Color:Type)
                         return Team_Info(index, type, TeamName[0]);
                 }
         }
- 
+
         return 0;
 }
- 
+
 FindPlayer()
 {
         new i = -1;
