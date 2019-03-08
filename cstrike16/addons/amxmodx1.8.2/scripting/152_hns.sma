@@ -1,4 +1,4 @@
-//LAST EDIT - 09/03/2019 01:01
+//LAST EDIT - 09/03/2019 01:39
 
 #include <amxmodx>
 #include <amxmisc>
@@ -287,7 +287,7 @@ public task_PTRFunction( )
 
 public CheckNOOB(id)
 {
-	if(!is_user_alive(id)||hnsxp_playerlevel[id]<91)	return
+	if(is_user_alive(id)||hnsxp_playerlevel[id]<91)	return
 
 	if(revive[id]&&round[id]<3&&start_count[id]&&count [ id ] > 0)
 	{
