@@ -923,7 +923,7 @@ public ev_DeathMsg(  )
 		ColorChat(attacker, TEAM_COLOR,"^1[^3 %s^1 ] Ai primit +%d XP pentru ca l-ai omorat pe %s!", TAG_CHAT, get_pcvar_num(hnsxp_kill), szName);
 	}
 
-	if(get_user_flags(attacker) & ADMIN_IMMUNITY && get_pcvar_num(vip_enable))
+	if(is_user_vip(attacker) && get_pcvar_num(vip_enable)==1)
 	{
 		hnsxp_playerxp[attacker] += get_pcvar_num(vip_xp);
 		ColorChat(attacker, TEAM_COLOR,"^1[^3 %s^1 ] Ai primit un bonus de +%d xp pentru ca esti VIP !",TAG_CHAT,get_pcvar_num(vip_xp));
