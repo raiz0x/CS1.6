@@ -1,4 +1,4 @@
-//LAST EDIT - 09/03/2019 15:56
+//LAST EDIT - 09/03/2019 16:11
 
 #include <amxmodx>
 #include <amxmisc>
@@ -361,7 +361,6 @@ public xp_cmd(id)
         exp = str_to_num(amount)
        
         hnsxp_playerxp[target] = exp
-        checkandupdatetop(target,hnsxp_playerlevel[target])
         UpdateLevel(target)
 
 	get_user_name(target,tname,charsmax(tname))
@@ -397,7 +396,6 @@ public takexp_cmd(id)
         }
        
         hnsxp_playerxp[target] -= exp
-        checkandupdatetop(target,hnsxp_playerlevel[target])
         UpdateLevel(target)
 
 	get_user_name(target,tname,charsmax(tname))
@@ -433,7 +431,6 @@ public level_cmd(id)
         }
        
         hnsxp_playerlevel[target] = exp
-        checkandupdatetop(target,hnsxp_playerlevel[target])
         UpdateLevel(target)
 
 	get_user_name(target,tname,charsmax(tname))
@@ -469,7 +466,6 @@ public takelevel_cmd(id)
         }
        
         hnsxp_playerlevel[target] -= exp
-        checkandupdatetop(target,hnsxp_playerlevel[target])
         UpdateLevel(target)
 
 	get_user_name(target,tname,charsmax(tname))
@@ -670,7 +666,6 @@ public hnsxp_spawn(id)
 	if(!is_user_alive(id))	return
         if(!task_exists(id+69))	set_task(15.0, "gItem", id+69);
         UpdateLevel(id);
-        checkandupdatetop(id,hnsxp_playerlevel[id]);
 }
  
 public gItem(id)
@@ -803,7 +798,7 @@ public client_PostThink(id)
 public UpdateLevel(id)
 {
 	if(!is_user_connected(id))	return
-        if(hnsxp_playerlevel[id] < LEVELE)
+        if((hnsxp_playerlevel[id] < LEVELE&&(hnsxp_playerxp[id] >= LEVELS[hnsxp_playerlevel[id]])))
         {
 		while(hnsxp_playerxp[id] >= LEVELS[hnsxp_playerlevel[id]])
 		{
@@ -812,7 +807,8 @@ public UpdateLevel(id)
                         hnsxp_playerlevel[id] += 1;
 			if(hnsxp_playerlevel[id]>=91&&++mesaj[id]>=1)	ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Nivelul tau iti permite un revive 1/3Runde ( /revive )",TAG_CHAT);
 			ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Felicitari ai trecut la nivelul urmator !",TAG_CHAT);
-			return
+			checkandupdatetop(id,hnsxp_playerlevel[id])
+			//return
 		}
         }
 }
@@ -827,7 +823,7 @@ public plvls(id)
 {
         new players[32], playersnum, name[32], motd[1024], len;
        
-        len = formatex(motd, charsmax(motd), "<body bgcolor=black><center><font color=red><b>LEVEL NUME XP<br/>");
+        len = formatex(motd, charsmax(motd), "<html><head><meta charset=UTF-8></head><body bgcolor=black><center><font color=red><b>LEVEL NUME XP<br/>");
         get_players(players, playersnum,"c");
        
         for ( new i = 0 ; i < playersnum ; i++ ) {
@@ -835,7 +831,7 @@ public plvls(id)
                 len += formatex(motd[len], charsmax(motd) - len, "<br>[%d] %s: %d",hnsxp_playerlevel[players[i]], name, hnsxp_playerxp[players[i]]);
         }
        
-        formatex(motd[len], charsmax(motd) - len, "</b></font></center></body>");
+        formatex(motd[len], charsmax(motd) - len, "</b></font></center></body></head>");
         show_motd(id, motd);
         return PLUGIN_HANDLED
 }
@@ -909,8 +905,6 @@ public ev_DeathMsg(  )
        
         UpdateLevel(attacker);
         //UpdateLevel(iVictim);
-        //checkandupdatetop(iVictim,hnsxp_playerlevel[iVictim]);
-        checkandupdatetop(attacker,hnsxp_playerlevel[attacker]);
 }
  
 public client_connect(id)
