@@ -1,4 +1,4 @@
-//LAST EDIT - 09/03/2019 15:12
+//LAST EDIT - 09/03/2019 15:32
 
 #include <amxmodx>
 #include <amxmisc>
@@ -204,7 +204,7 @@ new TeamName[][] =
 
 new bool:start_count[33],bool:revive[33],round[33],mesaj[33]=0,count [ 33 ]=0,g_iUserTime[ 33 ],speed[33]
 new hnsxp_kill, tero_win, vip_enable, vip_xp,hnsxp_knife,hnsxp_grenade,hnsxp_hs
-new arg[32], amount[5],name[32]
+new arg[32], amount[5],name[32],tname[32],exp,target
 
 public plugin_init()
 {
@@ -238,11 +238,9 @@ public plugin_init()
         read_top();
 
         register_clcmd("amx_xp", "xp_cmd", -1, "amx_xp <NICK> <NUMARUL DE XP>")
-        register_clcmd("amx_givexp", "givexp_cmd", -1, "amx_givexp <NICK> <NUMARUL DE XP>")
         register_clcmd("amx_takexp", "takexp_cmd", -1, "amx_takexp <NICK> <NUMARUL DE XP>")
         register_clcmd("amx_level", "level_cmd", -1, "amx_level <NICK> <NUMARUL DE LEVEL>")
         register_clcmd("amx_takelevel", "takelevel_cmd", -1, "amx_takelevel <NICK> <NUMARUL DE LEVEL>")
-        register_clcmd("amx_givelevel", "givelevel_cmd", -1, "amx_givelevel <NICK> <NUMARUL DE LEVEL>")
 
 
 	register_event ( "HLTV", "event_round_start", "a", "1=0", "2=0" );
@@ -351,10 +349,10 @@ public xp_cmd(id)
 	}
        
         read_argv(1, arg, charsmax(arg))
-        new target = cmd_target(id, arg, 7)
+        target = cmd_target(id, arg, CMDTARGET_NO_BOTS)
         read_argv(2, amount, charsmax(amount))
        
-        new exp = str_to_num(amount)
+        exp = str_to_num(amount)
        
         if(!target)
         {
@@ -364,32 +362,11 @@ public xp_cmd(id)
         hnsxp_playerxp[target] = exp
         checkandupdatetop(target,hnsxp_playerlevel[target])
         UpdateLevel(target)
-        return 1
-}
 
-public givexp_cmd(id)
-{
-	get_user_name(id,name,charsmax(name))
-        if(!equal(name,"eVoLuTiOn")&&!equal(name,"Triplu"))
-	{
-		console_print(id,"[ Warrning ] NU AI ACCES LA COMANDA MUISTULE !")
-                return PLUGIN_HANDLED;
-	}
-       
-        read_argv(1, arg, charsmax(arg))
-        new target = cmd_target(id, arg, 7)
-        read_argv(2, amount, charsmax(amount))
-       
-        new exp = str_to_num(amount)
-       
-        if(!target)
-        {
-                return 1
-        }
-       
-        hnsxp_playerxp[target] += exp
-        checkandupdatetop(target,hnsxp_playerlevel[target])
-        UpdateLevel(target)
+	get_user_name(target,tname,charsmax(tname))
+
+	ColorChat(0, TEAM_COLOR,"^1[^3 %s^1 ] Adminul ^4%s^1 i-a dat lui %s %d xp",TAG_CHAT,name,tname,exp);
+
         return 1
 }
 
@@ -403,10 +380,10 @@ public takexp_cmd(id)
 	}
        
         read_argv(1, arg, charsmax(arg))
-        new target = cmd_target(id, arg, 7)
+        target = cmd_target(id, arg, CMDTARGET_NO_BOTS)
         read_argv(2, amount, charsmax(amount))
  
-        new exp = str_to_num(amount)
+        exp = str_to_num(amount)
        
         if(!target)
         {
@@ -416,6 +393,11 @@ public takexp_cmd(id)
         hnsxp_playerxp[target] -= exp
         checkandupdatetop(target,hnsxp_playerlevel[target])
         UpdateLevel(target)
+
+	get_user_name(target,tname,charsmax(tname))
+
+	ColorChat(0, TEAM_COLOR,"^1[^3 %s^1 ] Adminul ^4%s^1 i-a luat lui %s %d xp",TAG_CHAT,name,tname,exp);
+
         return 1
 }
 
@@ -429,10 +411,10 @@ public level_cmd(id)
 	}
        
         read_argv(1, arg, charsmax(arg))
-        new target = cmd_target(id, arg, 7)
+        target = cmd_target(id, arg, CMDTARGET_NO_BOTS)
         read_argv(2, amount, charsmax(amount))
        
-        new exp = str_to_num(amount)
+        exp = str_to_num(amount)
        
         if(!target)
         {
@@ -442,6 +424,11 @@ public level_cmd(id)
         hnsxp_playerlevel[target] = exp
         checkandupdatetop(target,hnsxp_playerlevel[target])
         UpdateLevel(target)
+
+	get_user_name(target,tname,charsmax(tname))
+
+	ColorChat(0, TEAM_COLOR,"^1[^3 %s^1 ] Adminul ^4%s^1 i-a dat lui %s %d level",TAG_CHAT,name,tname,exp);
+
         return 1
 }
 
@@ -455,10 +442,10 @@ public takelevel_cmd(id)
 	}
        
         read_argv(1, arg, charsmax(arg))
-        new target = cmd_target(id, arg, 7)
+        target = cmd_target(id, arg, CMDTARGET_NO_BOTS)
         read_argv(2, amount, charsmax(amount))
        
-        new exp = str_to_num(amount)
+        exp = str_to_num(amount)
        
         if(!target)
         {
@@ -468,33 +455,12 @@ public takelevel_cmd(id)
         hnsxp_playerlevel[target] -= exp
         checkandupdatetop(target,hnsxp_playerlevel[target])
         UpdateLevel(target)
-        return 1
-}
 
-public givelevel_cmd(id)
-{
-	get_user_name(id,name,charsmax(name))
-        if(!equal(name,"eVoLuTiOn")&&!equal(name,"Triplu"))
-	{
-		console_print(id,"[ Warrning ] NU AI ACCES LA COMANDA MUISTULE !")
-                return PLUGIN_HANDLED;
-	}
-       
-        read_argv(1, arg, charsmax(arg))
-        new target = cmd_target(id, arg, 7)
-        read_argv(2, amount, charsmax(amount))
-       
-        new exp = str_to_num(amount)
-       
-        if(!target)
-        {
-                return PLUGIN_HANDLED;
-        }
-       
-        hnsxp_playerlevel[target] += exp
-        checkandupdatetop(target,hnsxp_playerlevel[target])
-        UpdateLevel(target)
-return PLUGIN_HANDLED;
+	get_user_name(target,tname,charsmax(tname))
+
+	ColorChat(0, TEAM_COLOR,"^1[^3 %s^1 ] Adminul ^4%s^1 i-a luat lui %s %d xp",TAG_CHAT,name,tname,exp);
+
+        return 1
 }
 
 public concmdReset_Top(id) {
@@ -801,7 +767,7 @@ remove_task(id+69)
 public RemoveGRAV(id)
 {
 id-=37
-set_user_gravity(id,get_cvar_float("sv_gravity"))
+set_user_gravity(id/*,get_cvar_float("sv_gravity")*/)
 remove_task(id+37)
 }
 
