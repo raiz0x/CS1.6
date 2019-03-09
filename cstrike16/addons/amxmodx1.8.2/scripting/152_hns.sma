@@ -1,4 +1,4 @@
-//LAST EDIT - 09/03/2019 15:32
+//LAST EDIT - 09/03/2019 15:40
 
 #include <amxmodx>
 #include <amxmisc>
@@ -553,25 +553,25 @@ public read_top() {
         fclose(f);
 }
 public sayTopLevel(id) {       
-        static buffer[2368], name[131], len, i;
-        len = formatex(buffer, 2047, "<body bgcolor=#FFFFFF><table width=100%% cellpadding=2 cellspacing=0 border=0>");
-        len += format(buffer[len], 2367-len, "<tr align=center bgcolor=#52697B><th width=10%% > # <th width=45%%> Nume <th width=45%%>Level");
+        static buffer[2368], namex[131], len, i;
+        len = formatex(buffer, 2047, "<html><head><meta charset=UTF-8></head><body bgcolor=#FFFFFF><table width=100%% cellpadding=2 cellspacing=0 border=0>");
+        len += format(buffer[len], 2367-len, "<tr align=center bgcolor=#52697B><th width=10%% >#<th width=45%%> Nume <th width=45%%>Level");
         for( i = 0; i < 10; i++ ) {
                 if( toplevels[i] == 0) {
-                        len += formatex(buffer[len], 2047-len, "<tr align=center%s><td> %d <td> %s <td> %s",((i%2)==0) ? "" : " bgcolor=#A4BED6", (i+1), "-", "-");
+                        len += formatex(buffer[len], 2047-len, "<tr align=center%s><td> %d<td> %s<td> %s",((i%2)==0) ? "" : " bgcolor=#A4BED6", (i+1), "-", "-");
                         //i = 10
                 }
                 else {
-                        name = topnames[i];
-                        while( containi(name, "<") != -1 )
-                                replace(name, 129, "<", "<");
-                        while( containi(name, ">") != -1 )
-                                replace(name, 129, ">", ">");
-                        len += formatex(buffer[len], 2047-len, "<tr align=center%s><td> %d <td> %s <td> %d",((i%2)==0) ? "" : " bgcolor=#A4BED6", (i+1), name,toplevels[i]);
+                        namex = topnames[i];
+                        while( containi(namex, "<") != -1 )
+                                replace(namex, 129, "<", "<");
+                        while( containi(namex, ">") != -1 )
+                                replace(namex, 129, ">", ">");
+                        len += formatex(buffer[len], 2047-len, "<tr align=center%s><td> %d<td> %s<td> %d",((i%2)==0) ? "" : " bgcolor=#A4BED6", (i+1), namex,toplevels[i]);
                 }
         }
         len += format(buffer[len], 2367-len, "</table>");
-        len += formatex(buffer[len], 2367-len, "<tr align=bottom font-size:11px><Center><br><br><br><br>[hNsX.*** Reclama ***.Ro] by LordOfNothing</body>");
+        len += formatex(buffer[len], 2367-len, "<tr align=bottom font-size:11px><Center><br><br><br><br>[%s] by EVO</body></body>",TAG_NORMAL);
         static strin[20];
         format(strin,33, "Top Level");
         show_motd(id, buffer, strin);
@@ -579,15 +579,15 @@ public sayTopLevel(id) {
 
 public ClientUserInfoChanged(id)
 {
-        static const name[] = "name"
+        static const namexx[] = "name"
         static szOldName[32], szNewName[32]
         pev(id, pev_netname, szOldName, charsmax(szOldName))
         if( szOldName[0] )
         {
-                get_user_info(id, name, szNewName, charsmax(szNewName))
+                get_user_info(id, namexx, szNewName, charsmax(szNewName))
                 if( !equal(szOldName, szNewName) )
                 {
-                        set_user_info(id, name, szOldName)
+                        set_user_info(id, namexx, szOldName)
                         ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Pe acest server nu este permisa schimbarea numelui !",TAG_CHAT);
                         return FMRES_HANDLED
                 }
