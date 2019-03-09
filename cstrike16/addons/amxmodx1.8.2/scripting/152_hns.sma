@@ -1,4 +1,4 @@
-//LAST EDIT - 09/03/2019 15:40
+//LAST EDIT - 09/03/2019 15:56
 
 #include <amxmodx>
 #include <amxmisc>
@@ -12,6 +12,7 @@
 #pragma tabsize 0
 
 #define TAG_CHAT "hNs.PlayArena.Ro"
+#define TAG_NORMAL "hNs.PlayArena.Ro"
 #define LEVELE 151
 
 #define TASK_PTR	06091993
@@ -204,7 +205,7 @@ new TeamName[][] =
 
 new bool:start_count[33],bool:revive[33],round[33],mesaj[33]=0,count [ 33 ]=0,g_iUserTime[ 33 ],speed[33]
 new hnsxp_kill, tero_win, vip_enable, vip_xp,hnsxp_knife,hnsxp_grenade,hnsxp_hs
-new arg[32], amount[5],name[32],tname[32],exp,target
+new arg[32], amount[32],name[32],tname[32],exp,target
 
 public plugin_init()
 {
@@ -349,15 +350,15 @@ public xp_cmd(id)
 	}
        
         read_argv(1, arg, charsmax(arg))
-        target = cmd_target(id, arg, CMDTARGET_NO_BOTS)
         read_argv(2, amount, charsmax(amount))
+	if(equal(arg,"")||equal(amount,""))
+	{
+		console_print(id,"Use: amx_xp <tinta> <xp>")
+		return 1
+	}
+        target = cmd_target(id, arg, CMDTARGET_NO_BOTS)
        
         exp = str_to_num(amount)
-       
-        if(!target)
-        {
-                return 1
-        }
        
         hnsxp_playerxp[target] = exp
         checkandupdatetop(target,hnsxp_playerlevel[target])
@@ -380,8 +381,13 @@ public takexp_cmd(id)
 	}
        
         read_argv(1, arg, charsmax(arg))
-        target = cmd_target(id, arg, CMDTARGET_NO_BOTS)
         read_argv(2, amount, charsmax(amount))
+	if(equal(arg,"")||equal(amount,""))
+	{
+		console_print(id,"Use: amx_takexp <tinta> <xp>")
+		return 1
+	}
+        target = cmd_target(id, arg, CMDTARGET_NO_BOTS)
  
         exp = str_to_num(amount)
        
@@ -411,8 +417,13 @@ public level_cmd(id)
 	}
        
         read_argv(1, arg, charsmax(arg))
-        target = cmd_target(id, arg, CMDTARGET_NO_BOTS)
         read_argv(2, amount, charsmax(amount))
+	if(equal(arg,"")||equal(amount,""))
+	{
+		console_print(id,"Use: amx_level <tinta> <level>")
+		return 1
+	}
+        target = cmd_target(id, arg, CMDTARGET_NO_BOTS)
        
         exp = str_to_num(amount)
        
@@ -442,8 +453,13 @@ public takelevel_cmd(id)
 	}
        
         read_argv(1, arg, charsmax(arg))
-        target = cmd_target(id, arg, CMDTARGET_NO_BOTS)
         read_argv(2, amount, charsmax(amount))
+	if(equal(arg,"")||equal(amount,""))
+	{
+		console_print(id,"Use: amx_takelevel <tinta> <level>")
+		return 1
+	}
+        target = cmd_target(id, arg, CMDTARGET_NO_BOTS)
        
         exp = str_to_num(amount)
        
@@ -836,6 +852,11 @@ public t_win(id)
         new iPlayer [ 32 ], iNum;
         get_players(iPlayer, iNum, "ace", "TERRORIST")
         for ( new i = 0; i < iNum; i++ ) {
+	if(is_user_vip(iPlayer [ i ]) && get_pcvar_num(vip_enable)==1)
+	{
+		hnsxp_playerxp[iPlayer [ i ]] += get_pcvar_num(vip_xp);
+		ColorChat(iPlayer [ i ], TEAM_COLOR,"^1[^3 %s^1 ] Ai primit un bonus de +%d xp pentru ca esti VIP !",TAG_CHAT,get_pcvar_num(vip_xp));
+	}
                 hnsxp_playerxp[iPlayer [ i ]] += get_pcvar_num(tero_win);
                 ColorChat(iPlayer[i], TEAM_COLOR,"^1[^3 %s^1 ] Ai primit +%i ^4XP^1 pentru ca echipa ^4TERO^1 a castigat !",TAG_CHAT,get_pcvar_num(tero_win));
                 //UpdateLevel(iPlayer[i]);
@@ -881,12 +902,6 @@ public ev_DeathMsg(  )
 	{
 		hnsxp_playerxp[attacker] += get_pcvar_num(hnsxp_kill);
 		ColorChat(attacker, TEAM_COLOR,"^1[^3 %s^1 ] Ai primit +%d XP pentru ca l-ai omorat pe %s!", TAG_CHAT, get_pcvar_num(hnsxp_kill), szName);
-	}
-
-	if(is_user_vip(attacker) && get_pcvar_num(vip_enable)==1)
-	{
-		hnsxp_playerxp[attacker] += get_pcvar_num(vip_xp);
-		ColorChat(attacker, TEAM_COLOR,"^1[^3 %s^1 ] Ai primit un bonus de +%d xp pentru ca esti VIP !",TAG_CHAT,get_pcvar_num(vip_xp));
 	}
 
         new ret;
