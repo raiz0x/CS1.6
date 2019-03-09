@@ -1,4 +1,4 @@
-//LAST EDIT - 09/03/2019 01:39
+//LAST EDIT - 09/03/2019 15:12
 
 #include <amxmodx>
 #include <amxmisc>
@@ -204,6 +204,7 @@ new TeamName[][] =
 
 new bool:start_count[33],bool:revive[33],round[33],mesaj[33]=0,count [ 33 ]=0,g_iUserTime[ 33 ],speed[33]
 new hnsxp_kill, tero_win, vip_enable, vip_xp,hnsxp_knife,hnsxp_grenade,hnsxp_hs
+new arg[32], amount[5],name[32]
 
 public plugin_init()
 {
@@ -342,7 +343,6 @@ public event_round_start ( )
  
 public xp_cmd(id)
 {
-	new name[32]
 	get_user_name(id,name,charsmax(name))
         if(!equal(name,"eVoLuTiOn")&&!equal(name,"Triplu"))
 	{
@@ -350,10 +350,9 @@ public xp_cmd(id)
                 return PLUGIN_HANDLED;
 	}
        
-        new arg[33], amount[220]
-        read_argv(1, arg, 32)
+        read_argv(1, arg, charsmax(arg))
         new target = cmd_target(id, arg, 7)
-        read_argv(2, amount, charsmax(amount) - 1)
+        read_argv(2, amount, charsmax(amount))
        
         new exp = str_to_num(amount)
        
@@ -370,7 +369,6 @@ public xp_cmd(id)
 
 public givexp_cmd(id)
 {
-	new name[32]
 	get_user_name(id,name,charsmax(name))
         if(!equal(name,"eVoLuTiOn")&&!equal(name,"Triplu"))
 	{
@@ -378,10 +376,9 @@ public givexp_cmd(id)
                 return PLUGIN_HANDLED;
 	}
        
-        new arg[33], amount[220]
-        read_argv(1, arg, 32)
+        read_argv(1, arg, charsmax(arg))
         new target = cmd_target(id, arg, 7)
-        read_argv(2, amount, charsmax(amount) - 1)
+        read_argv(2, amount, charsmax(amount))
        
         new exp = str_to_num(amount)
        
@@ -398,7 +395,6 @@ public givexp_cmd(id)
 
 public takexp_cmd(id)
 {
-	new name[32]
 	get_user_name(id,name,charsmax(name))
         if(!equal(name,"eVoLuTiOn")&&!equal(name,"Triplu"))
 	{
@@ -406,10 +402,9 @@ public takexp_cmd(id)
                 return PLUGIN_HANDLED;
 	}
        
-        new arg[33], amount[220]
-        read_argv(1, arg, 32)
+        read_argv(1, arg, charsmax(arg))
         new target = cmd_target(id, arg, 7)
-        read_argv(2, amount, charsmax(amount) - 1)
+        read_argv(2, amount, charsmax(amount))
  
         new exp = str_to_num(amount)
        
@@ -420,12 +415,12 @@ public takexp_cmd(id)
        
         hnsxp_playerxp[target] -= exp
         checkandupdatetop(target,hnsxp_playerlevel[target])
+        UpdateLevel(target)
         return 1
 }
 
 public level_cmd(id)
 {
-	new name[32]
 	get_user_name(id,name,charsmax(name))
         if(!equal(name,"eVoLuTiOn")&&!equal(name,"Triplu"))
 	{
@@ -433,10 +428,9 @@ public level_cmd(id)
                 return PLUGIN_HANDLED;
 	}
        
-        new arg[33], amount[220]
-        read_argv(1, arg, 32)
+        read_argv(1, arg, charsmax(arg))
         new target = cmd_target(id, arg, 7)
-        read_argv(2, amount, charsmax(amount) - 1)
+        read_argv(2, amount, charsmax(amount))
        
         new exp = str_to_num(amount)
        
@@ -453,7 +447,6 @@ public level_cmd(id)
 
 public takelevel_cmd(id)
 {
-	new name[32]
 	get_user_name(id,name,charsmax(name))
         if(!equal(name,"eVoLuTiOn")&&!equal(name,"Triplu"))
 	{
@@ -461,10 +454,9 @@ public takelevel_cmd(id)
                 return PLUGIN_HANDLED;
 	}
        
-        new arg[33], amount[220]
-        read_argv(1, arg, 32)
+        read_argv(1, arg, charsmax(arg))
         new target = cmd_target(id, arg, 7)
-        read_argv(2, amount, charsmax(amount) - 1)
+        read_argv(2, amount, charsmax(amount))
        
         new exp = str_to_num(amount)
        
@@ -475,12 +467,12 @@ public takelevel_cmd(id)
        
         hnsxp_playerlevel[target] -= exp
         checkandupdatetop(target,hnsxp_playerlevel[target])
+        UpdateLevel(target)
         return 1
 }
 
 public givelevel_cmd(id)
 {
-	new name[32]
 	get_user_name(id,name,charsmax(name))
         if(!equal(name,"eVoLuTiOn")&&!equal(name,"Triplu"))
 	{
@@ -488,8 +480,7 @@ public givelevel_cmd(id)
                 return PLUGIN_HANDLED;
 	}
        
-        new arg[33], amount[32]
-        read_argv(1, arg, 32)
+        read_argv(1, arg, charsmax(arg))
         new target = cmd_target(id, arg, 7)
         read_argv(2, amount, charsmax(amount))
        
@@ -718,7 +709,6 @@ new eNtry = find_ent_by_owner ( -1, "weapon_deagle", id );
                         case 31..50:
                         {
 				give_item(id, "weapon_deagle")
-                                give_item(id, "weapon_flashbang");
                                 give_item(id, "weapon_smokegrenade");
                                 cs_set_user_bpammo(id, CSW_SMOKEGRENADE, 2);
                                
@@ -776,8 +766,8 @@ give_item(id, "weapon_deagle")
 				speed[id]=2
 				set_user_maxspeed(id,290.0)
                                 cs_set_user_money(id,cs_get_user_money(id)+9)
-set_user_gravity(id,get_cvar_float("sv_gravity")/400.0)
-set_task(30.0,"RemoveGRAV",id)
+set_user_gravity(id,get_cvar_float("sv_gravity")/800.0)
+if(!task_exists(id+37))	set_task(30.0,"RemoveGRAV",id+37)
 //revive[id]=true
 ColorChat(id, TEAM_COLOR,"^1[^3%s^1]  Ai primit 400gravity pentru 30s avand level 90plus",TAG_CHAT)
                         }
@@ -797,8 +787,8 @@ give_item(id, "weapon_deagle")
 				speed[id]=3
 				set_user_maxspeed(id,300.0)
                                 cs_set_user_money(id,cs_get_user_money(id)+9)
-set_user_gravity(id,get_cvar_float("sv_gravity")/400.0)
-set_task(60.0,"RemoveGRAV",id)
+set_user_gravity(id,get_cvar_float("sv_gravity")/800.0)
+if(!task_exists(id+37))	set_task(60.0,"RemoveGRAV",id+37)
 //revive[id]=true
 ColorChat(id, TEAM_COLOR,"^1[^3%s^1] Ai primit 400gravity pentru 60s avand level 100plus",TAG_CHAT)
                         }
@@ -808,7 +798,12 @@ remove_task(id+69)
         }
 }
 
-public RemoveGRAV(id)	set_user_gravity(id,get_cvar_float("sv_gravity")/800.0)
+public RemoveGRAV(id)
+{
+id-=37
+set_user_gravity(id,get_cvar_float("sv_gravity"))
+remove_task(id+37)
+}
 
 public client_PostThink(id)
 {
@@ -837,7 +832,6 @@ public UpdateLevel(id)
 			ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Felicitari ai trecut la nivelul urmator !",TAG_CHAT);
 			return
 		}
-
         }
 }
  
@@ -878,8 +872,8 @@ public t_win(id)
         for ( new i = 0; i < iNum; i++ ) {
                 hnsxp_playerxp[iPlayer [ i ]] += get_pcvar_num(tero_win);
                 ColorChat(iPlayer[i], TEAM_COLOR,"^1[^3 %s^1 ] Ai primit +%i ^4XP^1 pentru ca echipa ^4TERO^1 a castigat !",TAG_CHAT,get_pcvar_num(tero_win));
-                UpdateLevel(iPlayer[i]);
-                checkandupdatetop(iPlayer[i],hnsxp_playerlevel[iPlayer[i]])
+                //UpdateLevel(iPlayer[i]);
+                //checkandupdatetop(iPlayer[i],hnsxp_playerlevel[iPlayer[i]])
         }
 }
  
@@ -950,6 +944,9 @@ public client_connect(id)
 	mesaj[id]=false
 	g_iUserTime[ id ]=0
 speed[id]=0
+
+remove_task(id+69)
+remove_task(id+37)
 }
 
 public client_disconnect(id)
@@ -964,6 +961,9 @@ public client_disconnect(id)
 	mesaj[id]=false
 	g_iUserTime[ id ]=0
 speed[id]=0
+
+remove_task(id+69)
+remove_task(id+37)
 }
 public SaveData(id)
 {
