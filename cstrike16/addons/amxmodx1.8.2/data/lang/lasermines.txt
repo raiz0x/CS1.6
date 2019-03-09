@@ -1,0 +1,39 @@
+[en]
+STR_NOTACTIVE = Lasermines are not currently active.
+STR_NOACCESS = You can't access, this command.
+STR_CBT = Your Zombie! Can't buy and deploying lasermine!
+STR_DONTHAVEMINE = You don't have lasermine.
+STR_CANTBUY = Can't buying this server.
+STR_HAVEMAX = You have a maximum lasermine.
+STR_NOMONEY = You don't have enough money to buy a lasermine! ($
+STR_NEEDED = needed)
+STR_DELAY = You can buying and deploying lasermine in after
+STR_SECONDS = seconds.
+STR_NOROUND = You can't plant lasermines now.
+STR_MAXDEPLOY = Maximum mines have been deployed.
+STR_MANYPPL = Too many ppl on your team...
+STR_PLANTWALL = You must plant the lasermine on a wall!
+STR_REF = Refer to a lasermine rule with this server. say 'lasermine'
+STR_BOUGHT = You bought a lasermine.
+STR_STATE = LaserMines :
+CHATTAG = [Lasermine]
+
+[ro]
+STR_NOTACTIVE = Laserele nu sunt activate.
+STR_NOACCESS = Nu ai acces la aceasta comanda.
+STR_CBT = Esti Zombi! Nu poti cumpara sau planta lasere!
+STR_DONTHAVEMINE = Nu ai nici un laser.
+STR_CANTBUY = Nu poti cumpara lasere.
+STR_HAVEMAX = Ai atins numarul maxim de lasere.
+STR_NOMONEY = Nu ai suficienti bani pentru a cumpara lasere! ($
+STR_NEEDED = needed)
+STR_DELAY = Poti cumpara si planta lasere numai in
+STR_SECONDS = seconde.
+STR_NOROUND = Nu poti planta lasermine acum.
+STR_MAXDEPLOY = Ai plantat numarul maxim de lasere.
+STR_MANYPPL = Echipa ta a plantat prea multe lasere...
+STR_PLANTWALL = Trebuie sa plantezi laserul pe un perete!
+STR_REF = Te referi la lasere, pentru mai multe informatii tasteaza 'lasermine'
+STR_BOUGHT = Ai cumparat un laser.
+STR_STATE = LaserMines :
+CHATTAG = [Lasermine]
