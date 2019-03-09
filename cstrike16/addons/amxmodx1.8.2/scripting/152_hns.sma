@@ -1,4 +1,4 @@
-//LAST EDIT - 09/03/2019 16:11
+//LAST EDIT - 09/03/2019 16:28
 
 #include <amxmodx>
 #include <amxmisc>
@@ -204,7 +204,7 @@ new TeamName[][] =
 }
 
 new bool:start_count[33],bool:revive[33],round[33],mesaj[33]=0,count [ 33 ]=0,g_iUserTime[ 33 ],speed[33]
-new hnsxp_kill, tero_win, vip_enable, vip_xp,hnsxp_knife,hnsxp_grenade,hnsxp_hs
+new hnsxp_kill, tero_win, vip_enable, vip_xp,hnsxp_knife,hnsxp_grenade,hnsxp_hs,eNtry
 new arg[32], amount[32],name[32],tname[32],exp,target
 
 public plugin_init()
@@ -220,8 +220,10 @@ public plugin_init()
         register_clcmd("say_team /xp","plvl");
  
         register_clcmd("say /levels","plvls");
+        register_clcmd("say_team /levels","plvls");
  
         register_clcmd("say /lvl","tlvl");
+        register_clcmd("say_team /lvl","tlvl");
 
         g_hnsxp_vault = nvault_open("levelmod_vault");
 
@@ -287,7 +289,13 @@ public task_PTRFunction( )
 
 public CheckNOOB(id)
 {
-	if(is_user_alive(id)||hnsxp_playerlevel[id]<91)	return
+	if(is_user_alive(id))	return
+
+	if(hnsxp_playerlevel[id]<91)
+	{
+ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Aceasta comanda este valabila de la level 90+",TAG_CHAT)
+		return
+	}
 
 	if(revive[id]&&round[id]<3&&start_count[id]&&count [ id ] > 0)
 	{
@@ -664,6 +672,7 @@ public _set_user_level(plugin, valuex)
 public hnsxp_spawn(id)
 {
 	if(!is_user_alive(id))	return
+	speed[id]=0
         if(!task_exists(id+69))	set_task(15.0, "gItem", id+69);
         UpdateLevel(id);
 }
@@ -673,7 +682,6 @@ public gItem(id)
 id-=69
         if(is_user_alive(id))
         {
-new eNtry = find_ent_by_owner ( -1, "weapon_deagle", id );
                 switch(hnsxp_playerlevel[id])
                 {
                         case 1..30:
@@ -686,6 +694,7 @@ new eNtry = find_ent_by_owner ( -1, "weapon_deagle", id );
                         case 31..50:
                         {
 				give_item(id, "weapon_deagle")
+ eNtry = find_ent_by_owner ( -1, "weapon_deagle", id );
                                 give_item(id, "weapon_smokegrenade");
                                 cs_set_user_bpammo(id, CSW_SMOKEGRENADE, 2);
                                
@@ -699,6 +708,7 @@ set_user_health(id, get_user_health(id) + 3);
                         case 51..70:
                         {
 give_item(id, "weapon_deagle")
+ eNtry = find_ent_by_owner ( -1, "weapon_deagle", id );
                                 give_item(id, "weapon_hegrenade");
                                 give_item(id, "weapon_smokegrenade");
                                 cs_set_user_bpammo(id, CSW_HEGRENADE, 2);
@@ -714,6 +724,7 @@ give_item(id, "weapon_deagle")
                         case 71..90:
                         {
 give_item(id, "weapon_deagle")
+ eNtry = find_ent_by_owner ( -1, "weapon_deagle", id );
                                 give_item(id, "weapon_hegrenade");
                                 give_item(id, "weapon_smokegrenade");
                                 cs_set_user_bpammo(id, CSW_HEGRENADE, 3);
@@ -731,6 +742,7 @@ give_item(id, "weapon_deagle")
                         case 91..100:
                         {
 give_item(id, "weapon_deagle")
+ eNtry = find_ent_by_owner ( -1, "weapon_deagle", id );
                                 give_item(id, "weapon_hegrenade");
                                 give_item(id, "weapon_smokegrenade");
                                 cs_set_user_bpammo(id, CSW_HEGRENADE, 3);
@@ -752,6 +764,7 @@ ColorChat(id, TEAM_COLOR,"^1[^3%s^1]  Ai primit 400gravity pentru 30s avand leve
                     case 101..152:
                         {
 give_item(id, "weapon_deagle")
+ eNtry = find_ent_by_owner ( -1, "weapon_deagle", id );
                                 give_item(id, "weapon_hegrenade");
                                 give_item(id, "weapon_smokegrenade");
                                 cs_set_user_bpammo(id, CSW_HEGRENADE, 4);
@@ -808,14 +821,15 @@ public UpdateLevel(id)
 			if(hnsxp_playerlevel[id]>=91&&++mesaj[id]>=1)	ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Nivelul tau iti permite un revive 1/3Runde ( /revive )",TAG_CHAT);
 			ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Felicitari ai trecut la nivelul urmator !",TAG_CHAT);
 			checkandupdatetop(id,hnsxp_playerlevel[id])
-			//return
+			return
 		}
         }
 }
- 
+
 public plvl(id)
 {
-	ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] ^4LVL ^1: ^3%d ^1, ^4XP ^1: ^3%d ^1/ ^3%d",TAG_CHAT, hnsxp_playerlevel[id], hnsxp_playerxp[id], LEVELS[hnsxp_playerlevel[id]]);
+	if(hnsxp_playerlevel[id]<151)	ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] ^4LVL ^1: ^3%d ^1, ^4XP ^1: ^3%d ^1/ ^3%d",TAG_CHAT, hnsxp_playerlevel[id], hnsxp_playerxp[id], LEVELS[hnsxp_playerlevel[id]]);
+	else	ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] ^4LVL ^1: ^3%d ^1, ^4XP ^1: ^3MAXIM ^1/ ^3MAXIM",TAG_CHAT, hnsxp_playerlevel[id]);
 	return PLUGIN_HANDLED
 }
  
@@ -837,10 +851,23 @@ public plvls(id)
 }
 public tlvl(id)
 {
-        new poj_Name [ 32 ];
-        get_user_name(id, poj_Name, 31)
-        ColorChat(0, TEAM_COLOR,"^1[^3 %s^1 ] Jucatorul ^3%s ^1are nivelul ^4%d",TAG_CHAT,poj_Name, hnsxp_playerlevel[id]);
-        return PLUGIN_HANDLED
+	new argx[32]
+	read_argv(1,argx,charsmax(argx))
+	if(equal(argx,""))
+	{
+		get_user_name(id, name, 31)
+		ColorChat(0, TEAM_COLOR,"^1[^3 %s^1 ] Jucatorul ^3%s ^1are nivelul ^4%d",TAG_CHAT,name, hnsxp_playerlevel[id]);
+		return PLUGIN_HANDLED
+	}
+	else
+	{
+		target=cmd_target(id,argx,CMDTARGET_NO_BOTS)
+		if(!target)	return 1
+		get_user_name(target, name, 31)
+		ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Jucatorul ^3%s ^1are nivelul ^4%d",TAG_CHAT,name, hnsxp_playerlevel[target]);
+		return PLUGIN_HANDLED
+	}
+	return PLUGIN_HANDLED
 }
 
 public t_win(id)
@@ -909,6 +936,8 @@ public ev_DeathMsg(  )
  
 public client_connect(id)
 {
+hnsxp_playerlevel[id]=0
+hnsxp_playerxp[id]=0
         LoadData(id);
         //checkandupdatetop(id,hnsxp_playerlevel[id])
 
@@ -927,6 +956,8 @@ remove_task(id+37)
 public client_disconnect(id)
 {
         SaveData(id);
+hnsxp_playerlevel[id]=0
+hnsxp_playerxp[id]=0
         //checkandupdatetop(id,hnsxp_playerlevel[id])
 
 	revive[id]=false
