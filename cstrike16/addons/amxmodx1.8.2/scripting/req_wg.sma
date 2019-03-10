@@ -21,7 +21,7 @@ public client_connect(id)   hascan[id] = false;
 
 public hook_say ( id )
 {
-   new szSaid[ 192 ];
+   new szSaid[ 195 ],text[512]
    read_args( szSaid, sizeof( szSaid ) -1 );
    remove_quotes( szSaid );
     
@@ -57,6 +57,8 @@ public hook_say ( id )
          ColorChat(0, GREEN, "%s^x03 Link download ^x04www.wargods.ro/wcd/download.php", TAG);
          if(is_user_alive(player))   user_silentkill(player)
          cs_set_user_team(player,CS_TEAM_SPECTATOR)
+	 formatex(text,charsmax(text),"%s %s Adminul %s i-a cerut o scanare WG jucatorului %s",TAG,timer,get_name(id),get_name(player))
+	 write_file("addons/amxmodx/logs/wg.txt",text,-1)
       }
       else
       {
