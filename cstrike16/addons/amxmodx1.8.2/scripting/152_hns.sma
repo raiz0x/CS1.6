@@ -1,4 +1,4 @@
-//LAST EDIT - 10/03/2019 13:50
+//LAST EDIT - 10/03/2019 15:31
 
 #include <amxmodx>
 #include <amxmisc>
@@ -124,59 +124,60 @@ new const LEVELS[LEVELE] =
         20000000000, // 100
         20000100000, // 101
         20000110000, // 102
-        20000130000,
-        20000134000,
-        20000135000,
-        20000136000,
-        20000138000,
-        20000139000,
-        20000113000,
-        20000213000,
-        20000313000,
-        20000413000,
-        20000513000,
-        20000613000,
-        20000713000,
-        20000813000,
-        20000913000,
-        20001113000,
-        20002113000,
-        20003113000,
-        20004113000,
-        20005113000,
-        20006113000,
-        20007113000,
-        20008113000,
-        20009113000,
-        20011113000,
-        20021113000,
-        20031113000,
-        20041113000,
-        20051113000,
-        20061113000,
-        20071113000,
-        20081113000,
-        20091113000,
-        20101113000,
-        20201113000,
-        20301113000,
-        20401113000,
-        20501113000,
-        20601113000,
-        20701113000,
-        20901113000,
-        21101113000,
-        22101113000,
-        23101113000,
-        24101113000,
-        25101113000,
-        26101113000,
-        27101113000,
+        20000130000, // 103
+        20000134000, // 104
+        20000135000, // 105
+        20000136000, // 106
+        20000138000, // 107
+        20000139000, // 108
+        20000113000, // 109
+        20000213000, // 110
+        20000313000, // 111
+        20000413000, // 112
+        20000513000, // 113
+        20000613000, // 114
+        20000713000, // 115
+        20000813000, // 116
+        20000913000, // 117
+        20001113000, // 118
+        20002113000, // 119
+        20003113000, // 120
+        20004113000, // 121
+        20005113000, // 122
+        20006113000, // 123
+        20007113000, // 124
+        20008113000, // 125
+        20009113000, // 126
+        20011113000, // 127
+        20021113000, // 128
+        20031113000, // 129
+        20041113000, // 130
+        20051113000, // 131
+        20061113000, // 132
+        20071113000, // 133
+        20081113000, // 134
+        20091113000, // 135
+        20101113000, // 136
+        20201113000, // 137
+        20301113000, // 138
+        20401113000, // 139
+        20501113000, // 140
+        20601113000, // 141
+        20701113000, // 142
+        20901113000, // 143
+        21101113000, // 144
+        22101113000, // 145
+        23101113000, // 146
+        24101113000, // 147
+        25101113000, // 148
+        26101113000, // 149
+        27101113000, // 150
         30000000000//151
 }
 
 new hnsxp_playerxp[33], hnsxp_playerlevel[33];
-new g_hnsxp_vault, wxp, xlevel;
+new g_hnsxp_vault
+//new wxp, xlevel;
 
 #define is_user_vip(%1)         ( get_user_flags(%1) & ADMIN_IMMUNITY )
 
@@ -222,15 +223,16 @@ public plugin_init()
         register_clcmd("say /levels","plvls");
         register_clcmd("say_team /levels","plvls");
  
-        register_clcmd("say /lvl","tlvl");
-        register_clcmd("say_team /lvl","tlvl");
+        register_clcmd("lvl","tlvl");
+	register_clcmd( "say", "ClCmdSay" );
+	register_clcmd( "say_team", "ClCmdSay" );
 
         g_hnsxp_vault = nvault_open("levelmod_vault");
 
         register_event("SendAudio", "t_win", "a", "2&%!MRAD_terwin")
  
-        xlevel = CreateMultiForward("PlayerMakeNextLevel", ET_IGNORE, FP_CELL);
-        wxp = CreateMultiForward("PlayerIsHookXp", ET_IGNORE, FP_CELL);
+        //xlevel = CreateMultiForward("PlayerMakeNextLevel", ET_IGNORE, FP_CELL);
+        //wxp = CreateMultiForward("PlayerIsHookXp", ET_IGNORE, FP_CELL);
         register_forward(FM_ClientUserInfoChanged, "ClientUserInfoChanged")
        
         register_clcmd("say /toplevel","sayTopLevel");
@@ -240,6 +242,7 @@ public plugin_init()
         get_datadir(Data, 63);
         read_top();
 
+	//execute forward in ele
         register_clcmd("amx_xp", "xp_cmd", -1, "amx_xp <NICK> <NUMARUL DE XP>")
         register_clcmd("amx_takexp", "takexp_cmd", -1, "amx_takexp <NICK> <NUMARUL DE XP>")
         register_clcmd("amx_level", "level_cmd", -1, "amx_level <NICK> <NUMARUL DE LEVEL>")
@@ -367,8 +370,9 @@ public xp_cmd(id)
         target = cmd_target(id, arg, CMDTARGET_NO_BOTS)
        
         exp = str_to_num(amount)
-       
-        hnsxp_playerxp[target] += exp
+
+        hnsxp_playerxp[target] = exp
+	//SaveData(target)
         UpdateLevel(target)
 
 	get_user_name(target,tname,charsmax(tname))
@@ -438,7 +442,7 @@ public level_cmd(id)
                 return 1
         }
        
-        hnsxp_playerlevel[target] += exp
+        hnsxp_playerlevel[target] = exp
         UpdateLevel(target)
 
 	get_user_name(target,tname,charsmax(tname))
@@ -662,7 +666,7 @@ public _set_user_level(plugin, valuex)
 
 public hnsxp_spawn(id)
 {
-	if(!is_user_alive(id))	return
+	if(!is_user_alive(id)||hnsxp_playerlevel[id]<=0)	return
 	speed[id]=0
         if(!task_exists(id+69))	set_task(15.0, "gItem", id+69);
         UpdateLevel(id);
@@ -803,34 +807,32 @@ public client_PostThink(id)
 public UpdateLevel(id)
 {
 	if(!is_user_connected(id))	return PLUGIN_HANDLED
-        /*if((hnsxp_playerlevel[id] < LEVELE&&(hnsxp_playerxp[id] >= LEVELS[hnsxp_playerlevel[id]])))
+        if(hnsxp_playerlevel[id] < LEVELE)
         {
 		while(hnsxp_playerxp[id] >= LEVELS[hnsxp_playerlevel[id]])
 		{
-			new ret;
-			ExecuteForward(xlevel, ret, id);
-                        hnsxp_playerlevel[id] ++;
-			if(hnsxp_playerlevel[id]>=91&&++mesaj[id]>=1)	ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Nivelul tau iti permite un revive 1/3Runde ( /revive )",TAG_CHAT);
-			ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Felicitari ai trecut la nivelul urmator !",TAG_CHAT);
-			checkandupdatetop(id,hnsxp_playerlevel[id])
-			return
-		}
-        }*/
+			//new ret;
+			//ExecuteForward(xlevel, ret, id);
 
-        if(hnsxp_playerlevel[id] <= LEVELE)
-        {
-		if(hnsxp_playerxp[id] >= LEVELS[hnsxp_playerlevel[id]])//while
-		{
-			new ret;
-			ExecuteForward(xlevel, ret, id);
-                        hnsxp_playerlevel[id] ++;
-			if(hnsxp_playerlevel[id]>=91&&++mesaj[id]>=1)	ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Nivelul tau iti permite un revive 1/3Runde ( /revive )",TAG_CHAT);
-			ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Felicitari ai trecut la nivelul urmator !",TAG_CHAT);
-			checkandupdatetop(id,hnsxp_playerlevel[id])
-			//return
+	//new xpx = hnsxp_playerlevel[ id ] * 10;
+	//hnsxp_playerxp[id] = hnsxp_playerxp[id] + ( value + xpx );
+
+                        hnsxp_playerlevel[id] ++
+			if(task_exists(id+45))	set_task(1.5,"INFO",id+45)
+			//break
 		}
         }
 	return PLUGIN_HANDLED
+}
+
+public INFO(id)
+{
+id-=45
+			ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Felicitari ai trecut la nivelul %d !",TAG_CHAT,hnsxp_playerlevel[id]);
+			if(hnsxp_playerlevel[id]>=91&&++mesaj[id]>=1)	ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Nivelul tau iti permite un revive 1/3Runde ( /revive )",TAG_CHAT);
+			checkandupdatetop(id,hnsxp_playerlevel[id])
+remove_task(id+45)
+return PLUGIN_HANDLED
 }
 
 public plvl(id)
@@ -855,6 +857,28 @@ public plvls(id)
         formatex(motd[len], charsmax(motd) - len, "</b></font></center></body></head>");
         show_motd(id, motd);
         return PLUGIN_HANDLED
+}
+
+public ClCmdSay( id )
+{
+	static szArgs[ 192 ];
+	read_args( szArgs, sizeof ( szArgs ) -1 );
+
+	if( !szArgs[ 0 ] )
+		return 0;
+
+	new szCommand[ 192 ];
+	remove_quotes( szArgs );
+
+	if( equal( szArgs, "/lvl", strlen( "/lvl" ) ) )
+	{
+		replace( szArgs, sizeof ( szArgs ) -1, "/", "" );
+		formatex( szCommand, sizeof ( szCommand ) -1, szArgs );
+		client_cmd( id, szCommand );
+		return 1;
+	}
+
+	return 0;
 }
 public tlvl(id)
 {
@@ -934,8 +958,8 @@ public ev_DeathMsg(  )
 		ColorChat(attacker, TEAM_COLOR,"^1[^3 %s^1 ] Ai primit +%d XP pentru ca l-ai omorat pe %s!", TAG_CHAT, get_pcvar_num(hnsxp_kill), szName);
 	}
 
-        new ret;
-        ExecuteForward(wxp, ret, attacker);
+        //new ret;
+        //ExecuteForward(wxp, ret, attacker);
        
         UpdateLevel(attacker);
         //UpdateLevel(iVictim);
@@ -958,6 +982,7 @@ speed[id]=0
 
 remove_task(id+69)
 remove_task(id+37)
+remove_task(id+45)
 }
 
 public client_disconnect(id)
@@ -977,6 +1002,7 @@ speed[id]=0
 
 remove_task(id+69)
 remove_task(id+37)
+remove_task(id+45)
 }
 public SaveData(id)
 {
