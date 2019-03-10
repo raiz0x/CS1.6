@@ -1,4 +1,4 @@
-//LAST EDIT - 10/03/2019 13:20
+//LAST EDIT - 10/03/2019 13:50
 
 #include <amxmodx>
 #include <amxmisc>
@@ -646,13 +646,12 @@ public _set_user_xp(plugin, value)
 public _set_user_level(plugin, valuex)
 {
         new id = get_param(1)
- 
+
         if(is_user_connected(id))
         {
                 hnsxp_playerlevel[id] = valuex;
                 return 0
         }
- 
         else
         {
                 log_error(AMX_ERR_NATIVE,"User %d is not connected !",id)
@@ -803,8 +802,8 @@ public client_PostThink(id)
  
 public UpdateLevel(id)
 {
-	if(!is_user_connected(id))	return
-        if((hnsxp_playerlevel[id] < LEVELE&&(hnsxp_playerxp[id] >= LEVELS[hnsxp_playerlevel[id]])))
+	if(!is_user_connected(id))	return PLUGIN_HANDLED
+        /*if((hnsxp_playerlevel[id] < LEVELE&&(hnsxp_playerxp[id] >= LEVELS[hnsxp_playerlevel[id]])))
         {
 		while(hnsxp_playerxp[id] >= LEVELS[hnsxp_playerlevel[id]])
 		{
@@ -816,7 +815,22 @@ public UpdateLevel(id)
 			checkandupdatetop(id,hnsxp_playerlevel[id])
 			return
 		}
+        }*/
+
+        if(hnsxp_playerlevel[id] <= LEVELE)
+        {
+		if(hnsxp_playerxp[id] >= LEVELS[hnsxp_playerlevel[id]])//while
+		{
+			new ret;
+			ExecuteForward(xlevel, ret, id);
+                        hnsxp_playerlevel[id] ++;
+			if(hnsxp_playerlevel[id]>=91&&++mesaj[id]>=1)	ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Nivelul tau iti permite un revive 1/3Runde ( /revive )",TAG_CHAT);
+			ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Felicitari ai trecut la nivelul urmator !",TAG_CHAT);
+			checkandupdatetop(id,hnsxp_playerlevel[id])
+			//return
+		}
         }
+	return PLUGIN_HANDLED
 }
 
 public plvl(id)
@@ -1101,3 +1115,5 @@ FindPlayer()
  
         return -1;
 }
+
+public plugin_end()	nvault_close(g_hnsxp_vault)
