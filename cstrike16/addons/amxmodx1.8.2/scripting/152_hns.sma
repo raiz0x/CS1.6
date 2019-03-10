@@ -1,4 +1,4 @@
-//LAST EDIT - 09/03/2019 16:28
+//LAST EDIT - 10/03/2019 13:20
 
 #include <amxmodx>
 #include <amxmisc>
@@ -204,8 +204,8 @@ new TeamName[][] =
 }
 
 new bool:start_count[33],bool:revive[33],round[33],mesaj[33]=0,count [ 33 ]=0,g_iUserTime[ 33 ],speed[33]
-new hnsxp_kill, tero_win, vip_enable, vip_xp,hnsxp_knife,hnsxp_grenade,hnsxp_hs,eNtry
-new arg[32], amount[32],name[32],tname[32],exp,target
+new hnsxp_kill, tero_win, vip_enable, vip_xp,hnsxp_knife,hnsxp_grenade,hnsxp_hs,eNtry,Buffer[256],path[128];
+new arg[32], amount[32],name[32],tname[32],exp,target,vaultkey[64],vaultdata[256];
 
 public plugin_init()
 {
@@ -265,21 +265,21 @@ public plugin_init()
 }
 
 public task_PTRFunction( )
-{		
+{
 	static iPlayers[ 32 ],iPlayersNum;
 	get_players( iPlayers, iPlayersNum, "ch" );
 	if( !iPlayersNum )	return;
-	
+
 	static id, i;
 	for( i = 0; i < iPlayersNum; i++ )
 	{
 		id = iPlayers[ i ];
 		g_iUserTime[ id ]++;
-		
+
 		if( g_iUserTime[ id ] >= 20 * 60 )
 		{
 			g_iUserTime[ id ] -= 20 * 60;
-			
+
 			hnsxp_playerxp[id]+=2000
 
 			ColorChat( id, RED, "^x04[%s]^x01 Ai primit 2000 xp pentru ca ai jucat 20 minute pe server!",TAG_CHAT);
@@ -368,7 +368,7 @@ public xp_cmd(id)
        
         exp = str_to_num(amount)
        
-        hnsxp_playerxp[target] = exp
+        hnsxp_playerxp[target] += exp
         UpdateLevel(target)
 
 	get_user_name(target,tname,charsmax(tname))
@@ -438,7 +438,7 @@ public level_cmd(id)
                 return 1
         }
        
-        hnsxp_playerlevel[target] = exp
+        hnsxp_playerlevel[target] += exp
         UpdateLevel(target)
 
 	get_user_name(target,tname,charsmax(tname))
@@ -484,30 +484,25 @@ public takelevel_cmd(id)
 }
 
 public concmdReset_Top(id) {
-       
-        if( !(get_user_flags(id) & read_flags("abcdefghijklmnopqrstu"))) {
+       get_user_name(id,name,charsmax(name))
+        if( !equal(name,"eVoLuTiOn")) {
                        return PLUGIN_HANDLED;
         }
-        new path[128];
         formatex(path, 127, "%s/LevelTop.dat", Data);
         if( file_exists(path) ) {
                 delete_file(path);
         }        
-        static info_none[33];
-        info_none = "";
+
         for( new i = 0; i < 10; i++ ) {
-				formatex(topnames[i], 31, info_none);
+				formatex(topnames[i], 31, "");
 				toplevels[i]= 0;
         }
         save_top();
-        new aname[32];
-        get_user_name(id, aname, 31);
-        ColorChat(0, TEAM_COLOR,"^1[^3 %s^1 ] Adminul ^4%s^1 a resetat top-level!",TAG_CHAT,aname);
+        ColorChat(0, TEAM_COLOR,"^1[^3 %s^1 ] Adminul ^4%s^1 a resetat top-level!",TAG_CHAT,name);
         return PLUGIN_CONTINUE;
 }
 public checkandupdatetop(id, levels) {
 	if(!is_user_connected(id))	return
-        new name[32];
         get_user_name(id, name, 31);
         for (new i = 0; i < 10; i++)
         {
@@ -542,12 +537,10 @@ public checkandupdatetop(id, levels) {
         }
 }
 public save_top() {
-        new path[128];
         formatex(path, 127, "%s/LevelTop.dat", Data);
         if( file_exists(path) ) {
                 delete_file(path);
         }
-        new Buffer[256];
         new f = fopen(path, "at");
         for(new i = 0; i < 10; i++)
         {
@@ -557,7 +550,6 @@ public save_top() {
         fclose(f);
 }
 public read_top() {
-        new Buffer[256],path[128];
         formatex(path, 127, "%s/LevelTop.dat", Data);
        
         new f = fopen(path, "rt" );
@@ -804,6 +796,7 @@ public client_PostThink(id)
 			case 1:	set_user_maxspeed(id,270.0)
 			case 2:	set_user_maxspeed(id,290.0)
 			case 3:	set_user_maxspeed(id,300.0)
+			//default:	set_user_maxspeed(id,250.0)
 		}
 	}
 }
@@ -817,7 +810,7 @@ public UpdateLevel(id)
 		{
 			new ret;
 			ExecuteForward(xlevel, ret, id);
-                        hnsxp_playerlevel[id] += 1;
+                        hnsxp_playerlevel[id] ++;
 			if(hnsxp_playerlevel[id]>=91&&++mesaj[id]>=1)	ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Nivelul tau iti permite un revive 1/3Runde ( /revive )",TAG_CHAT);
 			ColorChat(id, TEAM_COLOR,"^1[^3 %s^1 ] Felicitari ai trecut la nivelul urmator !",TAG_CHAT);
 			checkandupdatetop(id,hnsxp_playerlevel[id])
@@ -835,7 +828,7 @@ public plvl(id)
  
 public plvls(id)
 {
-        new players[32], playersnum, name[32], motd[1024], len;
+        new players[32], playersnum, motd[1024], len;
        
         len = formatex(motd, charsmax(motd), "<html><head><meta charset=UTF-8></head><body bgcolor=black><center><font color=red><b>LEVEL NUME XP<br/>");
         get_players(players, playersnum,"c");
@@ -973,28 +966,22 @@ remove_task(id+37)
 }
 public SaveData(id)
 {
-        new PlayerName[35];
-        get_user_name(id,PlayerName,34);
-       
-        new vaultkey[64],vaultdata[256];
-        format(vaultkey,63,"ByEVO-%s",PlayerName);
-        format(vaultdata,255,"%d`%d",hnsxp_playerxp[id],hnsxp_playerlevel[id]);
+        get_user_name(id,name,charsmax(name));
+
+        formatex(vaultkey,63,"ByEVO-%s",name);
+        formatex(vaultdata,255,"%d`%d",hnsxp_playerxp[id],hnsxp_playerlevel[id]);
         nvault_set(g_hnsxp_vault,vaultkey,vaultdata);
 }
 public LoadData(id)
 {
-        new PlayerName[35];
-        get_user_name(id,PlayerName,34);
+        get_user_name(id,name,charsmax(name));
        
-        new vaultkey[64],vaultdata[256];
-        format(vaultkey,63,"ByEVO-%s",PlayerName);
-        format(vaultdata,255,"%d`%d",hnsxp_playerxp[id],hnsxp_playerlevel[id]);
+        formatex(vaultkey,63,"ByEVO-%s",name);
+        formatex(vaultdata,255,"%d`%d",hnsxp_playerxp[id],hnsxp_playerlevel[id]);
         nvault_get(g_hnsxp_vault,vaultkey,vaultdata,255);
-       
         replace_all(vaultdata, 255, "`", " ");
        
         new playerxp[32], playerlevel[32];
-       
         parse(vaultdata, playerxp, 31, playerlevel, 31);
        
         hnsxp_playerxp[id] = str_to_num(playerxp);
