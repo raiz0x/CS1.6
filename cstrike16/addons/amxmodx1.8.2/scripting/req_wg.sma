@@ -8,7 +8,7 @@
 #pragma tabsize 0
 
 new bool: hascan[33],admin
-new const TAG[] = "[www.cs2.ro/forum]"
+#define TAG "[www.cs2.ro/forum]"
 
 public plugin_init() {
    register_plugin("WarGods Cerere", "1.0", "DanN");
@@ -25,7 +25,7 @@ public hook_say ( id )
    read_args( szSaid, sizeof( szSaid ) -1 );
    remove_quotes( szSaid );
     
-   if( contain( szSaid, "/wg" ) != -1 )
+   if( containi( szSaid, "/wg" ) != -1 )
    {
       if(!is_user_admin(id))   return PLUGIN_HANDLED
       
@@ -37,8 +37,7 @@ public hook_say ( id )
          return PLUGIN_HANDLED
       }
       
-      new player = cmd_target( id, target, 2 );
-      
+      new player = cmd_target( id, target, CMDTARGET_NO_BOTS );
       if(hascan[player])
       {
          ColorChat( id, GREEN, "%s^x03 Jucatorului^x04 [%s]^x03 i s-a cerut deja o scanare wargods, de catre adminul ^x04[%s].", TAG, get_name(player), get_name(admin));
@@ -58,14 +57,13 @@ public hook_say ( id )
          if(is_user_alive(player))   user_silentkill(player)
          cs_set_user_team(player,CS_TEAM_SPECTATOR)
 	 formatex(text,charsmax(text),"%s %s Adminul %s i-a cerut o scanare WG jucatorului %s",TAG,timer,get_name(id),get_name(player))
-	 write_file("addons/amxmodx/logs/wg.txt",text,-1)
+	 write_file("/addons/amxmodx/logs/wg.ini",text,-1)
       }
       else
       {
          ColorChat(id, GREEN, "%s Jucatorul specificat nu exista.", TAG);
          return PLUGIN_HANDLED
       }
-
       return PLUGIN_HANDLED;
    }
    return PLUGIN_CONTINUE;
@@ -73,7 +71,7 @@ public hook_say ( id )
       
 stock get_name ( id ) {
    new name [ 32 ] ;
-   get_user_name ( id, name, 31 );
+   get_user_name ( id, name, charsmax(name) );
    
    return name;
 }
