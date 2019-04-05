@@ -1,4 +1,4 @@
-//	LAST EDIT ON >>>	05.04.2019 19:40
+//	LAST EDIT ON >>>	05.04.2019 19:52
 
 #pragma dynamic 32768
 
@@ -453,7 +453,7 @@ remove_quotes( szArgs );
 }
 
 
-ClCmdFcsDonate( id, target[], amnt[] )
+stock ClCmdFcsDonate( id, target[], amnt[] )
 {
 	if( equal(amnt,"") )
 	{
@@ -2883,14 +2883,11 @@ static szData[ 256 ]
 	{
 		static szCredits[ 15 ],szLevel[32];
 
-		replace_all(szData, 255, "#", " ");
-
 		parse( szData, szCredits, sizeof ( szCredits ) -1,szLevel,charsmax(szLevel) );
 
 		g_iUserCredits[ id ] = str_to_num( szCredits );
 
 		Level[id]=str_to_num(szLevel)
-		return;
 	}
 	else
 	{
@@ -2901,9 +2898,9 @@ static szData[ 256 ]
 	nvault_close( iVault );
 #else
 	new szLevel[ 65 ], szXp[ 65 ]
-	if( fvault_get_data(g_VAULTNAME, g_szName[ id ], data, charsmax(data) ) )
+	if( fvault_get_data(g_VAULTNAME, g_szName[ id ], szData, charsmax(szData) ) )
 	{
-		strbreak( data, szLevel, charsmax(szLevel ), szXp, charsmax(szXp ) );
+		strbreak( szData, szLevel, charsmax(szLevel ), szXp, charsmax(szXp ) );
 		
 		g_iUserCredits[ id ] = str_to_num( szLevel );
 		Level[id] = str_to_num( szXp );
