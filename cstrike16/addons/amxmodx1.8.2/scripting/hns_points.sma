@@ -1,4 +1,4 @@
-//	LAST EDIT ON >>>	10.03.2019 19:04
+//	LAST EDIT ON >>>	05.04.2019 19:36
 
 #pragma dynamic 32768
 
@@ -1081,7 +1081,10 @@ set_user_flags(id,read_flags("ak"))
 
 	if(dayx+14>28)
 	{
-		dayx=28-dayx<=0?01:dayx
+		dayx=28-dayx<=0?1:dayx//01
+	}
+	else dayx=dayx+14
+
 		if(monthx+1>12)
 		{
 			//kkt="01"
@@ -1094,8 +1097,6 @@ set_user_flags(id,read_flags("ak"))
 			//else	formatex(kkt,charsmax(kkt),monthx)
 			*/
 		}
-	}
-	else dayx=dayx+14
 
 	/*if(is_user_admin(id))
 	{
@@ -1104,8 +1105,8 @@ set_user_flags(id,read_flags("ak"))
 	}
 	else	kkt="p"*/
 
-	formatex(text,charsmax(text),"^"%s^" ^"%s^" ^"p^" ^"ak^" ^"0^" ^"%d.%d.%d^"", g_szName[id], szPassword,dayx,monthx,yearx)
-	write_file("addons/amxmodx/configs/users_custom.ini",text,-1)
+	formatex(text,charsmax(text),"^"%s^" ^"%s^" ^"p^" ^"ak^" ^"1^" ^"%d.%d.%d^"", g_szName[id], szPassword,dayx,monthx,yearx)
+	write_file("addons/amxmodx/configs/users_custom.ini",text)
 
 	log_to_file("buy_vips.log", "%s bought VIP. Password, Is %s", g_szName[id], szPassword);
 	LoadAdmins();
@@ -1222,8 +1223,8 @@ public client_disconnect( id )
 	
 	SaveCredits( id );
 
-	g_iUserCredits[id]=0
-	Level[id]=0
+	//g_iUserCredits[id]=0
+	//Level[id]=0
 
 	
 	return PLUGIN_CONTINUE;
@@ -2868,6 +2869,7 @@ stock IsLeapYear( const iYear )
 
 public LoadCredits( id )
 {
+static szData[ 256 ]
 #if !defined FVAULT
 	iVault  =  nvault_open(  "HnsPointsSystem"  );
 	
@@ -2876,7 +2878,7 @@ public LoadCredits( id )
 		set_fail_state(  "nValut returned invalid handle!"  );
 	}
 	
-	static szData[ 256 ],  iTimestamp;
+	static iTimestamp;
 	if(  nvault_lookup( iVault, g_szName[ id ], szData, sizeof ( szData ) -1, iTimestamp ) )
 	{
 		static szCredits[ 15 ],szLevel[32];
@@ -2898,27 +2900,24 @@ public LoadCredits( id )
 	
 	nvault_close( iVault );
 #else
-	new data[ 256 ], szLevel[ 32 ], szXp[ 32 ]
-	if( fvault_get_data(g_VAULTNAME, g_szName[ id ], data, sizeof( data ) - 1 ) )
+	new szLevel[ 65 ], szXp[ 65 ]
+	if( fvault_get_data(g_VAULTNAME, g_szName[ id ], data, charsmax(data) ) )
 	{
-		strbreak( data, szLevel, sizeof( szLevel ) - 1, szXp, sizeof( szXp ) - 1 );
+		strbreak( data, szLevel, charsmax(szLevel ), szXp, charsmax(szXp ) );
 		
 		g_iUserCredits[ id ] = str_to_num( szLevel );
 		Level[id] = str_to_num( szXp );
-
-return
 	}
 	else
 	{
 		g_iUserCredits[ id ]=50
 		Level[id]=1
-
-return
 	}
 #endif
 }
 public SaveCredits(  id  )
 {
+static szData[ 256 ]
 #if !defined FVAULT
 	iVault  =  nvault_open(  "HnsPointsSystem"  );
 	
@@ -2927,17 +2926,13 @@ public SaveCredits(  id  )
 		set_fail_state(  "nValut returned invalid handle!"  );
 	}
 	
-	static szData[ 256 ];
-	formatex( szData, sizeof ( szData ) -1, "%i#%i#", g_iUserCredits[ id ],Level[id] );
+	formatex( szData, sizeof ( szData ) -1, "%d %d", g_iUserCredits[ id ],Level[id] );
 	
 	nvault_set( iVault, g_szName[ id ], szData );
 	nvault_close( iVault );
 #else
-	new szData[ 256 ];
-	formatex( szData, sizeof ( szData ) -1, "%d %d",g_iUserCredits[ id ],Level[id] );
+	formatex( szData, charsmax ( szData ), "%d %d",g_iUserCredits[ id ],Level[id] );
 	fvault_set_data(g_VAULTNAME, g_szName[ id ], szData );
-
-	return
 #endif
 }
 
