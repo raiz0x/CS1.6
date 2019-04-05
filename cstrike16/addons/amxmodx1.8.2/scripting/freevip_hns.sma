@@ -1,12 +1,11 @@
-//	LAST EDIT ON - 05.04.2019 & 20:03
+//	LAST EDIT ON - 05.04.2019 & 20:26
 
 #include <amxmodx>
 #include <amxmisc>
 #include <cstrike>
 #include <fun>
-#include <engine>
 #include <hamsandwich>
-#include <colorchat>
+//#include <colorchat>
 
 new bool:vip_free,bool:has_godmode[33],bool:has_gravity[33],bool:has_speed[33],Float:Gravity
 const KEYSMENU = MENU_KEY_1|MENU_KEY_2|MENU_KEY_3|MENU_KEY_4|MENU_KEY_5|MENU_KEY_6|MENU_KEY_7|MENU_KEY_8|MENU_KEY_9|MENU_KEY_0
@@ -53,7 +52,7 @@ public check_time( )
 	}
 }
 
-public round_start ( )
+/*public round_start ( )
 {
 	new iPlayers [ 32 ], iNum, i;
 	get_players ( iPlayers, iNum, "ch" );
@@ -73,7 +72,7 @@ public round_start ( )
 			scout [ id ] = 0;
 		}
 	}
-}
+}*/
 
 public ham_SpawnPlayerPost(id)
 {
