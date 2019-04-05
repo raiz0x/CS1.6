@@ -1,4 +1,4 @@
-//	LAST EDIT ON - 05.04.2019 & 20:26
+//	LAST EDIT ON - 05.04.2019 & 20:27
 
 #include <amxmodx>
 #include <amxmisc>
@@ -22,8 +22,13 @@ public plugin_init()
 	//register_logevent ( "round_start", 2, "1=Round_Start" );
 }
 
-/*public client_putinserver(id)	scout[id]=0
-public client_disconnected(id)	scout[id]=0*/
+public client_disconnected(id)
+{
+	//scout[id]=0
+	has_speed[id]=false
+	has_godmode[id]=false
+	has_gravity[id]=false
+}
 
 public check_time( )
 {
