@@ -1,4 +1,4 @@
-//	LAST EDIT ON >>>	05.04.2019 19:36
+//	LAST EDIT ON >>>	05.04.2019 19:40
 
 #pragma dynamic 32768
 
@@ -443,11 +443,11 @@ remove_quotes( szArgs );
 
 
 
-	if( equali( arg1, "/transfer",8) )
+	/*if( equal( arg1, "/transfer") )
 	{
 		ClCmdFcsDonate(id,arg2,arg3)
 		return 1;
-}
+}*/
 
 	return PLUGIN_CONTINUE;
 }
