@@ -1,3 +1,5 @@
+//	LAST EDIT ON - 05.04.2019 & 20:03
+
 #include <amxmodx>
 #include <amxmisc>
 #include <cstrike>
@@ -6,8 +8,9 @@
 #include <hamsandwich>
 #include <colorchat>
 
-new bool:vip_free,bool:has_godmode[33],bool:has_gravity[33],bool:has_speed[33],Float:Gravity,scout[33]=0
+new bool:vip_free,bool:has_godmode[33],bool:has_gravity[33],bool:has_speed[33],Float:Gravity
 const KEYSMENU = MENU_KEY_1|MENU_KEY_2|MENU_KEY_3|MENU_KEY_4|MENU_KEY_5|MENU_KEY_6|MENU_KEY_7|MENU_KEY_8|MENU_KEY_9|MENU_KEY_0
+//new scout[33]=0
 
 public plugin_init()
 {
@@ -16,22 +19,23 @@ public plugin_init()
 	register_menu("Game Menu", KEYSMENU, "radio")
 	register_event("CurWeapon" , "CWeapon" , "be" , "1=1" );
 	RegisterHam( Ham_Spawn, "player", "ham_SpawnPlayerPost", true );
-	register_logevent ( "round_start", 2, "1=Round_Start" );
+
+	//register_logevent ( "round_start", 2, "1=Round_Start" );
 }
 
-public client_putinserver(id)	scout[id]=0
-public client_disconnected(id)	scout[id]=0
+/*public client_putinserver(id)	scout[id]=0
+public client_disconnected(id)	scout[id]=0*/
 
 public check_time( )
 {
 	new o, m, s;
 	time(o, m, s)
 
-	if( o >= 19 && o < 24 )
+	if( o >= 18 && o <= 24 )
 	{
 		if( !vip_free )
 		{
-			xCoLoR(0, "!v[!nFREE-VIP!v]!n Fiind trecut de ora!e 19:00!n, toti jucatorii conectati au primit acces!v *V.I.P*!n, pana la ora!e 00:00!n !");
+			xCoLoR(0, "!v[!nFREE-VIP!v]!n Fiind trecut de ora!e 18:00!n, toti jucatorii conectati au primit acces!v *V.I.P*!n, pana la ora!e 00:00!n !");
 		}
 		vip_free = true;
 		//server_cmd( "amx_default_access ^"bt^"" );
@@ -41,7 +45,7 @@ public check_time( )
 	{
 		if( vip_free )
 		{
-			xCoLoR(0, "!v[!nFREE-VIP!v]!n Fiind trecut de ora!e 00:00!n, eventul!v *V.I.P*!n, a luat!e Sfarsit!n, si va reincepe la ora!v 19:00!n !");
+			xCoLoR(0, "!v[!nFREE-VIP!v]!n Fiind trecut de ora!e 00:00!n, eventul!v *V.I.P*!n, a luat!e Sfarsit!n, si va reincepe la ora!v 18:00!n !");
 		}
 		vip_free = false;
 		//server_cmd( "amx_default_access ^"z^"" );
@@ -90,11 +94,11 @@ public ShowMenu(id)
 	//   new len = formatex( menu, 255, "\r[\yHNS.PLAY-ARENA.RO\r] \w- Invizibilitate \y[\rFPS\y]^n^n" );
 	
 	len += formatex(menu[len], charsmax(menu) - len, "\w[\r HNS.PLAY-ARENA.RO\w -\r FREE V.I.P \w]^n^n") 
-	len += formatex(menu[len], charsmax(menu) - len, "\w-\r[\w1\r]\w -\r Scout [\w3\r] [\wGL\r]^n") 
-	len += formatex(menu[len], charsmax(menu) - len, "\w-\r[\w2\r]\w -\r GodMode [\w5\r] [\wSEC\r]^n") 
-	len += formatex(menu[len], charsmax(menu) - len, "\w-\r[\w3\r]\w -\r Gravity [\w400\r] [\w30\r] [\wSEC\r]^n") 
-	len += formatex(menu[len], charsmax(menu) - len, "\w-\r[\w4\r]\w -\r Speed [\w300\r] [\w30\r] [\wSEC\r]^n") 
-	len += formatex(menu[len], charsmax(menu) - len, "\w-\r[\w5\r]\w -\r Medic [\w15$\r]^n^n") 
+	//len += formatex(menu[len], charsmax(menu) - len, "\w-\r[\w1\r]\w -\r Scout [\w3\r] [\wGL\r]^n") 
+	len += formatex(menu[len], charsmax(menu) - len, "\w-\r[\w1\r]\w -\r GodMode [\w5\r] [\wSEC\r]^n") 
+	len += formatex(menu[len], charsmax(menu) - len, "\w-\r[\w2\r]\w -\r Gravity [\w400\r] [\w30\r] [\wSEC\r]^n") 
+	len += formatex(menu[len], charsmax(menu) - len, "\w-\r[\w3\r]\w -\r Speed [\w300\r] [\w30\r] [\wSEC\r]^n") 
+	len += formatex(menu[len], charsmax(menu) - len, "\w-\r[\w4\r]\w -\r Medic [\w15$\r]^n^n") 
 	
     /*len += formatex( menu[len], 255 - len, "^n\r0. \yIesire" );
     show_menu( id, ( 1<<0 | 1<<1 | 1<<9 ), menu, -1 );*/
@@ -107,7 +111,7 @@ public radio ( id , key )
 {
 	switch ( key )
 	{
-		case 0:
+		/*case 0:
 		{
 			if(!is_user_alive(id))
 			{
@@ -132,9 +136,9 @@ public radio ( id , key )
 				scout[id]=3
 				xCoLoR(id,"!v[HnS.Play-Arena.Ro]!n Ai primit!e Scout!n cu!v 3GL")
 			}
-		}
+		}*/
 
-		case 1:
+		case 0:
 		{
 			if(!is_user_alive(id))
 			{
@@ -156,7 +160,7 @@ public radio ( id , key )
 			}
 		}
 		
-		case 2:
+		case 1:
 		{
 			if(!is_user_alive(id))
 			{
@@ -179,7 +183,7 @@ public radio ( id , key )
 			}
 		}
 		
-		case 3:
+		case 2:
 		{
 			if(!is_user_alive(id))
 			{
@@ -201,7 +205,7 @@ public radio ( id , key )
 			}
 		}
 		
-		case 4:
+		case 3:
 		{
 			if(!is_user_alive(id))
 			{
@@ -279,17 +283,15 @@ stock xCoLoR( const id, const input[ ], any:... )
 		players[ 0 ] = id;
 	}
 	
-	else get_players( players, count, "ch" );
+	else get_players( players, count, "c" );
+	for( new i = 0; i < count; i++ )
 	{
-		for( new i = 0; i < count; i++ )
+		if( is_user_connected( players[ i ] ) )
 		{
-			if( is_user_connected( players[ i ] ) )
-			{
-				message_begin( MSG_ONE_UNRELIABLE, get_user_msgid( "SayText" ), _, players[ i ] );
-				write_byte( players[ i ] );
-				write_string( msg );
-				message_end( );
-			}
+			message_begin( MSG_ONE_UNRELIABLE, get_user_msgid( "SayText" ), _, players[ i ] );
+			write_byte( players[ i ] );
+			write_string( msg );
+			message_end( );
 		}
 	}
 }
