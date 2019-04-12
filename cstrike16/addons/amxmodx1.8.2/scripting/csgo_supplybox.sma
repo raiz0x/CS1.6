@@ -56,12 +56,13 @@
 	native csgor_is_user_logged(id);
 
 
+	/* Model cadou */
+	#define MODEL_CUTIE "models/cutie.mdl"
+
+
 	/* Extras din Super Spawns */ 
 	#define SS_MIN_DISTANCE 500.0
 	#define SS_MAX_LOOPS 100000
-
-	/* Model cadou */
-	#define MODEL_CUTIE "models/cutie.mdl"
 
 	new Array:g_vecSsOrigins;
 	new Array:g_vecSsSpawns;
@@ -72,58 +73,80 @@
 	new const g_szStarts[ ][ ] = { "info_player_start", "info_player_deathmatch" };
 	new const Float:g_flOffsets[ ] = { 3500.0, 3500.0, 1500.0 };
 
+/*
+// Floats
+new Float:fMaxs[ 3 ]  =  {  13.0, 13.0, 35.0  };
+new Float:fMins[ 3 ]  =  {  -13.0, -13.0, 0.0  };
+*/
+
+
 	new pcvar_respawn_time, pcvar_presents_on_map;
+
+	public plugin_precache( )
+	{
+		engfunc( EngFunc_PrecacheModel, MODEL_CUTIE );
+
+		pcvar_presents_on_map = register_cvar( "presents_on_map", "4" );
+	}
 
 	public plugin_init( )
 	{
 		register_plugin( "XMAS GIFTS", "2.3.2", "KronoS" );
 
+
 	// Eventuri
-		register_event( "HLTV", "spawn_gifts", "a", "1=0", "2=0" );
+		//register_event( "HLTV", "spawn_gifts", "a", "1=0", "2=0" );
 		RegisterHam( Ham_Killed, "player", "client_death", 1 );
 		register_forward( FM_Touch, "forward_touch" );
 
+
 	// Cvar-uri
 		pcvar_respawn_time = register_cvar( "presents_respawn_time", "90.0" );
-		pcvar_presents_on_map = register_cvar( "presents_on_map", "4" );
 		//NOI
-		register_cvar("box_chei","1");
-		register_cvar("box_cutii","1");
-		register_cvar("box_pulbere","1");
-		register_cvar("box_bani","333");
-		register_cvar("box_skin_max","80");
+			register_cvar("box_chei","1");
+			register_cvar("box_cutii","1");
+			register_cvar("box_pulbere","1");
+			register_cvar("box_bani","333");
+			register_cvar("box_skin_max","80");
+
 
 		SsInit( 800.0 );
 		SsScan( );
+
 		XGIFTS_Spawn( );
 	}
 
-	public plugin_precache( )	engfunc( EngFunc_PrecacheModel, MODEL_CUTIE );
 
 	public spawn_gifts( )	XGIFTS_Spawn( );
 
+
 	public XGIFTS_Spawn( )
 	{
-		new Float:fOrigin[ 3 ];
-		for ( new i = 0; i < get_pcvar_num( pcvar_presents_on_map ); i++ )	if ( SsGetOrigin( fOrigin ) ) XGIFTS_Create( fOrigin );
+		new Float:fOrigin[ 3 ];//xxx
+		for( new i = 1; i <= get_pcvar_num( pcvar_presents_on_map ); i++ )	if ( SsGetOrigin( fOrigin ) ) XGIFTS_Create( fOrigin );
 	}
 
 	public XGIFTS_Create( const Float:fOrigin[ 3 ] )
 	{
+		//create
 		new ent = engfunc( EngFunc_CreateNamedEntity, engfunc( EngFunc_AllocString, "info_target" ) );
 
 		if ( pev_valid( ent ) )
 		{
-			engfunc( EngFunc_SetModel, ent, MODEL_CUTIE );
+			set_pev( ent, pev_classname, "csgo_supplybox" );
+
 			engfunc( EngFunc_SetOrigin, ent, fOrigin );
+			engfunc( EngFunc_SetModel, ent, MODEL_CUTIE );
+			//entity_set_int(  ent, EV_INT_movetype, MOVETYPE_NONE  );
+			set_pev( ent, pev_solid, SOLID_BBOX );
 			static Float:fMaxs[ 3 ] = { 2.0, 2.0, 4.0 };
 			static Float:fMins[ 3 ] = { -2.0, -2.0, -4.0 };
-			set_pev( ent, pev_solid, SOLID_BBOX );
 			engfunc( EngFunc_SetSize, ent, fMins, fMaxs );
-			engfunc( EngFunc_DropToFloor, ent );
 
-			set_pev( ent, pev_classname, "csgo_supplybox" );
+			engfunc( EngFunc_DropToFloor, ent );
+			//drop_to_floor(  ent  );
 		}
+		//return 1;
 	}
 
 	public XGIFTS_Respawn( iOrigin[ ] )
@@ -138,25 +161,31 @@
 
 		set_hudmessage(255, 165, 0, 0.02, 0.73, 0, 6.0, 5.0,0.1,0.2,-1);
 		show_hudmessage(0,"Tocmai a fost aruncata o cutie pe mapa!^nCautati-o pentru a afla ce ascunde.");
+
+		return 0;
 	}
 
-	public forward_touch( ent, id )
+	public forward_touch( const ent, const id )
 	{
-		if ( !pev_valid( ent ) )	return FMRES_IGNORED;
+		if ( !pev_valid( ent )||!is_user_alive( id )/*||!( 1 <= id <= 32 )*/ )	return FMRES_IGNORED;
 
 		static class[ 20 ];
 		pev( ent, pev_classname, class, sizeof class - 1 );
-		if ( !equal( class, "csgo_supplybox" )||!is_user_alive( id ) ) return FMRES_IGNORED;
+		if ( !equal( class, "csgo_supplybox" ) ) return FMRES_IGNORED;
 
 		set_pev( ent, pev_solid, SOLID_NOT );
 		set_pev( ent, pev_effects, EF_NODRAW );
 
 		if ( get_pcvar_float( pcvar_respawn_time ) > 0.0 )
-		{ 
+		{
+			//new iParm[ 3 ];
 			new Float:flOrigin[ 3 ], iOrigin[ 3 ];
 			entity_get_vector( ent, EV_VEC_origin, flOrigin );
 			FVecIVec( flOrigin, iOrigin );
-			set_task( get_pcvar_float( pcvar_respawn_time ), "XGIFTS_Respawn", _, iOrigin, 3 );
+			/*iParm[ 0 ] = iOrigin[ 0 ];
+			iParm[ 1 ] = iOrigin[ 1 ];
+			iParm[ 2 ] = iOrigin[ 2 ];*/
+			set_task( get_pcvar_float( pcvar_respawn_time ), "XGIFTS_Respawn", _, /*iParm*/iOrigin, 3 );
 		} 
 
 		switch ( random_num( 0, 4 ) )
@@ -215,7 +244,8 @@
 			}
 			case 4: Bani(id);
 		}
-		return FMRES_IGNORED;
+		//remove_entity( ent );
+		return FMRES_IGNORED;//0
 	}
 
 	public Bani(id)
@@ -246,17 +276,17 @@
 		new Float:data[3], size;
 		new ok = 1;
 
-		while ( ( size = ArraySize( g_vecSsOrigins ) ) )
+		while( ( size = ArraySize( g_vecSsOrigins ) ) )
 		{
 			new idx = random_num( 0, size - 1 );
 			ArrayGetArray( g_vecSsOrigins, idx, origin );
 
 			new used = ArraySize( g_vecSsUsed );
-			for ( new i = 0; i < used; i++ )
+			for( new i = 0; i < used; i++ )
 			{
 				ok = 0;
 				ArrayGetArray( g_vecSsUsed, i, data );
-				if ( get_distance_f( data, origin ) >= g_flSsMinDist )
+				if( get_distance_f( data, origin ) >= g_flSsMinDist )
 				{
 					ok = 1;
 					break;
@@ -280,12 +310,12 @@
 		new start, Float:origin[ 3 ], starttime;
 		starttime = get_systime( );
 
-		for ( start = 0; start < sizeof( g_szStarts ); start++ )
+		for( start = 0; start < sizeof( g_szStarts ); start++ )
 		{
 			server_print( "Searching for %s", g_szStarts[ start ] );
 
 			new ent;
-			if ( ( ent = engfunc( EngFunc_FindEntityByString, ent, "classname", g_szStarts[ start ] ) ) )
+			if( ( ent = engfunc( EngFunc_FindEntityByString, ent, "classname", g_szStarts[ start ] ) ) )
 			{
 				new counter;
 
@@ -303,9 +333,9 @@
 	GetLocation( Float:start[ 3 ], &counter )
 	{
 		new Float:end[ 3 ];
-		for ( new i = 0; i < 3; i++ ) end[ i ] += random_float( 0.0 - g_flOffsets[ i ], g_flOffsets[ i ] );
+		for( new i = 0; i < 3; i++ ) end[ i ] += random_float( 0.0 - g_flOffsets[ i ], g_flOffsets[ i ] );
 
-		if ( IsValid( start, end ) )
+		if( IsValid( start, end ) )
 		{
 			start[ 0 ] = end[ 0 ];
 			start[ 1 ] = end[ 1 ];
@@ -324,7 +354,7 @@
 		SetFloor( end );
 		end[ 2 ] += 36.0;
 		new point = engfunc( EngFunc_PointContents, end );
-		if ( point == CONTENTS_EMPTY ) if ( CheckPoints( end ) && CheckDistance( end ) && CheckVisibility( start, end ) ) if ( !trace_hull( end, HULL_LARGE, -1 ) ) return true;
+		if( point == CONTENTS_EMPTY ) if ( CheckPoints( end ) && CheckDistance( end ) && CheckVisibility( start, end ) ) if ( !trace_hull( end, HULL_LARGE, -1 ) ) return true;
 
 		return false;
 	}
@@ -343,7 +373,6 @@
 		end[ 0 ] = start[ 0 ];
 		end[ 1 ] = start[ 1 ];
 		end[ 2 ] = -99999.9;
-
 		engfunc( EngFunc_TraceLine, start, end, DONT_IGNORE_MONSTERS, -1, tr );
 		get_tr2( tr, TR_vecEndPos, start );
 	}
@@ -377,19 +406,19 @@
 		new Float:dist, Float:data[ 3 ];
 
 		new count = ArraySize( g_vecSsSpawns );
-		for ( new i = 0; i < count; i++ ) 
+		for( new i = 0; i < count; i++ ) 
 		{
 			ArrayGetArray( g_vecSsSpawns, i, data );
 			dist = get_distance_f( origin, data );
-			if ( dist < SS_MIN_DISTANCE ) return false;
+			if( dist < SS_MIN_DISTANCE ) return false;
 		}
 
 		count = ArraySize( g_vecSsOrigins );
-		for ( new i = 0; i < count; i++ )
+		for( new i = 0; i < count; i++ )
 		{
 			ArrayGetArray( g_vecSsOrigins, i, data );
 			dist = get_distance_f( origin, data );
-			if ( dist < SS_MIN_DISTANCE ) return false;
+			if( dist < SS_MIN_DISTANCE ) return false;
 		}
 
 		return true;
