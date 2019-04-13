@@ -125,7 +125,7 @@
 	public XGIFTS_Spawn( )
 	{
 		new Float: fOrigin[ 3 ];//xxx
-		for( new i = 0; i <= get_pcvar_num( pcvar_presents_on_map ); i++ )	if ( SsGetOrigin( fOrigin ) ) XGIFTS_Create( fOrigin );
+		for( new i; i < get_pcvar_num( pcvar_presents_on_map ); i++ )	if( SsGetOrigin( fOrigin ) )	XGIFTS_Create( fOrigin );
 	}
 
 	public XGIFTS_Create( const Float:fOrigin[ 3 ] )
