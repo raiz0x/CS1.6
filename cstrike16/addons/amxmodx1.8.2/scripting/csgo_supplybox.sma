@@ -1,3 +1,5 @@
+	// LAST EDIT ON - 14.04.2019 & 23:08
+	
 	/* 
 	Plugin: Xmas Gifts 2.3.2 
 	Autor: KronoS # GG 
@@ -42,28 +44,18 @@
 	#include < hamsandwich >
 	#include < engine >
 	#include < fakemeta >
+	#include <csgo_remake>
 
 	#pragma tabsize 0
 
-	native csgor_get_user_keys(id);
-	native csgor_set_user_keys(id,amount);
-	native csgor_get_user_dusts(id);
-	native csgor_set_user_dusts(id,amount);
-	native csgor_get_user_cases(id);
-	native csgor_set_user_cases(id,amount);
-	//native csgor_get_user_skins(id,amount)
-	native csgor_set_user_skins(id,skinid,amount);
-	native csgor_is_user_logged(id);
 	new const g_szFmuGiftClassName[ ] = "csgo_supplybox";
-
 
 	/* Model cadou */
 	#define MODEL_CUTIE "models/cutie.mdl"
 
-
 	/* Super-Spawns */ 
 	#define SS_VERSION "1.0"
-	#define SS_MIN_DISTANCE 250.0
+	#define SS_MIN_DISTANCE 500.0
 	#define SS_MAX_LOOPS 100000
 
 	new Array:g_vecSsOrigins;
@@ -75,10 +67,6 @@
 	new const g_szStarts[ ][ ] = { "info_player_start", "info_player_deathmatch" };
 	new const Float:g_flOffsets[ ] = { 3500.0, 3500.0, 1500.0 };
 
-	// Floats
-	static Float:fMaxs[ 3 ] = { 13.0, 13.0, 35.0 };
-	static Float:fMins[ 3 ] = { -13.0, -13.0, 0.0 };
-
 
 	new pcvar_respawn_time, pcvar_presents_on_map;
 
@@ -86,7 +74,7 @@
 	{
 		// Cvar-uri
 		pcvar_presents_on_map = register_cvar( "presents_on_map", "4" );
-		pcvar_respawn_time = register_cvar( "presents_respawn_time", "90" );//90
+		pcvar_respawn_time = register_cvar( "presents_respawn_time", "90" );
 	
 		precache_model( MODEL_CUTIE );
 	}
@@ -98,9 +86,8 @@
 
 	// Eventuri
 		//register_event( "HLTV", "spawn_gifts", "a", "1=0", "2=0" );
-		//register_logevent("spawn_gifts", 2, "1=Round_Start")
-		//register_forward( FM_Touch, "forward_touchX" );
-		register_touch( g_szFmuGiftClassName, "player", "forward_touchX" );
+		register_logevent("spawn_gifts", 2, "0=World triggered", "1=Round_Start")
+		register_forward( FM_Touch, "forward_touch" );
 
 
 		//NOI
@@ -123,30 +110,34 @@
 
 	public XGIFTS_Spawn( )
 	{
-		new Float: fOrigin[ 3 ];//xxx
-		for( new i = 1; i <= get_pcvar_num( pcvar_presents_on_map ); i++ )	if( SsGetOrigin( fOrigin ) )	XGIFTS_Create( fOrigin );
+		new Float:fOrigin[ 3 ];
+		for( new i = 0; i < get_pcvar_num( pcvar_presents_on_map ); i++ )	if( SsGetOrigin( fOrigin ) )	XGIFTS_Create( fOrigin );
 	}
 
 	public XGIFTS_Create( const Float:fOrigin[ 3 ] )
 	{
-		//create
-		new ent = create_entity( "info_target" );	//engfunc( EngFunc_CreateNamedEntity, engfunc( EngFunc_AllocString, "info_target" ) );
-		if( !is_valid_ent( ent ) ) return 0;
-		
-		//if ( pev_valid( ent ) )
-		//{
-			entity_set_string( ent, EV_SZ_classname, g_szFmuGiftClassName );
+		new ent = engfunc( EngFunc_CreateNamedEntity, engfunc( EngFunc_AllocString, "info_target" ) ); 
 
-			entity_set_origin( ent, fOrigin );
-			entity_set_model( ent, MODEL_CUTIE );
-			entity_set_int( ent, EV_INT_movetype, MOVETYPE_NONE  );
-			entity_set_int( ent, EV_INT_solid, SOLID_BBOX );
-			entity_set_size( ent, fMins, fMaxs );
+		if( pev_valid( ent ) )
+		{
+			engfunc( EngFunc_SetModel, ent, MODEL_CUTIE );
+			engfunc( EngFunc_SetOrigin, ent, fOrigin );
+			static Float:fMaxs[ 3 ] = { 2.0, 2.0, 4.0 };
+			static Float:fMins[ 3 ] = { -2.0, -2.0, -4.0 };
+			set_pev( ent, pev_solid, SOLID_BBOX );
+			engfunc( EngFunc_SetSize, ent, fMins, fMaxs );
+			engfunc( EngFunc_DropToFloor, ent );
 
-			//engfunc( EngFunc_DropToFloor, ent );
-			drop_to_floor( ent );
-		//}
-		return 1;
+			set_pev( ent, pev_classname, g_szFmuGiftClassName );
+			
+				set_rendering( ent,
+			kRenderFxGlowShell,
+			255,
+			0,
+			0,
+			kRenderNormal,
+			255 );
+		}
 	}
 
 	public XGIFTS_Respawn( iOrigin[ ] )
@@ -159,33 +150,28 @@
 		IVecFVec( auxOrigin, fOrigin );
 		XGIFTS_Create( fOrigin );
 
-		client_print(0,print_chat,"Tocmai a fost aruncata o cutie pe mapa!^nCautati-o pentru a afla ce ascunde.");
+		client_print(0,print_chat,"Tocmai a fost aruncata o cutie pe mapa!Cautati-o pentru a afla ce ascunde.");
 
 		return 0;
 	}
 
-	public forward_touchX( const ent, const id )
+	public forward_touch( ent, id )
 	{
-		/*if ( !pev_valid( ent )||!is_user_alive( id ) )	return FMRES_IGNORED;
+		if ( !pev_valid( ent )||!is_user_alive( id ) )	return FMRES_IGNORED;
 
 		static class[ 35 ];
 		pev( ent, pev_classname, class, sizeof class - 1 );
-		if ( !equal( class, "csgo_supplybox" ) ) return FMRES_IGNORED;
+		if ( !equal( class, g_szFmuGiftClassName ) ) return FMRES_IGNORED;
 
 		set_pev( ent, pev_solid, SOLID_NOT );
-		set_pev( ent, pev_effects, EF_NODRAW );*/
-		if( is_valid_ent( ent ) && ( 1 <= id <= 32 ) && is_user_alive( id ) )
-		{
+		set_pev( ent, pev_effects, EF_NODRAW );
+
 		if ( get_pcvar_float( pcvar_respawn_time ) > 0.0 )
 		{
-			new iParm[ 3 ];
 			new Float:flOrigin[ 3 ], iOrigin[ 3 ];
 			entity_get_vector( ent, EV_VEC_origin, flOrigin );
 			FVecIVec( flOrigin, iOrigin );
-			iParm[ 0 ] = iOrigin[ 0 ];
-			iParm[ 1 ] = iOrigin[ 1 ];
-			iParm[ 2 ] = iOrigin[ 2 ];
-			set_task( float(get_pcvar_num( pcvar_respawn_time )), "XGIFTS_Respawn", _, iParm, 3 );
+			set_task( float(get_pcvar_num( pcvar_respawn_time )), "XGIFTS_Respawn", _, iOrigin, 3 );
 		}
 
 		switch( random_num( 0, 4 ) )
@@ -244,9 +230,7 @@
 			}
 			case 4: Bani(id);
 		}
-		remove_entity( ent );
-		}
-		return 0//FMRES_IGNORED;/
+		return FMRES_IGNORED;
 	}
 
 	public Bani(id)
@@ -259,26 +243,26 @@
 	
 	// Super spawns
 	
-public SsDump()
-{
-	new Float:origin[3];
-	new count = ArraySize(g_vecSsOrigins);
-	server_print("-------------------------------------------------------");
-	for(new i = 0; i < count; i++)
+	public SsDump( )
 	{
-		ArrayGetArray(g_vecSsOrigins, i, origin);
-		server_print("Origin: %f %f %f", origin[0], origin[1], origin[2]);
+		new Float:origin[ 3 ];
+		new count = ArraySize( g_vecSsOrigins );
+		server_print( "-------------------------------------------------------" );
+		for( new i = 0; i < count; i++ )
+		{
+			ArrayGetArray( g_vecSsOrigins, i, origin );
+			server_print( "Origin: %f %f %f", origin[ 0 ], origin[ 1 ], origin[ 2 ] );
+		}
+		server_print( "-------------------------------------------------------" );
+		server_print( "Number of origins: %i", count );
+		server_print( "Time: %i", g_iSsTime );
+		server_print( "-------------------------------------------------------" );
 	}
-	server_print("-------------------------------------------------------");
-	server_print("Number of origins: %i", count);
-	server_print("Time: %i", g_iSsTime);
-	server_print("-------------------------------------------------------");
-}
 	
 	public SsInit( Float:mindist )
 	{
-	register_cvar("sv_superspawns", SS_VERSION, (FCVAR_SERVER|FCVAR_SPONLY));
-	register_concmd("_ss_dump", "SsDump");
+		register_cvar( "sv_superspawns", SS_VERSION, ( FCVAR_SERVER|FCVAR_SPONLY ) );
+		register_concmd( "_ss_dump", "SsDump" );
 	
 		g_flSsMinDist = mindist;
 		
@@ -298,7 +282,7 @@ public SsDump()
 
 	stock SsGetOrigin( Float:origin[ 3 ] )
 	{
-		new Float:data[3], size;
+		new Float:data[ 3 ], size;
 		new ok = 1;
 
 		while( ( size = ArraySize( g_vecSsOrigins ) ) )
