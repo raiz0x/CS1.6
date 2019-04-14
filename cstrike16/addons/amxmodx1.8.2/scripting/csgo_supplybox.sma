@@ -86,7 +86,7 @@
 	{
 		// Cvar-uri
 		pcvar_presents_on_map = register_cvar( "presents_on_map", "4" );
-		pcvar_respawn_time = register_cvar( "presents_respawn_time", "90.0" );
+		pcvar_respawn_time = register_cvar( "presents_respawn_time", "90" );//90
 	
 		precache_model( MODEL_CUTIE );
 	}
@@ -97,7 +97,7 @@
 
 
 	// Eventuri
-		register_event( "HLTV", "spawn_gifts", "a", "1=0", "2=0" );
+		//register_event( "HLTV", "spawn_gifts", "a", "1=0", "2=0" );
 		//register_logevent("spawn_gifts", 2, "1=Round_Start")
 		//register_forward( FM_Touch, "forward_touchX" );
 		register_touch( g_szFmuGiftClassName, "player", "forward_touchX" );
@@ -124,7 +124,7 @@
 	public XGIFTS_Spawn( )
 	{
 		new Float: fOrigin[ 3 ];//xxx
-		for( new i; i < get_pcvar_num( pcvar_presents_on_map ); i++ )	if( SsGetOrigin( fOrigin ) )	XGIFTS_Create( fOrigin );
+		for( new i = 1; i <= get_pcvar_num( pcvar_presents_on_map ); i++ )	if( SsGetOrigin( fOrigin ) )	XGIFTS_Create( fOrigin );
 	}
 
 	public XGIFTS_Create( const Float:fOrigin[ 3 ] )
@@ -159,13 +159,12 @@
 		IVecFVec( auxOrigin, fOrigin );
 		XGIFTS_Create( fOrigin );
 
-		set_hudmessage(255, 165, 0, 0.02, 0.73, 0, 6.0, 5.0,0.1,0.2,-1);
-		show_hudmessage(0,"Tocmai a fost aruncata o cutie pe mapa!^nCautati-o pentru a afla ce ascunde.");
+		client_print(0,print_chat,"Tocmai a fost aruncata o cutie pe mapa!^nCautati-o pentru a afla ce ascunde.");
 
 		return 0;
 	}
 
-	public forward_touchX( ent, id )
+	public forward_touchX( const ent, const id )
 	{
 		/*if ( !pev_valid( ent )||!is_user_alive( id ) )	return FMRES_IGNORED;
 
@@ -186,7 +185,7 @@
 			iParm[ 0 ] = iOrigin[ 0 ];
 			iParm[ 1 ] = iOrigin[ 1 ];
 			iParm[ 2 ] = iOrigin[ 2 ];
-			set_task( get_pcvar_float( pcvar_respawn_time ), "XGIFTS_Respawn", _, iParm, 3 );
+			set_task( float(get_pcvar_num( pcvar_respawn_time )), "XGIFTS_Respawn", _, iParm, 3 );
 		}
 
 		switch( random_num( 0, 4 ) )
@@ -254,7 +253,7 @@
 	{
 		cs_set_user_money(id,cs_get_user_money(id)+get_cvar_num("box_bani"),1);
 		client_print(id,print_chat,"Super!Ai primit +%d$",get_cvar_num("box_bani"));
-		return PLUGIN_HANDLED;
+		//return PLUGIN_HANDLED;
 	}
 
 	
