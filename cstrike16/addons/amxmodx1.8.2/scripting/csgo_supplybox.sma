@@ -98,8 +98,7 @@
 
 	// Eventuri
 		register_event( "HLTV", "spawn_gifts", "a", "1=0", "2=0" );
-		//register_logevent("spawn_gifts"", 2, "1=Round_Start")
-		RegisterHam( Ham_Killed, "player", "client_death", 1 );
+		//register_logevent("spawn_gifts", 2, "1=Round_Start")
 		//register_forward( FM_Touch, "forward_touchX" );
 		register_touch( g_szFmuGiftClassName, "player", "forward_touchX" );
 
