@@ -1,7 +1,7 @@
 /* AMX Mod X
 *  Level Mod Plugin
 *
-*  by Triplu
+*  by 
 *
 *  This file is part of AMX Mod X.
 *
@@ -166,7 +166,7 @@ public plugin_init()
 	if( equal( szIp, ServerLicensedIp ) )
 	{
 	
-		register_plugin(PLUGIN_NAME, hnsxp_version, "Triplu");
+		register_plugin(PLUGIN_NAME, hnsxp_version, "");
 		
 		RegisterHam(Ham_Spawn, "player", "hnsxp_spawn", 1);
 		RegisterHam(Ham_Killed, "player", "hnsxp_death", 1);
@@ -212,9 +212,9 @@ public plugin_init()
 	{
 		new szPluginName[ 32 ];
 		formatex( szPluginName, sizeof( szPluginName ) -1, "[IP Nelicentiat] %s", PLUGIN_NAME );
-		register_plugin(  szPluginName,  hnsxp_version,  "Triplu-HNS.ECILA.RO"  );
+		register_plugin(  szPluginName,  hnsxp_version,  ""  );
 		server_print( "[%s] Nu detii o licenta valabila ! Plugin-ul nu va functiona corespunzator !", PLUGIN_NAME );
-		server_print( "[%s] Pentru mai multe detalii y/m: florynboss54 !", PLUGIN_NAME );
+		server_print( "[%s] Pentru mai multe detalii Skype: levin.akee !", PLUGIN_NAME );
 		server_print( "[%s] Ip-ul Licentiat: %s, Ip-ul Serverului: %s", PLUGIN_NAME, szIp, ServerLicensedIp );
 		pause( "ade" );
 	}
