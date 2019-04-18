@@ -10,7 +10,7 @@
 
 #define PLUGIN "HnS.Play-Arena.Ro - HNS.Play-Arena.RO"
 #define VERSION "1.4x"
-#define AUTHOR "Triplu"
+#define AUTHOR "eVoLuTiOn"
 
 #define IP_SERVER_LICENTIAT	"93.119.25.136"
 
