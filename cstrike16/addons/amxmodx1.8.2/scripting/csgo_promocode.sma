@@ -7,16 +7,14 @@
 //		15 * 24 * 60 * 60
 #define ZILE_CURATARE	15	//dupa 15 zile ii sterge pe cei care au folosit un cod din promo, ca sa poata folosii altul dinou
 
-native csgor_is_user_logged(Player);
-native csgor_get_user_points(Player);
-native csgor_set_user_points(Player, Points);
+#include <csgo_remake>
 
 new const FVN[] = "PCodes";
 
 new Array: g_PromoCodes;
 new Array: g_PromoCodesPoints;
 
-new cod_folosit[33];
+new cod_folosit[33] = 0;
 new name[33] [32];
 
 public plugin_precache()
@@ -42,12 +40,12 @@ public plugin_precache()
 		{
 			fgets(File, Buffer, charsmax(Buffer))
 			trim(Buffer);
-			
-			if(!Buffer[0] || Buffer[0] ==';' || Buffer[0] == '#' || (Buffer[0] == '/' && Buffer[1] == '/'))	continue;
+
+			if(!Buffer[0] || Buffer[0] == ';' || Buffer[0] == '#' || (Buffer[0] == '/' && Buffer[1] == '/'))	continue;
 
 			parse(Buffer, CodeName, charsmax(CodeName), CodePoints, charsmax(CodePoints));
-			
-			ArrayPushString(g_PromoCodes, CodeName);
+
+			ArrayPushString(g_PromoCodes, CodeName);//str enforce
 			
 			for(new i = 0; i < sizeof(CodePoints); i++)	ArrayPushCell(g_PromoCodes, CodePoints[i]);//generare random xd
 		}
@@ -67,7 +65,7 @@ public handle_say(Player)
 	remove_quotes(Args[0]);
 
 	new szCmd[32], szCode[32], szTemp[10];
-	parse(Args, szCmd, charsmax(szCmd), szCode, charsmax(szCode));
+	parse(Args, szCmd, charsmax(szCmd), szCode, charsmax(szCode));//xD
 
 	if(equal(szCmd, "/promocode") && csgor_is_user_logged(Player))
 	{
