@@ -10,7 +10,7 @@
 #include <csgo_remake>
 
 new const FVN[] = "PCodes";
-
+//enum data [35]
 new Array: g_PromoCodes;
 new Array: g_PromoCodesPoints;
 
@@ -29,10 +29,11 @@ public plugin_precache()
 		return;
 	}
 
-	g_PromoCodes = ArrayCreate(10);//1,32
-	g_PromoCodesPoints = ArrayCreate(10);
+	g_PromoCodes = ArrayCreate(10);
+	g_PromoCodesPoints = ArrayCreate(10);//1,32
 
 	new File = fopen(ConfigsDir, "rt");
+	if(!File)	return;//...
 	if(File)
 	{
 		new Buffer[128], CodeName[8], CodePoints[10];
@@ -40,12 +41,12 @@ public plugin_precache()
 		{
 			fgets(File, Buffer, charsmax(Buffer))
 			if(!Buffer[0] || Buffer[0] == ';' || Buffer[0] == '#' || (Buffer[0] == '/' && Buffer[1] == '/'))	continue;
-			trim(Buffer);
+			trim(Buffer);//xd
 			parse(Buffer, CodeName, charsmax(CodeName), CodePoints, charsmax(CodePoints));
 
 			ArrayPushString(g_PromoCodes, CodeName);//str enforce
-			
-			for(new i; i < sizeof(CodePoints); i++)	ArrayPushCell(g_PromoCodesPoints, CodePoints[i]);//Cell	generare random xd
+
+			for(new a; a < sizeof(CodePoints); a++)	ArrayPushCell(g_PromoCodesPoints, CodePoints[a]);//generare random xd
 		}
 		fclose(File);
 	}
@@ -67,16 +68,16 @@ public handle_say(Player)
 
 	if(equal(szCmd, "/promocode") && csgor_is_user_logged(Player))
 	{
-		for(new i; i < ArraySize(g_PromoCodes); i++)
+		for(new b; b < ArraySize(g_PromoCodes); b++)
 		{
-			ArrayGetString(g_PromoCodes, i, szTemp, charsmax(szTemp));
+			ArrayGetString(g_PromoCodes, b, szTemp, charsmax(szTemp));
 
 			if(equal(szCode, szTemp) && cod_folosit[Player] > 0)
 			{
-				for(new i; i < ArraySize(g_PromoCodesPoints); i++)
+				for(new c; c < ArraySize(g_PromoCodesPoints); c++)
 				{
-					client_print(Player, print_chat, "Felicitari! Ai activat cu succes codul ^"%s^" fiind unul valid, si ai primit +%d punct%s", szTemp, ArrayGetCell(g_PromoCodesPoints, i), ArrayGetCell(g_PromoCodesPoints, i) == 1 ? "" : "e");
-					csgor_set_user_points(Player, csgor_get_user_points(Player) + ArrayGetCell(g_PromoCodesPoints, i));
+					client_print(Player, print_chat, "Felicitari! Ai activat cu succes codul ^"%s^" fiind unul valid, si ai primit +%d punct%s", szTemp, ArrayGetCell(g_PromoCodesPoints, c), ArrayGetCell(g_PromoCodesPoints, c) == 1 ? "" : "e");
+					csgor_set_user_points(Player, csgor_get_user_points(Player) + ArrayGetCell(g_PromoCodesPoints, c));
 					cod_folosit[Player] = 1;
 					SaveData(Player);
 					//ArrayClear(g_PromoCodes);
@@ -85,14 +86,13 @@ public handle_say(Player)
 			}
 		}
 	}
-
 	return PLUGIN_CONTINUE;
 }
 
 public SaveData(id)	fvault_set_data(FVN, name[id], cod_folosit[id]);
 public LoadData(id)
 {
-	new data[125];
+	new data[120];
 	if(fvault_get_data(FVN, name[id], data, charsmax(data)))	cod_folosit[id] = str_to_num(data);
 	else	cod_folosit[id] = 0;
 }
@@ -100,7 +100,7 @@ public LoadData(id)
 public plugin_end()//to cfg
 {
 	fvault_prune(FVN, _, get_systime() - (ZILE_CURATARE * 24 * 60 * 60));//0
-	
+
 	ArrayDestroy(g_PromoCodes);
 	ArrayDestroy(g_PromoCodesPoints);
 }
