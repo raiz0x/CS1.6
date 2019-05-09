@@ -36,7 +36,7 @@ public plugin_precache()
 	if(!File)	return;//...
 	if(File)
 	{
-		new Buffer[128], CodeName[8], CodePoints[10];
+		new Buffer[120], CodeName[10], CodePoints[10];
 		while(!feof(File))
 		{
 			fgets(File, Buffer, charsmax(Buffer))
@@ -58,13 +58,13 @@ public client_authorized(id)	get_user_name(id, name[id], charsmax(name [])),Load
 
 public handle_say(Player)
 {
-	new Args[128];
+	new Args[125];
 	read_args(Args, charsmax(Args));
-	if(!Args[0])	return PLUGIN_CONTINUE;
+	if(!Args[0])	return PLUGIN_CONTINUE;//xD
 	remove_quotes(Args[0]);
 
 	new szCmd[32], szCode[32], szTemp[10];
-	parse(Args, szCmd, charsmax(szCmd), szCode, charsmax(szCode));//xD
+	parse(Args, szCmd, charsmax(szCmd), szCode, charsmax(szCode));
 
 	if(equal(szCmd, "/promocode") && csgor_is_user_logged(Player))
 	{
@@ -97,9 +97,9 @@ public LoadData(id)
 	else	cod_folosit[id] = 0;
 }
 
-public plugin_end()//to cfg
+public plugin_end()
 {
-	fvault_prune(FVN, _, get_systime() - (ZILE_CURATARE * 24 * 60 * 60));//0
+	fvault_prune(FVN, _, get_systime() - (ZILE_CURATARE * 24 * 60 * 60));//0	road2cfg
 
 	ArrayDestroy(g_PromoCodes);
 	ArrayDestroy(g_PromoCodesPoints);
