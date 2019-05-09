@@ -29,8 +29,8 @@ public plugin_precache()
 		return;
 	}
 
-	g_PromoCodes = ArrayCreate(64, 1);
-	g_PromoCodesPoints = ArrayCreate(64, 1);
+	g_PromoCodes = ArrayCreate(10);//1,32
+	g_PromoCodesPoints = ArrayCreate(10);
 
 	new File = fopen(ConfigsDir, "r");
 	if(File)
@@ -47,7 +47,7 @@ public plugin_precache()
 
 			ArrayPushString(g_PromoCodes, CodeName);//str enforce
 			
-			for(new i = 0; i < sizeof(CodePoints); i++)	ArrayPushCell(g_PromoCodes, CodePoints[i]);//generare random xd
+			for(new i = 0; i < sizeof(CodePoints); i++)	ArrayPushString(g_PromoCodesPoints, CodePoints[i]);//Cell	generare random xd
 		}
 	}
 	fclose(File);
@@ -69,18 +69,18 @@ public handle_say(Player)
 
 	if(equal(szCmd, "/promocode") && csgor_is_user_logged(Player))
 	{
-		new i;
-		for(i = 0; i < ArraySize(g_PromoCodes); i++)
+		for(new i = 0; i < ArraySize(g_PromoCodes); i++)
 		{
 			ArrayGetString(g_PromoCodes, i, szTemp, charsmax(szTemp));
 
 			if(equal(szCode, szTemp) && cod_folosit[Player] > 0)
 			{
-				for(i = 0; i < ArraySize(g_PromoCodesPoints); i++)
+				for(new i = 0; i < ArraySize(g_PromoCodesPoints); i++)
 				{
 					csgor_set_user_points(Player, csgor_get_user_points(Player) + ArrayGetCell(g_PromoCodesPoints, i));
 					cod_folosit[Player] = 1;
 					SaveData(Player);
+					//ArrayClear(g_PromoCodes);
 				}
 				return PLUGIN_HANDLED;
 			}
@@ -98,4 +98,10 @@ public LoadData(id)
 	else	cod_folosit[id] = 0;
 }
 
-public plugin_end()	fvault_prune(FVN, _, get_systime() - (ZILE_CURATARE * 24 * 60 * 60));//0	to cfg
+public plugin_end()//to cfg
+{
+	fvault_prune(FVN, _, get_systime() - (ZILE_CURATARE * 24 * 60 * 60));//0
+	
+	ArrayDestroy(g_PromoCodes);
+	ArrayDestroy(g_PromoCodesPoints);
+}
