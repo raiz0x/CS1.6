@@ -32,7 +32,7 @@ public plugin_precache()
 	g_PromoCodes = ArrayCreate(10);
 	g_PromoCodesPoints = ArrayCreate(10);//1,32
 
-	new File = fopen(ConfigsDir, "rt");
+	new File = fopen(ConfigsDir, "rt");//csf
 	if(!File)	return;//...
 	if(File)
 	{
@@ -66,14 +66,24 @@ public handle_say(Player)
 	new szCmd[32], szCode[32], szTemp[10];
 	parse(Args, szCmd, charsmax(szCmd), szCode, charsmax(szCode));
 
-	if(equal(szCmd, "/promocode") && csgor_is_user_logged(Player))
+	if(equal(szCmd, "/promocode"))
 	{
+		if(!csgor_is_user_logged(Player))
+		{
+			client_print(Player, print_chat, "Se pare ca nu esti logat.");
+			return PLUGIN_HANDLED;
+		}
 		for(new b; b < ArraySize(g_PromoCodes); b++)
 		{
 			ArrayGetString(g_PromoCodes, b, szTemp, charsmax(szTemp));
 
-			if(equal(szCode, szTemp) && cod_folosit[Player] > 0)
+			if(equal(szCode, szTemp))
 			{
+				if(cod_folosit[Player] == 1)
+				{
+					client_print(Player, print_chat, "Se pare ca ai activat recent un cod. Asteapta sa expire.");
+					return PLUGIN_HANDLED;
+				}
 				for(new c; c < ArraySize(g_PromoCodesPoints); c++)
 				{
 					client_print(Player, print_chat, "Felicitari! Ai activat cu succes codul ^"%s^" fiind unul valid, si ai primit +%d punct%s", szTemp, ArrayGetCell(g_PromoCodesPoints, c), ArrayGetCell(g_PromoCodesPoints, c) == 1 ? "" : "e");
