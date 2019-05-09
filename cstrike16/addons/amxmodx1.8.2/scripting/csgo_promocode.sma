@@ -32,25 +32,23 @@ public plugin_precache()
 	g_PromoCodes = ArrayCreate(10);//1,32
 	g_PromoCodesPoints = ArrayCreate(10);
 
-	new File = fopen(ConfigsDir, "r");
+	new File = fopen(ConfigsDir, "rt");
 	if(File)
 	{
 		new Buffer[128], CodeName[8], CodePoints[10];
 		while(!feof(File))
 		{
 			fgets(File, Buffer, charsmax(Buffer))
-			trim(Buffer);
-
 			if(!Buffer[0] || Buffer[0] == ';' || Buffer[0] == '#' || (Buffer[0] == '/' && Buffer[1] == '/'))	continue;
-
+			trim(Buffer);
 			parse(Buffer, CodeName, charsmax(CodeName), CodePoints, charsmax(CodePoints));
 
 			ArrayPushString(g_PromoCodes, CodeName);//str enforce
 			
-			for(new i = 0; i < sizeof(CodePoints); i++)	ArrayPushString(g_PromoCodesPoints, CodePoints[i]);//Cell	generare random xd
+			for(new i; i < sizeof(CodePoints); i++)	ArrayPushCell(g_PromoCodesPoints, CodePoints[i]);//Cell	generare random xd
 		}
+		fclose(File);
 	}
-	fclose(File);
 }
 
 public plugin_init()	register_clcmd("say", "handle_say"),register_clcmd("say_team", "handle_say");
@@ -69,14 +67,15 @@ public handle_say(Player)
 
 	if(equal(szCmd, "/promocode") && csgor_is_user_logged(Player))
 	{
-		for(new i = 0; i < ArraySize(g_PromoCodes); i++)
+		for(new i; i < ArraySize(g_PromoCodes); i++)
 		{
 			ArrayGetString(g_PromoCodes, i, szTemp, charsmax(szTemp));
 
 			if(equal(szCode, szTemp) && cod_folosit[Player] > 0)
 			{
-				for(new i = 0; i < ArraySize(g_PromoCodesPoints); i++)
+				for(new i; i < ArraySize(g_PromoCodesPoints); i++)
 				{
+					client_print(Player, print_chat, "Felicitari! Ai activat cu succes codul ^"%s^" fiind unul valid, si ai primit +%d punct%s", szTemp, ArrayGetCell(g_PromoCodesPoints, i), ArrayGetCell(g_PromoCodesPoints, i) == 1 ? "" : "e");
 					csgor_set_user_points(Player, csgor_get_user_points(Player) + ArrayGetCell(g_PromoCodesPoints, i));
 					cod_folosit[Player] = 1;
 					SaveData(Player);
