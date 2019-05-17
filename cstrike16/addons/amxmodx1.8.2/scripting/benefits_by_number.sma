@@ -264,6 +264,7 @@ public plugin_cfg()
 
 		while(read_file(CvarFILE,line++,text,charsmax(text),length))//shit 15% Xd
 		{
+			if(/*!text[0]||text[0]=='^n'||*/text[0]==';'||(text[0]=='/'&&text[1]=='/'))	continue
 			new cvarX[32],param[32],bool:error_1=true,bool:error_2=true
 			trim(text)
 			parse(text,cvarX,charsmax(cvarX),param,charsmax(param))
