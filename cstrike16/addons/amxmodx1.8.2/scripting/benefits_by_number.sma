@@ -31,7 +31,7 @@ new Trie: eData
 enum _:CVARS
 {
 //	Fondator :
-		fondator_hp,
+		fondator_hp/*[20]*/,
 		fondator_ap,
 		fondator_money,
 //------------------------------------
@@ -80,7 +80,7 @@ enum _:CVARS
 }
 
 //Start of CVARs
-new const Cvars[][][]=
+new const Cvars[][][]=//CVARS xd +[]
 {
 //	Fondator :
 	{"fondator_hp","50"},
