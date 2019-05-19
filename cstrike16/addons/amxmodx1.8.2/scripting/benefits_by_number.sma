@@ -191,7 +191,7 @@ public plugin_cfg()
 		fputs(FilePointer,"// Aici faci configuratia acceselor, de forma ^"nume^" ^"numar^"^n")
 		fputs(FilePointer,"//  Iar ^"numar^" reprezinta accesul acelui nume. Accese valide: 1->8^n")
 		fputs(FilePointer,"//   Unde 1 este Fondator+Ftp iar 8 VIP^n")
-		fputs(FilePointer,"// Pentru a bloca un acces, poti pune ^";^" / ^"#^" / ^"//^" in fata sa. Sau poti sterge direct.^n^n")
+		fputs(FilePointer,"// Pentru a bloca un acces, poti pune  ^";^" | ^"#^" | ^"//^"  in fata sa, sau poti sterge direct.^n^n")
 		fclose(FilePointer)
 	}
 	FilePointer=fopen(AccesFILE,"rt")
