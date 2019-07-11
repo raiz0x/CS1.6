@@ -1,3 +1,5 @@
+//	LAST EDIT ON :	11.07.2019 / 22:54
+
 /*
 			set_pev(player_ent[id],pev_skin,0)//0 nr la model
 			set_pev(player_ent[id],pev_body,0) // pe corp asta..la noob??
