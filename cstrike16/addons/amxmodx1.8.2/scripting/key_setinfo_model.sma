@@ -4,15 +4,13 @@
 
 new const g_szModel[][] = {
 
-    "model1.mdl",
-    "model2.mdl"
+    "model1",
+    "model2"
 }
 
 #define VIP_FLAG ADMIN_LEVEL_H
 
 public plugin_init( ) {
-
-    register_plugin( "Admin Skin", "1.0", "DoNii" ) ;
 
     RegisterHam( Ham_Spawn, "player", "fw_HamSpawnPost", 1 ) ;
 
@@ -29,7 +27,6 @@ public plugin_precache( ) {
         precache_model( szBuffer ) ;
     }
 }
-
 public fw_HamSpawnPost( id ) {
 
     if( ! is_user_alive( id ) )
