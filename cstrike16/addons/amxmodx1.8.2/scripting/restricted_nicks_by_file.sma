@@ -60,7 +60,7 @@ public plugin_cfg()
 	static File, Buffer[64],Location[256];
 	g_Stroke = ArrayCreate(64);//pre
 	get_localinfo("amxx_configsdir", Location, charsmax(Location));
-	add(Location, charsmax(Location), "/names.ini ");
+	add(Location, charsmax(Location), "/names.ini");
 	
 	if (!file_exists(Location))
 	{
