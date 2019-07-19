@@ -21,7 +21,7 @@ public plugin_precache()
 	Codes2 = TrieCreate();
 	new iFile[ 256 ];
 	copy(iFile[ get_localinfo( "amxx_configsdir" , iFile, charsmax( iFile ) ) ] , charsmax( iFile ) , "/coduri.ini" );
-	if( !file_exists( iFile ) )	write_file( iFile, "; Trece codurile mai jos, una sub alta", -1 );
+	if( !file_exists( iFile ) )	write_file( iFile, "; Trece codurile mai jos, unu sub altu", -1 );
 	
 	new iFilePointer = fopen(iFile, "r+")
 	if(iFilePointer)
