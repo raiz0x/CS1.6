@@ -3,7 +3,7 @@
 
 #include <fvault>
 // Pruning player agree/decline after 15 days of not being updated
-//	15 days * 24 hours * 60 minutes * 60 seconds = 15 days in seconds
+//	15 days * 24 hours * 60 minutes * 60 seconds = 15 days in seconds(24x8600ms)
 //		15 * 24 * 60 * 60
 #define ZILE_CURATARE	15	//dupa 15 zile ii sterge pe cei care au folosit un cod din promo, ca sa poata folosii altul dinou
 
