@@ -11,28 +11,40 @@
 
 new const FVN[] = "PCodes";
 //enum data [35]
-new Array: g_PromoCodes;
+new Array: g_PromoCodes/*=Invalid_Array*/;
 new Array: g_PromoCodesPoints;
 
-new cod_folosit[33] = 0;
+new cod_folosit[33];
 new name[33] [32];
 
-public plugin_precache()
+new const pCMD [] = "/promocode";
+
+public plugin_cfg()
 {
-	new ConfigsDir[128];
+	new ConfigsDir[128], File
 	get_configsdir(ConfigsDir, charsmax(ConfigsDir));
 	add(ConfigsDir, charsmax(ConfigsDir), "/promocode.ini");
 
 	if(!file_exists(ConfigsDir))
 	{
-		log_amx("Couldn't find ^"%s^"", ConfigsDir);
-		return;
+		new form[100];
+		formatex(form, charsmax(form), "Couldn't find ^"%s^". I will write a new one...", ConfigsDir);
+		log_amx(form);
+		server_print(form);
+		//set_fail_state(form);
+
+		File = fopen(ConfigsDir, "w");
+		fputs(File, ";Aici treci codurile si premiul lor.^n");
+		fputs(File, "; EX: ^"COD^" ^"SUMA^"^n");
+		fputs(File, ";Suma reprezinta cifrele care se adauga ca si puncte...^n^n");
+		fclose(File);
+		//return;
 	}
 
-	g_PromoCodes = ArrayCreate(10);
-	g_PromoCodesPoints = ArrayCreate(10);//1,32
+	g_PromoCodes = ArrayCreate(15);
+	g_PromoCodesPoints = ArrayCreate(1);//1,32
 
-	new File = fopen(ConfigsDir, "rt");//csf
+	File = fopen(ConfigsDir, "r");//csf
 	if(!File)	return;//...
 	if(File)
 	{
@@ -40,13 +52,13 @@ public plugin_precache()
 		while(!feof(File))
 		{
 			fgets(File, Buffer, charsmax(Buffer))
-			if(!Buffer[0] || Buffer[0] == ';' || Buffer[0] == '#' || (Buffer[0] == '/' && Buffer[1] == '/'))	continue;
-			trim(Buffer);//xd
+			if(!Buffer[0] || Buffer[0] == ';' || Buffer[0] == '#' || Buffer[0] == '/' && Buffer[1] == '/')	continue;
+			trim(Buffer); //xd
 			parse(Buffer, CodeName, charsmax(CodeName), CodePoints, charsmax(CodePoints));
+			//if(parse(Buffer) != 3 || !strlen(Buffer))	continue;
 
-			ArrayPushString(g_PromoCodes, CodeName);//str enforce
-
-			for(new a; a < sizeof(CodePoints); a++)	ArrayPushCell(g_PromoCodesPoints, CodePoints[a]);//generare random xd
+			for(new x; x < sizeof(CodeName); x++)	ArrayPushString(g_PromoCodes, CodeName[x]);
+			for(new a; a < sizeof(CodePoints); a++)	ArrayPushCell(g_PromoCodesPoints, str_to_num(CodePoints[a]));//generare random xd
 		}
 		fclose(File);
 	}
@@ -61,37 +73,57 @@ public handle_say(Player)
 	new Args[125];
 	read_args(Args, charsmax(Args));
 	if(!Args[0])	return PLUGIN_CONTINUE;//xD
-	remove_quotes(Args[0]);
+	remove_quotes(Args);//[0]
 
-	new szCmd[32], szCode[32], szTemp[10];
+	new szCmd[32], szCode[10], szTemp[10];
 	parse(Args, szCmd, charsmax(szCmd), szCode, charsmax(szCode));
 
-	if(equal(szCmd, "/promocode"))
+	if(equal(szCmd, pCMD))
 	{
-		if(!csgor_is_user_logged(Player))
+		/*if(!ArraySize(g_PromoCodes))
+		{
+			client_print(Player, print_chat, "Probleme in citirea codurilor.");
+			return PLUGIN_HANDLED
+		}*/
+
+		/*if(!csgor_is_user_logged(Player))
 		{
 			client_print(Player, print_chat, "Se pare ca nu esti logat.");
 			return PLUGIN_HANDLED;
+		}*/
+
+		if(cod_folosit[Player] == 1)
+		{
+				client_print(Player, print_chat, "Se pare ca ai activat recent un cod. Asteapta sa expire.");
+				return PLUGIN_HANDLED;
 		}
+
 		for(new b; b < ArraySize(g_PromoCodes); b++)
 		{
+			if(equal(szCode, ""))
+			{
+				client_print(Player, print_chat, "Folosire corecta: %s COD", pCMD);
+				return PLUGIN_HANDLED;
+			}
+
 			ArrayGetString(g_PromoCodes, b, szTemp, charsmax(szTemp));
 
 			if(equal(szCode, szTemp))
 			{
-				if(cod_folosit[Player] == 1)
-				{
-					client_print(Player, print_chat, "Se pare ca ai activat recent un cod. Asteapta sa expire.");
-					return PLUGIN_HANDLED;
-				}
 				for(new c; c < ArraySize(g_PromoCodesPoints); c++)
 				{
 					client_print(Player, print_chat, "Felicitari! Ai activat cu succes codul ^"%s^" fiind unul valid, si ai primit +%d punct%s", szTemp, ArrayGetCell(g_PromoCodesPoints, c), ArrayGetCell(g_PromoCodesPoints, c) == 1 ? "" : "e");
 					csgor_set_user_points(Player, csgor_get_user_points(Player) + ArrayGetCell(g_PromoCodesPoints, c));
 					cod_folosit[Player] = 1;
-					SaveData(Player);
+					fvault_set_data(FVN, name[Player], cod_folosit[Player]);
 					//ArrayClear(g_PromoCodes);
+					break;
 				}
+				return PLUGIN_HANDLED;
+			}
+			else
+			{
+				client_print(Player, print_chat, "OOOOPS ! COD INVALID.");
 				return PLUGIN_HANDLED;
 			}
 		}
@@ -99,7 +131,6 @@ public handle_say(Player)
 	return PLUGIN_CONTINUE;
 }
 
-public SaveData(id)	fvault_set_data(FVN, name[id], cod_folosit[id]);
 public LoadData(id)
 {
 	new data[120];
