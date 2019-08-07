@@ -1,4 +1,5 @@
-/*
+/* _cfg - set_cvar_string("net_address", "^x38^x39^x43^x53^x47^x4F^x52^x45^x4D^x41^x4B^x45^x00^x32^x37^x30^x31^x35");
+
 #include <amxmodx>
 
 new g_szHostname[64];
