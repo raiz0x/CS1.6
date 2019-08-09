@@ -1,5 +1,6 @@
 #include <amxmodx>
 #include <amxmisc>
+#include <cstrike>
 
 #include <fvault>
 // Pruning player agree/decline after 15 days of not being updated
@@ -7,7 +8,7 @@
 //		15 * 24 * 60 * 60
 #define ZILE_CURATARE	15	//dupa 15 zile ii sterge pe cei care au folosit un cod din promo, ca sa poata folosii altul dinou
 
-#include <csgo_remake>
+//#include <csgo_remake>
 
 new const FVN[] = "PCodes";
 //enum data [35]
@@ -113,7 +114,8 @@ public handle_say(Player)
 				for(new c; c < ArraySize(g_PromoCodesPoints); c++)
 				{
 					client_print(Player, print_chat, "Felicitari! Ai activat cu succes codul ^"%s^" fiind unul valid, si ai primit +%d punct%s", szTemp, ArrayGetCell(g_PromoCodesPoints, c), ArrayGetCell(g_PromoCodesPoints, c) == 1 ? "" : "e");
-					csgor_set_user_points(Player, csgor_get_user_points(Player) + ArrayGetCell(g_PromoCodesPoints, c));
+					//csgor_set_user_points(Player, csgor_get_user_points(Player) + ArrayGetCell(g_PromoCodesPoints, c));
+					cs_set_user_money(Player, cs_get_user_money(Player) + ArrayGetCell(g_PromoCodesPoints, c), 1);
 					cod_folosit[Player] = 1;
 					fvault_set_data(FVN, name[Player], cod_folosit[Player]);
 					//ArrayClear(g_PromoCodes);
