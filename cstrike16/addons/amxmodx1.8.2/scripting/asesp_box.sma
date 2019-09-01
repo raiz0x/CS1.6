@@ -308,7 +308,7 @@ public esp_timer(){
 	
 	for (new i=1;i<=max_players;i++){ // loop through players
 		
-		if (admin_options[ESP_ON][i] && first_person[i] && is_user_connected(i) && admin[i] && (!is_user_alive(i)) && (spec[i]>0) && is_user_alive(spec[i])){ // :)
+		if (admin_options[i][ESP_ON] && first_person[i] && is_user_connected(i) && admin[i] && (!is_user_alive(i)) && (spec[i]>0) && is_user_alive(spec[i])){ // :)
 			
 			new spec_id=spec[i]
 			new Float:my_origin[3] 
