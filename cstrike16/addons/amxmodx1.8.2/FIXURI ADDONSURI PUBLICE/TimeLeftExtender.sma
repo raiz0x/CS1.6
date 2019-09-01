@@ -106,9 +106,10 @@ timeleft.amxx         ; displays time left on map
 // de facut sa reseteze mp_timelimit cand nu e in functiune faza
 
 #include <amxmodx>
-#include <amxmisc>
 
-#define DENUMIRE "FURIEN.EXTREAMCS.COM"
+#pragma tabsize 0
+
+#define DENUMIRE "DR.THEXFORCE.RO"
 
 #define TLE_ENABLED "1"
 #define DEFAULT_CHATTIME "0"
@@ -116,7 +117,7 @@ timeleft.amxx         ; displays time left on map
 #define CATCH_MAPCHANGE_AT "5" // seconds left when mapchange should be catched and blocked
 #define CHANGE_ACCESS ADMIN_MAP
 
-new bool:g_mrset,g_timelimit,cvar_tle_enabled, cvar_tle_chattime, cvar_tle_catchat, cvar_tle_usehud,nextmap[32]
+new bool:g_mrset,g_timelimit,cvar_tle_enabled, cvar_tle_chattime, cvar_tle_catchat, cvar_tle_usehud,nextmap[65]
 
 #include <dhudmessage>
 
@@ -205,11 +206,22 @@ public changeNow(id) // de pus motiv??
 {
   if(get_pcvar_num(cvar_tle_enabled))
   {
-    if(access(id, ADMIN_MAP))
+    if(get_user_flags(id)&ADMIN_MAP)
     {
       new name[64]
       get_user_name(id, name, charsmax(name))
-      get_cvar_string("amx_nextmap", nextmap, charsmax(nextmap))
+
+		if (GetRandomMap("mapcycle.txt", nextmap,charsmax(nextmap)))	set_cvar_string("amx_nextmap",nextmap)
+		else if (GetRandomMap("addons/amxmodx/configs/maps.ini",nextmap,charsmax(nextmap)))	set_cvar_string("amx_nextmap", nextmap)
+		else
+		{
+			//get_cvar_string("amx_nextmap", nextmap, charsmax(nextmap))
+			//if(ValidMap(nextmap))	get_cvar_string("amx_nextmap", nextmap, charsmax(nextmap))
+			xCoLoR(id, "!v[!n %s!v ]!n Nu am gasit nici o mapa valida...",DENUMIRE)
+			return PLUGIN_HANDLED
+		}
+      /*if(is_map_valid()))*/	get_cvar_string("amx_nextmap", nextmap, charsmax(nextmap))//hm...
+
       switch(get_cvar_num("amx_show_activity"))
       {
         case 2: xCoLoR(0, "%L", LANG_PLAYER, "ADMIN_CHANGENOW_2", name, nextmap)
@@ -238,7 +250,7 @@ public initMapchangeEvent() // initiate the main event, setting timelimit to 0 e
 {
   new players[32],num
   get_cvar_string("amx_nextmap", nextmap, charsmax(nextmap))
-  get_players(players,num,"chi")
+  get_players(players,num,"ch")
 
   if(get_pcvar_num(cvar_tle_enabled)&&num>2)
   {
@@ -284,6 +296,84 @@ public doMapChange() // do the actual change
   server_cmd("changelevel %s", nextmap)
 }
 
+GetRandomMap(const szMapFile[ ], szReturn[ ], const iLen)
+{
+	new iFile = fopen(szMapFile, "rt");
+	
+	if (!iFile)
+	{
+		return 0;
+	}
+	
+	new Array:aMaps = ArrayCreate(64);
+	new Trie:tArrayPos = TrieCreate( );
+	new iTotal = 0;
+	
+	static szData[128], szMap[64];
+	
+	while (!feof(iFile))
+	{
+		fgets(iFile, szData, 127);
+		parse(szData, szMap, 63);
+		strtolower(szMap);
+		
+		if (is_map_valid(szMap) && !TrieKeyExists(tArrayPos, szMap))
+		{
+			ArrayPushString(aMaps, szMap);
+			TrieSetCell(tArrayPos, szMap, iTotal);
+			
+			iTotal++;
+		}
+	}
+	
+	TrieDestroy(tArrayPos);
+	
+	if (!iTotal)
+	{
+		ArrayDestroy(aMaps);
+		
+		return 0;
+	}
+	
+	ArrayGetString(aMaps, random(iTotal), szReturn, iLen);
+	
+	ArrayDestroy(aMaps);
+	
+	fclose(iFile);
+	
+	return 1;
+}
+
+stock bool:ValidMap(mapname[])
+{
+	if ( is_map_valid(mapname) )
+	{
+		return true;
+	}
+	// If the is_map_valid check failed, check the end of the string
+	new len = strlen(mapname) - 4;
+	
+	// The mapname was too short to possibly house the .bsp extension
+	if (len < 0)
+	{
+		return false;
+	}
+	if ( equali(mapname[len], ".bsp") )
+	{
+		// If the ending was .bsp, then cut it off.
+		// the string is byref'ed, so this copies back to the loaded text.
+		mapname[len] = '^0';
+		
+		// recheck
+		if ( is_map_valid(mapname) )
+		{
+			return true;
+		}
+	}
+	
+	return false;
+}
+
 stock xCoLoR( const id, const input[ ], any:... )
 {
 	new count = 1, players[ 32 ];
@@ -314,6 +404,3 @@ stock xCoLoR( const id, const input[ ], any:... )
 		}
 	}
 }
-/* AMXX-Studio Notes - DO NOT MODIFY BELOW HERE
-*{\\ rtf1\\ ansi\\ deff0{\\ fonttbl{\\ f0\\ fnil Tahoma;}}\n\\ viewkind4\\ uc1\\ pard\\ lang1031\\ f0\\ fs16 \n\\ par }
-*/
