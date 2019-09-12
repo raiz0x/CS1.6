@@ -11,3 +11,9 @@ public plugin_init()
 
 public OnTakeDamagePre(iVictim, iInflictor, iAttacker, Float:fDamage, iBits)
     return iBits & DMG_FALL ? HAM_SUPERCEDE : HAM_IGNORED 
+
+
+/*
+    //    SetHamParamFloat(4, 0.0)
+        SetHamReturnInteger(0)
+        */
