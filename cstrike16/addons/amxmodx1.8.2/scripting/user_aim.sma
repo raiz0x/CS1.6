@@ -27,3 +27,29 @@ public status_display(id)
     
     return PLUGIN_CONTINUE 
 } 
+
+register_message( get_user_msgid( "StatusValue" ), "msgStatusValue" );
+public msgStatusValue( msgid, dest, id ) {
+    new flag, value;
+    flag = get_msg_arg_int( 1 );
+    value = get_msg_arg_int( 2 );
+    
+    if( !value ) {
+        return PLUGIN_CONTINUE;
+    }
+    
+    if( flag == 2 ) {
+        new text[ 128 ];
+        
+        if( get_user_team( value ) == get_user_team( id ) )
+            formatex( text, charsmax( text ), "1 %%p2 HP: %d ( %s )", get_user_health( value ), g_mPlayerData[ g_iPlayerLevel[ value ] ][ m_szRankName ]  );
+        else 
+            formatex( text, charsmax( text ), "1 %%p2 ( %s )", g_mPlayerData[ g_iPlayerLevel[ value ] ][ m_szRankName ]  );
+        
+        message_begin( MSG_ONE_UNRELIABLE, get_user_msgid( "StatusText" ), _, id );
+        write_byte( 0 );
+        write_string( text );
+        message_end( );
+    }
+    return PLUGIN_CONTINUE;
+ }
