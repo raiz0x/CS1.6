@@ -53,6 +53,10 @@ public LoadConfig( )
 							trim( szKey ); 
 							trim( szValue );
 							
+							//remove_quotes(szKey)
+							//ArrayPushString(gx_InfoCommands, szKey)
+							//gx_InfoCommands = ArrayCreate(32, 1)
+							
 							new szCmd[ 32 ];
 							formatex( szCmd, charsmax( szCmd ), "say %s", szKey );
 							register_clcmd( szCmd, "TEST" );
