@@ -30,7 +30,7 @@
 
 #define MODE_LASERMINE 0 // 0? dmg pe hit
 #define ACCESS ADMIN_IMMUNITY
-#define CHAT_TAG "[ZOMBIE.THEXFORCE.RO]"
+#define CHAT_TAG "^4[ZOMBIE.THEXFORCE.RO]^1"
 
 new const LMName[] = "LASER-MINE"
 new const LMCost = 2 //ammo
@@ -313,13 +313,13 @@ public Spawn(id)
       return
    }
 
-   new iEntx = g_MaxPL + 1; 
+   /*new iEntx = g_MaxPL + 1; 
    new clsname[32]; 
    while((iEntx = engfunc(EngFunc_FindEntityByString, iEntx, "classname", ENT_CLASS_NAME))) 
    {
          clsname[0] = '^0' 
          pev(iEntx, pev_classname, clsname, sizeof(clsname)-1); 
-         if(equali(clsname, ENT_CLASS_NAME)/*||equali(clsname, ENT_CLASS_NAME3)*/) 
+         if(equali(clsname, ENT_CLASS_NAME)	//||equali(clsname, ENT_CLASS_NAME3)//	) 
          { 
 		PlaySound(iEntx, STOP_SOUND); 
 		RemoveEntity(iEntx);
@@ -327,7 +327,7 @@ public Spawn(id)
 		return
          }
 	 //else	set_pev(iEnt, pev_flags, FL_KILLME); 
-   }
+   }*/
 
    set_pev(i_Ent,pev_classname,ENT_CLASS_NAME); 
 
@@ -1216,7 +1216,7 @@ public Task_CheckAiming( iTaskIndex )
         { 
             pev( iEntity, pev_classname, cClassname, 31 ); 
 
-            if( equal( cClassname, "lasermine" ) ) 
+            if( equali( cClassname, ENT_CLASS_NAME ) ) 
             { 
                 new name[ 45 ]; 
                 new aim = pev( iEntity, LASERMINE_OWNER ); 
