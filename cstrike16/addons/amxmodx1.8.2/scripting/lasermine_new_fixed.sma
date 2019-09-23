@@ -76,15 +76,17 @@ new const
    ENT_MODELS[]   = "models/v_tripmine.mdl",
 
    ENT_SOUND1[]   = "weapons/mine_deploy.wav", 
-   ENT_SOUND2[]   = "weapons/mine_charge.wav", 
-   ENT_SOUND3[]   = "weapons/mine_activate.wav", 
-   ENT_SOUND4[]   = "debris/beamstart9.wav", 
-   ENT_SOUND5[]   = "items/gunpickup2.wav", 
-   ENT_SOUND6[]   = "debris/bustglass1.wav", 
-   ENT_SOUND7[]   = "debris/bustglass2.wav",
+   ENT_SOUND2[]   = "weapons/mine_charge.wav",
+   ENT_SOUND3[]   = "weapons/mine_activate.wav",
 
-   ENT_SPRITE1[]   = "sprites/laserbeam.spr", 
-   ENT_SPRITE2[]   = "sprites/lm_explode.spr"; 
+   ENT_SOUND6[]   = "debris/bustglass1.wav",
+   ENT_SOUND7[]   = "debris/bustglass2.wav",
+   ENT_SOUND4[]   = "debris/beamstart9.wav",
+   
+   ENT_SOUND5[]   = "items/gunpickup2.wav",
+
+   ENT_SPRITE1[]   = "sprites/laserbeam.spr",
+   ENT_SPRITE2[]   = "sprites/lm_explode.spr";
 
 
 new const 
