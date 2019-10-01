@@ -26,6 +26,40 @@ SendWeaponAnim(id, iAnim)
     write_byte(pev(id,pev_body))
     message_end()
 }
+
+
+
+
+new const P_MODEL[] = "models/p_skinknife.mdl"
+new const V_MODEL[] = "models/v_skinknife.mdl"
+
+public plugin_init() {
+register_plugin(PLUGIN, VERSION, AUTHOR)
+register_event( "CurWeapon","Event_CurWeapon","be", "1=1" );
+}
+
+public plugin_precache()
+{
+engfunc(EngFunc_PrecacheModel, P_MODEL)
+engfunc(EngFunc_PrecacheModel, V_MODEL)
+}
+public Event_CurWeapon( id )
+{
+if(get_user_weapon(id)==CSW_KNIFE)
+{
+set_pev(id, pev_viewmodel, engfunc(EngFunc_AllocString, V_MODEL))
+set_pev(id, pev_weaponmodel, engfunc(EngFunc_AllocString, P_MODEL))
+new class[32];
+get_weaponname(CSW_KNIFE, class, sizeof class - 1);
+new weapon = fm_find_ent_by_owner(-1, class, id);
+entity_set_int(weapon, EV_INT_body, 1)
+entity_set_int(weapon, EV_INT_skin, 5)
+//set_pev(weapon,pev_skin,5)
+
+}
+}
+
+pev_body or EV_INT_body
 */
 
 #include <amxmodx>
