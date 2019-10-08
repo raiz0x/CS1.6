@@ -125,16 +125,12 @@ public client_disconnect ( id )	if ( PlayerGagged [ id ]&&!is_user_bot(id) )	Sav
 public SaveData ( client ) {
 	new Name [ 32 ];
 	get_user_name ( client, Name, 31 );
-	
 	new _Gagged = PlayerGagged [ client ];
 	new _GagTime = PlayerGagTime [ client ];
-	
 	new StrongData [ 1024 ];
 	formatex ( StrongData, sizeof ( StrongData ) - 1, "^"%i^" ^"%i^" ^"%s^"", _Gagged, _GagTime,g_admin );
-	
 	new Save [ 1024 ];
 	format ( Save, sizeof ( Save ) - 1, "^"%s^" %s", Name, StrongData );
-	
 	new Line [ 128 ], Linie, IsPlayer = false, Arg1 [ 32 ];
 	new FileOpen = fopen ( SaveDataFile, "rt" );
 	while ( !feof ( FileOpen ) ) {
@@ -148,9 +144,12 @@ public SaveData ( client ) {
 		}
 		Linie++;
 	}
-	
 	fclose ( FileOpen );
-	if ( !IsPlayer )	write_file ( SaveDataFile, Save, -1 );
+
+	if ( !IsPlayer ) {
+		PlayerGagged [ client ] = 0;
+		PlayerGagTime [ client ]  = 0;
+	}
 }
 
 public LoadData ( client ) {
@@ -194,6 +193,7 @@ public command_chat( index )
 				replace( szArg, charsmax ( szArg ), bars, "" );
 				formatex( command2, charsmax(command2), "amx_%s", szArg );
 				client_cmd( index, command2 );
+				return PLUGIN_HANDLED
 			}
 			break;
 		}
@@ -210,11 +210,10 @@ public CheckGag( id )
 	
 	if( PlayerGagged[ id ] == 1 )
 	{
-		PlayerGagged[ id ] = 1;
 		chat_color( id, "%s Ai fost pedepsit de^4 %s^1 ! Vei putea folosi chatul peste^4 %d^1 minut%s !",CHAT_TAG,g_admin, PlayerGagTime[ id ], PlayerGagTime[ id ]==1?"":"e" );	
 		return PLUGIN_HANDLED;
 	}
-	if( PlayerGagged[ id ] == 2 )
+	else if( PlayerGagged[ id ] == 2 )
 	{
 		chat_color( id, "%s You've been^4 Auto-Gagged^1 for your behavior.^4 %d minute%s^1 remaining",CHAT_TAG, PlayerGagTime[ id ], PlayerGagTime[ id ]==1?"":"s" );
 		return PLUGIN_HANDLED
@@ -295,6 +294,7 @@ public CommandGag( id )
 	PlayerGagged[ iPlayer ] = 1;
 	PlayerGagTime[ iPlayer ] = iMinutes;
 	set_speak( iPlayer, SPEAK_MUTED );
+	SaveData(iPlayer);
 	
 	chat_color(0, "%s ADMIN^4 %s^1 GAG^4 %s^1 for^4 %d^1 minute%s",CHAT_TAG, GetInfo( id, INFO_NAME ), GetInfo( iPlayer, INFO_NAME ), iMinutes, iMinutes==1?"":"s" );
 	
