@@ -17,6 +17,8 @@ entity_get_int(entindex, EV_INT_body)
     fm_set_entity_visibility(iWep, 1)
     set_pev(id, pev_viewmodel2, "")  
 
+
+//UpdateClientData---
 SendWeaponAnim(id, iAnim)
 {
     set_pev(id, pev_weaponanim, iAnim)
@@ -27,6 +29,19 @@ SendWeaponAnim(id, iAnim)
     message_end()
 }
 
+
+stock SendWeaponAnim( id, iAnim, iBody )
+{
+    if ( !is_valid_player(id) || is_user_bot( id ) ) return 0; // check player validity first with some function (Humans only)
+    set_pev( id, pev_weaponanim, iAnim );
+
+    message_begin( MSG_ONE, SVC_WEAPONANIM, _, id );
+    write_byte( iAnim );  // sequence number.
+    write_byte( iBody );  // weaponmodel bodygroup.
+    message_end();
+
+    return 1;
+}
 
 
 
