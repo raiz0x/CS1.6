@@ -1,3 +1,5 @@
+// 00:18
+
 #include <amxmodx>
 #include <cstrike>
 #include <engine>
@@ -1078,10 +1080,7 @@ public FWD_AddToFullPack(es, e, ent, host, host_flags, player, p_set) {
 			static Float:Origin[3]
 			pev(ent, pev_origin, Origin)
 			
-			if(get_user_weapon(ent) == CSW_KNIFE && fm_get_speed(ent) <= 5 || get_user_weapon(ent) == CSW_KNIFE && Origin[0] == Wallorigin[ent][0] && Origin[1] == Wallorigin[ent][1] && Origin[2] == Wallorigin[ent][2])	set_es(es, ES_RenderAmt, 0);
-			else	set_es(es, ES_RenderAmt, 255);
-
-			if(get_user_weapon(ent) == CSW_C4 && (get_user_button(ent) & IN_DUCK)&&g_last[ent])	set_es(es, ES_RenderAmt, 0);
+			if(get_user_weapon(ent) == CSW_KNIFE && fm_get_speed(ent) <= 5 || get_user_weapon(ent) == CSW_KNIFE && Origin[0] == Wallorigin[ent][0] && Origin[1] == Wallorigin[ent][1] && Origin[2] == Wallorigin[ent][2]||get_user_weapon(ent) == CSW_C4 && (get_user_button(ent) & IN_DUCK)&&g_last[ent])	set_es(es, ES_RenderAmt, 0);
 			else	set_es(es, ES_RenderAmt, 255);
 		}
 	}
