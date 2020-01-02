@@ -1,4 +1,4 @@
-// 00:18
+// 00:36
 
 #include <amxmodx>
 #include <cstrike>
@@ -45,9 +45,10 @@ MSGID_SayText, MSGID_StatusIcon, MSGID_TextMsg, MSGID_SendAudio, MSGID_ShowMenu,
 bool:CanPlant, C4_CountDownDelay;
 
 public plugin_cfg() {
-	server_cmd("amx_cvar mp_playerid 2")
-	server_cmd("amx_cvar sv_maxspeed 900")
-	server_cmd("amx_cvar sv_restart 5")
+	server_cmd("mp_playerid 2")
+	server_cmd("sv_maxspeed 9000")
+	server_cmd("sv_maxvelocity 9000")
+	server_cmd("sv_restart 5")
 }
 
 //===========================================================================================//
@@ -161,7 +162,7 @@ public client_putinserver(id) {
 
 public Ham_Spawn_Post(id) {
 	if(is_user_alive(id)) {
-		//set_user_rendering(id)
+		set_user_rendering(id)
 
 		g_speed[id] = false;
 		g_last[id] = false;
@@ -190,18 +191,8 @@ public Ham_Spawn_Post(id) {
 	}
 }
 
-public EVENT_NewRound() {
-	CanPlant = false;
-	new Float:FloatTime = get_cvar_num("mp_freezetime") + (get_cvar_num("mp_roundtime") * 60) - 60.0
-	set_task(FloatTime, "TASK_CanPlant", TASKID_CANPLANT)
-	remove_task(TASKID_C4COUNTDOWN)
-}
-
-public EVENT_FireINTheHole()	return PLUGIN_HANDLED
-
 public HAM_Touch_Weapon(ent, id) {
 	if(is_user_alive(id) && get_user_team(id) == TEAM_FURIEN && !(get_pdata_cbase(ent, 39, 4) > 0))	return HAM_SUPERCEDE
-	
 	return HAM_IGNORED
 }
 
@@ -211,11 +202,6 @@ public SuperKnife_TakeDamage(Victim, Inflictor, Attacker, Float:Damage, DamageTy
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
-
-public C4_PrimaryAttack(Ent) {
-	if(!CanPlant)	return HAM_SUPERCEDE
-	return HAM_IGNORED
-}
 
 public CmdResetScore(id) {
 	if(get_user_frags(id) == 0 && get_user_deaths(id) == 0)	ColorChat(id, "!g[FURIEN] Scorul tau este deja!t 0-0!g !")
@@ -793,81 +779,105 @@ public MSG_TextMessage() {
 		client_print(0, print_center, "The Anti-Furiens have won this round!")
 		return PLUGIN_HANDLED;
 	}
-	else if(equal(TextMsg, "#Fire_in_the_hole"))
-		return PLUGIN_HANDLED
-	else if(equal(TextMsg, "#C4_Plant_At_Bomb_Spot")) {
-		if(!CanPlant)
-			return PLUGIN_HANDLED
-	}
+	else if(equal(TextMsg, "#Fire_in_the_hole"))	return PLUGIN_HANDLED
+	else if(equal(TextMsg, "#C4_Plant_At_Bomb_Spot"))	if(!CanPlant)	return PLUGIN_HANDLED
+
 	return PLUGIN_CONTINUE;
 }
-
-public MSG_ShowMenu(msgid, dest, id) {
-	if(!Should_AutoJoin(id))
-		return PLUGIN_CONTINUE
-	
-	static team_select[] = "#Team_Select"
-	static menu_text_code[sizeof team_select]
-	get_msg_arg_string(4, menu_text_code, sizeof menu_text_code - 1)
-	if(!equal(menu_text_code, team_select))
-		return PLUGIN_CONTINUE
-	
-	JoinTeam_Task(id, msgid)
-	
-	return PLUGIN_HANDLED
+public EVENT_NewRound() {
+	remove_task(TASKID_C4COUNTDOWN)
+	remove_task(TASKID_CANPLANT)
+	C4_CountDownDelay=0
+	CanPlant = false;
+	new Float:FloatTime = get_cvar_num("mp_freezetime") + (get_cvar_num("mp_roundtime") * 60) - 60.0
+	set_task(FloatTime, "TASK_CanPlant", TASKID_CANPLANT)
 }
-
-public MSG_VGUIMenu(msgid, dest, id) {
-	if(get_msg_arg_int(1) != 2 || !Should_AutoJoin(id))
-		return PLUGIN_CONTINUE
-	
-	JoinTeam_Task(id, msgid)
-	
-	return PLUGIN_HANDLED
+public TASK_CanPlant() {
+	CanPlant = true;
+	set_hudmessage(random(255), random(255), random(255), -1.0, -1.0, 1, 3.1, 3.0)
+	show_hudmessage(0, "Furienii pot planta bomba!")
 }
-
+public C4_PrimaryAttack() {
+	if(!CanPlant)	return HAM_SUPERCEDE
+	return HAM_IGNORED
+}
+public bomb_planted() {
+	//if(!CanPlant)	return
+	C4_CountDownDelay = get_cvar_num("mp_c4timer") - 1
+	TASK_C4_CountDown();
+	set_hudmessage(random(255), random(255), random(255), -1.0, -1.0, 1, 3.1, 3.0)
+	show_hudmessage(0, "Furienii au plantat bomba!")
+}
+public TASK_C4_CountDown() {
+	//if(!CanPlant)	return
+	new Red, Green, Blue
+	if(C4_CountDownDelay > 10)	Red = 0, Green = 255, Blue = 0;
+	else if(C4_CountDownDelay > 5)	Red = 255, Green = 200, Blue = 0;
+	else if(C4_CountDownDelay <= 5)	Red = 255, Green = 0, Blue = 0;
+	
+	if(C4_CountDownDelay) {
+		new Message[256];
+		formatex(Message,sizeof(Message)-1,"----------^n| C4: %d |^n----------", C4_CountDownDelay);
+		
+		set_hudmessage(Red, Green, Blue, -1.0, 0.78, 0, 6.0, 1.0)
+		show_hudmessage(0, "%s", Message)
+		set_task(1.0, "TASK_C4_CountDown", TASKID_C4COUNTDOWN);
+		C4_CountDownDelay--;
+	}
+	else if(!C4_CountDownDelay)	C4_CountDownDelay = 0;
+}
 public MSG_SendAudio() {
 	static Sound[17]
 	get_msg_arg_string(2, Sound, sizeof Sound - 1)
 	
-	if(equal(Sound, "terwin") || equal(Sound, "ctwin") || equal(Sound, "rounddraw") || equal(Sound, "bombpl") || equal(Sound, "bombdef"))
-		return PLUGIN_HANDLED;
+	if(equal(Sound, "terwin") || equal(Sound, "ctwin") || equal(Sound, "rounddraw") || equal(Sound, "bombpl") || equal(Sound, "bombdef"))	return PLUGIN_HANDLED;
 	
 	return PLUGIN_CONTINUE;
 }
+public EVENT_FireINTheHole()	return PLUGIN_HANDLED
 
 public MSG_Health(msgid, dest, id) {
 	static Health;
 	Health = get_msg_arg_int(1)
-	if(Health > 255)
-		set_msg_arg_int(1, ARG_BYTE, 255);
-	else if(Health == 256)
-		set_msg_arg_int(1, ARG_BYTE, get_user_health(id) + 10)
+	if(Health > 255)	set_msg_arg_int(1, ARG_BYTE, 255);
+	else if(Health == 256)	set_msg_arg_int(1, ARG_BYTE, get_user_health(id) + 10)
 }
 
-
-
-bool:Should_AutoJoin(id) {
-	return(get_pcvar_num(cvar_autojoin_team) && !get_user_team(id) && !task_exists(id))
+public MSG_ShowMenu(msgid, dest, id) {
+	if(!Should_AutoJoin(id))	return PLUGIN_CONTINUE
+	
+	static team_select[] = "#Team_Select"
+	static menu_text_code[sizeof team_select]
+	get_msg_arg_string(4, menu_text_code, sizeof menu_text_code - 1)
+	if(!equal(menu_text_code, team_select))	return PLUGIN_CONTINUE
+	
+	JoinTeam_Task(id, msgid)
+	
+	return PLUGIN_HANDLED
 }
-
+public MSG_VGUIMenu(msgid, dest, id) {
+	if(get_msg_arg_int(1) != 2 || !Should_AutoJoin(id))	return PLUGIN_CONTINUE
+	
+	JoinTeam_Task(id, msgid)
+	
+	return PLUGIN_HANDLED
+}
+bool:Should_AutoJoin(id)	return(get_pcvar_num(cvar_autojoin_team) && !get_user_team(id) && !task_exists(id))
 JoinTeam_Task(id, menu_msgid) {
 	static param_menu_msgid[2]
 	param_menu_msgid[0] = menu_msgid
 	
 	set_task(0.1, "Force_JoinTeam", id, param_menu_msgid, sizeof param_menu_msgid)
 }
-
 public Force_JoinTeam(menu_msgid[], id) {
-	if(get_user_team(id))
-		return
+	if(get_user_team(id))	return
 	
 	static team[2], class[2]
 	get_pcvar_string(cvar_autojoin_team, team, sizeof team - 1)
 	get_pcvar_string(cvar_autojoin_class, class, sizeof class - 1)
+
 	Force_Team_Join(id, menu_msgid[0], team, class)
 }
-
 stock Force_Team_Join(id, menu_msgid, team[] = "5", class[] = "0") {
 	static jointeam[] = "jointeam"
 	if(class[0] == '0') {
@@ -883,13 +893,6 @@ stock Force_Team_Join(id, menu_msgid, team[] = "5", class[] = "0") {
 	set_msg_block(menu_msgid, msg_block)
 }
 
-public bomb_planted(planter) {
-	C4_CountDownDelay = get_cvar_num("mp_c4timer") - 1
-	TASK_C4_CountDown();
-	set_hudmessage(random(255), random(255), random(255), -1.0, -1.0, 1, 3.1, 3.0)
-	show_hudmessage(0, "Furienii au plantat bomba!")
-}
-
 public EVENT_SwitchTeam() {
 	new Players[32], PlayersNum, id;
 	get_players(Players, PlayersNum)
@@ -900,7 +903,6 @@ public EVENT_SwitchTeam() {
 		}
 	}
 }
-
 public BeginDelay(id) {
 	if(is_user_connected(id)) {
 		switch(id) {
@@ -911,13 +913,12 @@ public BeginDelay(id) {
 			}
 	}
 }
-
 public BeginTeamSwap(id) {
 	if(is_user_connected(id)) {
 		switch(get_user_team(id)) {
 			case TEAM_FURIEN: cs_set_user_team(id, CS_TEAM_CT)
-				case TEAM_ANTIFURIEN: cs_set_user_team(id, CS_TEAM_T)
-			}
+			case TEAM_ANTIFURIEN: cs_set_user_team(id, CS_TEAM_T)
+		}
 	}
 }
 
@@ -1093,30 +1094,6 @@ public FWD_GameDescription() {
 	forward_return(FMV_STRING, GameName)
 	
 	return FMRES_SUPERCEDE
-}
-
-public TASK_CanPlant() {
-	CanPlant = true;
-	set_hudmessage(random(255), random(255), random(255), -1.0, -1.0, 1, 3.1, 3.0)
-	show_hudmessage(0, "Furienii pot planta bomba!")
-}
-
-public TASK_C4_CountDown() {
-	new Red, Green, Blue
-	if(C4_CountDownDelay > 10)	Red = 0, Green = 255, Blue = 0;
-	else if(C4_CountDownDelay > 5)	Red = 255, Green = 200, Blue = 0;
-	else if(C4_CountDownDelay <= 5)	Red = 255, Green = 0, Blue = 0;
-	
-	if(C4_CountDownDelay) {
-		new Message[256];
-		formatex(Message,sizeof(Message)-1,"----------^n| C4: %d |^n----------", C4_CountDownDelay);
-		
-		set_hudmessage(Red, Green, Blue, -1.0, 0.78, 0, 6.0, 1.0)
-		show_hudmessage(0, "%s", Message)
-		set_task(1.0, "TASK_C4_CountDown", TASKID_C4COUNTDOWN);
-		C4_CountDownDelay--;
-	}
-	else if(!C4_CountDownDelay)	C4_CountDownDelay = 0;
 }
 
 stock ColorChat(const id, const input[], any:...) {
