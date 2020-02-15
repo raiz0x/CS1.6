@@ -1,3 +1,5 @@
+	//https://forums.alliedmods.net/showthread.php?t=240304
+	
 	#include <amxmodx>
 	#include <amxmisc>
 	#include <cstrike>
