@@ -1,0 +1,33 @@
+public client_infochanged( iPlayer )
+{
+    new szNewName[ 32 ], szOldName[ 32 ];
+    get_user_info( iPlayer, "name", szNewName, 31 );
+    get_user_name( iPlayer, szOldName, 31 );
+    
+    if( !equal( szNewName, szOldName ) )
+    {
+        new Float:fGametime = get_gametime( );
+        new Float:fDiff = g_fLastNameChange[ iPlayer ] + NAME_CHANGE_WAIT - fGametime;
+        
+        if( fDiff > 0.0 )
+        {
+            set_user_info( iPlayer, "name", szOldName );
+            client_print( iPlayer, print_center, "You must wait %.1f seconds before changing you name.", fDiff );
+        }
+        else
+        {
+            static name[32]
+            for(new i = 1; i <= 32; i++)
+            {
+                if(is_user_connected(i)){
+                    get_user_name(i , name 31)
+                    if(containi(szNewName, name) != -1){
+                      set_user_info( iPlayer, "name", szOldName );
+                      return;
+                    }
+                }
+            }
+            g_fLastNameChange[ iPlayer ] = fGametime;
+        }
+    }
+} 
