@@ -75,6 +75,12 @@ entity_set_int(weapon, EV_INT_skin, 5)
 }
 
 pev_body or EV_INT_body
+
+
+if (pev(id, pev_body)== 1)
+{
+set_pev(id, pev_body, 2)
+}
 */
 
 #include <amxmodx>
