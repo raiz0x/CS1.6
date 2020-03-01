@@ -1,6 +1,6 @@
 //	LAST EDIT ON :	11.07.2019 / 22:54
 
-/*
+/*	https://forums.alliedmods.net/showthread.php?t=282544
 			set_pev(player_ent[id],pev_skin,0)//0 nr la model
 			set_pev(player_ent[id],pev_body,0) // pe corp asta..la noob??
 			set_pev(entity, pev_sequence,1)
