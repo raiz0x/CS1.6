@@ -1,10 +1,10 @@
 /*  AMX Mod X script
-*                               ______                       __                    __          __                              ________
-*		               / ____ \                      \ \                  / /         /  |                            |______  |
-*		              / /    \ \                      \ \                / /         /   |                        __         | |
-*		             | /      \ |                      \ \              / /         / /| |                       |__|        | |
-*		             | |      | |    ______     _    __ \ \            / /  _      / / | |       ______                      | |
-*    	 _   _____   _____   | |      | |   / ____ \   | |  / /  \ \          / /  |_|    / /  | |      / ____ \                     | |
+*                           ______                       __                    __          __                              ________
+*		               	   / ____ \                      \ \                  / /         /  |                            |______  |
+*		              	  / /    \ \                      \ \                / /         /   |                        __         | |
+*		             	 | /      \ |                      \ \              / /         / /| |                       |__|        | |
+*		             	 | |      | |    ______     _    __ \ \            / /  _      / / | |       ______                      | |
+*    _   _____   _____   | |      | |   / ____ \   | |  / /  \ \          / /  |_|    / /  | |      / ____ \                     | |
 *	| | / __  | / __  |  | |      | |  | /    \_\  | | / /    \ \        / /    _    / /   | |     /_/    \ \                    | |
 *	| |/ /  | |/ /  | |  | |      | |  | \_____    | |/ /      \ \      / /    | |  / /____| |__     ______| |                   | |
 *	| | /   | | /   | |  | |      | |   \_____ \   | | /        \ \    / /     | | /_______  |__|   / _____  |                   | |
@@ -105,20 +105,37 @@
 
 #include <amxmodx>
 #include <amxmisc>
-#include <celltrie>
+#define EVO
 #include <cstrike>
 
+#pragma tabsize 0
+
+//#define EV0_DEBUG	//pt flagele ce nu apar drc..a trb manual gen
+#define NORMAL_SAY_FOR_TAGGED_PLAYERS
+//#define REPLACE_BUG_CHARS
+#if defined REPLACE_BUG_CHARS
+#define EXTRA 0
+#if EXTRA == 1
+#pragma ctrlchar '\'
+#endif
+new cmdx[21]
+#endif
 //#define INCHAT_NAME_CHANGED
-//#define NORMAL_SAY_FOR_TAGGED_PLAYERS
+//#define TOP_PREFIX
+//#define LEVEL_PREFIX
+#if defined LEVEL_PREFIX//level sau rank??..
+native get_user_lvl(id)
+native get_user_rank(id)
+#endif
 
 #define VERSION "4.0"
 #define FLAG_LOAD ADMIN_IMMUNITY
 #define MAX_PREFIXES 666
 #define MAX_BAD_PREFIXES 100
 
-new g_bad_prefix, /*g_listen, g_listen_flag,*/ g_custom, /*g_custom_flag,*/ g_say_characters, g_prefix_characters;
-new pre_ips_count = 0, pre_names_count = 0, pre_steamids_count/*=0*/, pre_flags_count = 0, bad_prefix_count = 0, i/*, temp_cvar[2]*/;
-new configs_dir[64], file_prefixes[512], file_bad_prefixes[128], text[128], prefix[200], type[2], key[200], length, line = 0, error[256];
+new g_bad_prefix, /*g_listen, g_listen_flag,*/ g_custom, g_custom_flag, g_say_characters, g_prefix_characters;
+new pre_ips_count, pre_names_count, pre_steamids_count, pre_flags_count, bad_prefix_count, temp_cvar[2];
+new configs_dir[64], file_prefixes[512], file_bad_prefixes[128], text[128], prefix[200], type[2], key[200], length, line, error[256];
 new g_saytxt, g_maxplayers, CsTeams:g_team;
 new g_typed[192], g_message[192], g_name[32];
 new Trie:pre_ips_collect, Trie:pre_names_collect, Trie:pre_steamids_collect, Trie:pre_flags_collect, Trie:bad_prefixes_collect, Trie:client_prefix;
@@ -137,17 +154,31 @@ new const sayteam_team_info[2][CsTeams][] =
 	{"(Spectator) ", "(Terrorist) ", "(Counter-Terrorist) ", "(Spectator) "}
 }
 
-new const forbidden_say_symbols[] = {
-	"/",
-	"%",
-	"#"
+new const forbidden_say_symbols[] = {//hidden
+	"/"
 }
 
 new const forbidden_prefixes_symbols[] = {
-	"%",
+	"%s",
 	".",
 	":",
-	"#"
+	"#c",
+	"#a",
+	"#s",
+	"#t",
+	"#o",
+	"#l"
+}
+
+new const FORBIDDEN_CHARS[]=
+{
+	"%s",
+	"#c",
+	"#a",
+	"#s",
+	"#t",
+	"#o",
+	"#l"
 }
 
 new const separator[] = "************************************************"
@@ -155,13 +186,13 @@ new const in_prefix[] = "[AdminPrefixes]"
 
 public plugin_init()
 {
-	register_plugin("Admin Prefixes", VERSION, "m0skVi4a ;]")
+	register_plugin("Admin Prefixes", VERSION, "m0skVi4a ;]")//lev edition
 
 	g_bad_prefix = register_cvar("ap_bad_prefixes", "0")
 	//g_listen = register_cvar("ap_listen", "0")
-	//g_listen_flag = register_cvar("ap_listen_flag", "a")
+	//g_listen_flag = register_cvar("ap_listen_flag", "0")
 	g_custom = register_cvar("ap_custom_current", "1")
-	//g_custom_flag = register_cvar("ap_custom_current_flag", "b")
+	g_custom_flag = register_cvar("ap_custom_current_flag", "a")
 	g_say_characters = register_cvar("ap_say_characters", "3")
 	g_prefix_characters = register_cvar("ap_prefix_characters", "0")
 
@@ -189,43 +220,20 @@ public plugin_init()
 
 	LoadPrefixes(0)
 	LoadBadPrefixes(0)
-#if defined INCHAT_NAME_CHANGED
-	register_message( get_user_msgid( "SayText" ), "MessageSayText" );
-#endif
 }
 
-public MessageSayText( iMsgId, iDest, iReceiver ) {
-	static szMessage[ 65 ];
-	get_msg_arg_string( 2, szMessage, sizeof( szMessage ) - 1 );
-	
-	if( equal( szMessage, "#Cstrike_Name_Change" ) ) {
-		static szName[ 32 ], id;
-		for( new i = 3; i <= 4; i++ ) {
-			get_msg_arg_string( i, szName, 31 );
-			
-			id = get_user_index( szName );
-			new namen[32]
-			get_user_info(id,"name",namen,charsmax(namen))//wtf..
-			
-			if( is_user_connected( id ) ) {
-				if(temp_prefix[0])	formatex(szMessage, charsmax(szMessage), "!e*!v%s!e %s!n si-a schimbat numele in!v %s",szName,temp_prefix,namen);
-				else	formatex(szMessage, charsmax(szMessage), "!e*!v %s!n si-a schimbat numele in!v %s",szName,namen);
-				xCoLoR(0,szMessage)
-				break;
-			}
-		}
-		return PLUGIN_HANDLED
-	}
-	
-	return PLUGIN_CONTINUE;
-}
-	
-public LoadPrefixes(id)
+public LoadPrefixes(id)//cfg??
 {
 	if(!(get_user_flags(id) & FLAG_LOAD))
 	{
 		console_print(id, "%L", LANG_SERVER, "PREFIX_PERMISSION", in_prefix)
 		return PLUGIN_HANDLED
+	}
+
+	if(!file_exists(file_prefixes)) 
+	{
+		formatex(error, charsmax(error), "%L", LANG_SERVER, "PREFIX_NOT_FOUND", in_prefix, file_prefixes)
+		set_fail_state(error)
 	}
 
 	TrieClear(pre_ips_collect)
@@ -235,20 +243,22 @@ public LoadPrefixes(id)
 
 	line = 0, length = 0, pre_flags_count = 0, pre_ips_count = 0, pre_names_count = 0;
 
-	if(!file_exists(file_prefixes)) 
-	{
-		formatex(error, charsmax(error), "%L", LANG_SERVER, "PREFIX_NOT_FOUND", in_prefix, file_prefixes)
-		set_fail_state(error)
-	}
-
 	server_print(separator)
 
 	while(read_file(file_prefixes, line++ , text, charsmax(text), length) && (pre_ips_count + pre_names_count + pre_steamids_count + pre_flags_count) <= MAX_PREFIXES)
 	{
-		if(!text[0] || text[0] == '^n' || text[0] == ';' || (text[0] == '/' && text[1] == '/'))
-			continue
+		if(!text[0] || text[0] == ';' || (text[0] == '/' && text[1] == '/'))	continue
+#if defined REPLACE_BUG_CHARS
+	#if EXTRA == 1
+		if(text[0] == '\"n')	continue
+	#endif
+#else
+		if(text[0] == '^n')	continue
+#endif
 
 		parse(text, type, charsmax(type), key, charsmax(key), prefix, charsmax(prefix))
+		trim(prefix)
+		trim(type)
 		trim(prefix)
 
 		if(!type[0] || /*!prefix[0] ||*/ !key[0]) // de scos !prefix[0] daca vreau sa fac sa nu apara tagu' cuiva...
@@ -260,41 +270,37 @@ public LoadPrefixes(id)
 
 		switch(type[0])
 		{
-			case 'f':
+			case 'f','F':
 			{
+				strtolower(key)
+				remove_quotes(key)
 				pre_flags_count++
 				TrieSetString(pre_flags_collect, key, prefix)
-				server_print("%L", LANG_SERVER, "PREFIX_LOAD_FLAG", in_prefix, prefix, key[0])
+				server_print("%L", LANG_SERVER, "PREFIX_LOAD_FLAG", in_prefix, prefix, key)
 			}
-			case 'i':
+			case 'i','I':
 			{
 				pre_ips_count++
 				TrieSetString(pre_ips_collect, key, prefix)
 				server_print("%L", LANG_SERVER, "PREFIX_LOAD_IP", in_prefix, prefix, key)
 			}
-			case 's':
+			case 's','S':
 			{
 				pre_steamids_count++
 				TrieSetString(pre_steamids_collect, key, prefix)
 				server_print("%L", LANG_SERVER, "PREFIX_LOAD_STEAMID", in_prefix, prefix, key)
 			}
-			case 'n':
+			case 'n','N':
 			{
 				pre_names_count++
 				TrieSetString(pre_names_collect, key, prefix)
 				server_print("%L", LANG_SERVER, "PREFIX_LOAD_NAME", in_prefix, prefix, key)
 			}
-			default://=))
-			{
-				continue
-			}
+			default:	continue
 		}
 	}
 
-	if(pre_flags_count <= 0 && pre_ips_count <= 0 && pre_steamids_count <= 0 && pre_names_count <= 0)
-	{
-		server_print("%L", LANG_SERVER, "PREFIX_NO", in_prefix)
-	}
+	if(pre_flags_count <= 0 && pre_ips_count <= 0 && pre_steamids_count <= 0 && pre_names_count <= 0)	server_print("%L", LANG_SERVER, "PREFIX_NO", in_prefix)
 
 	get_user_name(id, g_name, charsmax(g_name))
 	server_print("%L", LANG_SERVER, "PREFIX_LOADED_BY", in_prefix, g_name)
@@ -304,6 +310,7 @@ public LoadPrefixes(id)
 
 	for(new i = 1; i <= g_maxplayers; i++)
 	{
+		if(!is_user_connected(i)||is_user_bot(i)||is_user_hltv(i))	continue
 		num_to_str(i, str_id, charsmax(str_id))
 		TrieDeleteKey(client_prefix, str_id)
 		PutPrefix(i)
@@ -311,7 +318,6 @@ public LoadPrefixes(id)
 
 	return PLUGIN_HANDLED
 }
-
 public LoadBadPrefixes(id)
 {
 	if(!get_pcvar_num(g_bad_prefix))
@@ -340,23 +346,24 @@ public LoadBadPrefixes(id)
 
 	while(read_file(file_bad_prefixes, line++ , text, charsmax(text), length) && bad_prefix_count <= MAX_BAD_PREFIXES)
 	{
-		if(!text[0] || text[0] == '^n' || text[0] == ';' || (text[0] == '/' && text[1] == '/'))
-			continue
+		if(!text[0] || text[0] == ';' || (text[0] == '/' && text[1] == '/'))	continue
+#if defined REPLACE_BUG_CHARS
+	#if EXTRA == 1
+		if(text[0] == '\"n')	continue
+	#endif
+#else
+		if(text[0] == '^n')	continue
+#endif
 
 		parse(text, prefix, charsmax(prefix))
-
-		if(!prefix[0])
-			continue
+		if(!prefix[0])	continue
 
 		bad_prefix_count++
 		TrieSetCell(bad_prefixes_collect, prefix, 1)
 		server_print("%L", LANG_SERVER, "BADP_LOAD", in_prefix, prefix)
 	}
 
-	if(bad_prefix_count <= 0)
-	{
-		server_print("%L", LANG_SERVER, "BADP_NO", in_prefix)
-	}
+	if(bad_prefix_count <= 0)	server_print("%L", LANG_SERVER, "BADP_NO", in_prefix)
 
 	get_user_name(id, g_name, charsmax(g_name))
 	server_print("%L", LANG_SERVER, "BADP_LOADED_BY", in_prefix, g_name)
@@ -369,9 +376,8 @@ public LoadBadPrefixes(id)
 
 public client_putinserver(id)
 {
+	if(!is_user_connected(id)||is_user_bot(id)||is_user_hltv(id))	return
 	g_toggle[id] = true
-	/*num_to_str(id, str_id, charsmax(str_id))
-	TrieSetString(client_prefix, str_id, "")*/
 	PutPrefix(id)
 }
 
@@ -379,11 +385,14 @@ public HookSay(id)
 {
 	read_args(g_typed, charsmax(g_typed))
 	remove_quotes(g_typed)
-
 	trim(g_typed)
+	if(equal(g_typed, "") || !is_user_connected(id))	return PLUGIN_HANDLED_MAIN
 
-	if(equal(g_typed, "") || !is_user_connected(id))
+	/*if(containi(g_typed,"%s")!=-1||containi(g_typed,"%s0")!=-1||containi(g_typed,"#c")!=-1||containi(g_typed,"#a")!=-1||containi(g_typed,"#s")!=-1||containi(g_typed,"#t")!=-1||containi(g_typed,"#o")!=-1||containi(g_typed,"#l")!=-1)
+	{
+		client_print(id,print_chat,"	MESAJ BLOCAT!!")
 		return PLUGIN_HANDLED_MAIN
+	}*/
 
 	if(equal(g_typed, "/prefix")) // ???
 	{
@@ -397,46 +406,70 @@ public HookSay(id)
 			g_toggle[id] = true
 			client_print(id, print_chat, "%L", LANG_SERVER, "PREFIX_ON", in_prefix)
 		}
-
 		return PLUGIN_HANDLED_MAIN
 	}
 
-	if(!g_toggle[id])
-		return PLUGIN_CONTINUE
+	if(!g_toggle[id])	return PLUGIN_CONTINUE
 
 	num_to_str(id, str_id, charsmax(str_id))
-
-	if((TrieGetString(client_prefix, str_id, temp_prefix, charsmax(temp_prefix)) && get_pcvar_num(g_say_characters) == 1) || (!TrieGetString(client_prefix, str_id, temp_prefix, charsmax(temp_prefix)) && get_pcvar_num(g_say_characters) == 2) || get_pcvar_num(g_say_characters) == 3)
-	{
-		if(check_say_characters(g_typed))
-			return PLUGIN_HANDLED_MAIN
-	}
+	if((TrieGetString(client_prefix, str_id, temp_prefix, charsmax(temp_prefix)) && get_pcvar_num(g_say_characters) == 1) || (!TrieGetString(client_prefix, str_id, temp_prefix, charsmax(temp_prefix)) && get_pcvar_num(g_say_characters) == 2) || get_pcvar_num(g_say_characters) == 3)	if(check_say_characters(g_typed))	return PLUGIN_HANDLED_MAIN
 
 	get_user_name(id, g_name, charsmax(g_name))
 
 	g_team = cs_get_user_team(id)
 
+#if defined TOP_PREFIX
+	new izStats[8], izBody[8], iRankPos, szPrefix[64];
+	iRankPos = get_user_stats(id, izStats, izBody);
+	szPrefix[0] = '^1';
+		//>0
+	if(iRankPos <= 15)	format(szPrefix, 63, " %s[TOP %d]", szPrefix, iRankPos);
+	//if(get_user_flags(id) & ADMIN_LEVEL_G)	format(szPrefix, 63, "%s[SVIP]", szPrefix);
+    
+	if(strlen(szPrefix) < 2) return 0;
+#endif
+
+#if defined REPLACE_BUG_CHARS
+	check_param(id,g_typed,charsmax(g_typed),2)
+#endif
+
 	if(temp_prefix[0])
 	{
 		#if defined NORMAL_SAY_FOR_TAGGED_PLAYERS
-		if(!is_user_admin(id))	formatex(g_message, charsmax(g_message), "^1%s^4%s^3 %s^1 : %s", say_team_info[is_user_alive(id)][g_team], temp_prefix, g_name, g_typed)
+		if(!is_user_admin(id))
+		{
+			#if !defined TOP_PREFIX
+			formatex(g_message, charsmax(g_message), "^1%s^4%s^3 %s^1 : %s", say_team_info[is_user_alive(id)][g_team], temp_prefix, g_name, g_typed)
+			#else
+			formatex(g_message, charsmax(g_message), "^1%s^4%s%s^3 %s^1 : %s", say_team_info[is_user_alive(id)][g_team], temp_prefix,szPrefix, g_name, g_typed)
+			#endif
+		}
 		else
 		#endif
+		#if !defined TOP_PREFIX
 		formatex(g_message, charsmax(g_message), "^1%s^4%s^3 %s^1 :^4 %s", say_team_info[is_user_alive(id)][g_team], temp_prefix, g_name, g_typed)
+		#else
+		formatex(g_message, charsmax(g_message), "^1%s^4%s%s^3 %s^1 :^4 %s", say_team_info[is_user_alive(id)][g_team], temp_prefix,szPrefix, g_name, g_typed)
+		#endif
 	}
-	else	formatex(g_message, charsmax(g_message), "^1%s^3%s^4 :^1 %s", say_team_info[is_user_alive(id)][g_team], g_name, g_typed)
+	else
+	{
+		#if !defined TOP_PREFIX
+		formatex(g_message, charsmax(g_message), "^1%s^3%s^4 :^1 %s", say_team_info[is_user_alive(id)][g_team], g_name, g_typed)
+		#else
+		formatex(g_message, charsmax(g_message), "^1%s%s^3%s^4 :^1 %s", say_team_info[is_user_alive(id)][g_team],szPrefix, g_name, g_typed)
+		#endif
+	}
 
 	//get_pcvar_string(g_listen_flag, temp_cvar, charsmax(temp_cvar))
-
-	for(new i = 1; i <= g_maxplayers; i++) // ??
+	for(new i = 1; i <= g_maxplayers; i++)
 	{
-		if(!is_user_connected(i))
-			continue
+		if(!is_user_connected(i)||is_user_bot(i)||is_user_hltv(i))	continue
 
-		if(is_user_alive(id) || is_user_alive(i) || !is_user_alive(id) || !is_user_alive(i) /*&& get_pcvar_num(g_listen) && get_user_flags(i) & read_flags(temp_cvar)*/)
-		{
+		//if(is_user_alive(id) || is_user_alive(i) || !is_user_alive(id) || !is_user_alive(i) /*&& get_pcvar_num(g_listen) && get_user_flags(i) & read_flags(temp_cvar)*/)
+		//{
 			send_message(g_message, id, i)
-		}
+		//}
 	}
 
 	return PLUGIN_HANDLED_MAIN
@@ -446,11 +479,14 @@ public HookSayTeam(id)
 {
 	read_args(g_typed, charsmax(g_typed))
 	remove_quotes(g_typed)
-
 	trim(g_typed)
+	if(equal(g_typed, "") || !is_user_connected(id))	return PLUGIN_HANDLED_MAIN
 
-	if(equal(g_typed, "") || !is_user_connected(id))
+	/*if(containi(g_typed,"%s")!=-1||containi(g_typed,"%s0")!=-1||containi(g_typed,"#c")!=-1||containi(g_typed,"#a")!=-1||containi(g_typed,"#s")!=-1||containi(g_typed,"#t")!=-1||containi(g_typed,"#o")!=-1||containi(g_typed,"#l")!=-1)
+	{
+		client_print(id,print_chat,"	MESAJ BLOCAT!!")
 		return PLUGIN_HANDLED_MAIN
+	}*/
 
 	if(equal(g_typed, "/prefix"))
 	{
@@ -468,37 +504,69 @@ public HookSayTeam(id)
 		return PLUGIN_HANDLED_MAIN
 	}
 
-	if(!g_toggle[id])
-		return PLUGIN_CONTINUE
+	if(!g_toggle[id])	return PLUGIN_CONTINUE
 
 	num_to_str(id, str_id, charsmax(str_id))
-
-	if((TrieGetString(client_prefix, str_id, temp_prefix, charsmax(temp_prefix)) && get_pcvar_num(g_say_characters) == 1) || (!TrieGetString(client_prefix, str_id, temp_prefix, charsmax(temp_prefix)) && get_pcvar_num(g_say_characters) == 2) || get_pcvar_num(g_say_characters) == 3)
-	{
-		if(check_say_characters(g_typed))
-			return PLUGIN_HANDLED_MAIN
-	}
+	if((TrieGetString(client_prefix, str_id, temp_prefix, charsmax(temp_prefix)) && get_pcvar_num(g_say_characters) == 1) || (!TrieGetString(client_prefix, str_id, temp_prefix, charsmax(temp_prefix)) && get_pcvar_num(g_say_characters) == 2) || get_pcvar_num(g_say_characters) == 3)	if(check_say_characters(g_typed))	return PLUGIN_HANDLED_MAIN
 
 	get_user_name(id, g_name, charsmax(g_name))
 
 	g_team = cs_get_user_team(id)
 
-	if(temp_prefix[0])	formatex(g_message, charsmax(g_message), "^1%s^4%s^3 %s^1 :^4 %s", sayteam_team_info[is_user_alive(id)][g_team], temp_prefix, g_name, g_typed)
-	else	formatex(g_message, charsmax(g_message), "^1%s^3%s^4 :^1 %s", sayteam_team_info[is_user_alive(id)][g_team], g_name, g_typed)
+#if defined TOP_PREFIX
+	new izStats[8], izBody[8], iRankPos, szPrefix[64];
+	iRankPos = get_user_stats(id, izStats, izBody);
+	szPrefix[0] = '^1';
+		//>0
+	if(iRankPos <= 15)	format(szPrefix, 63, " %s[TOP %d]", szPrefix, iRankPos);
+	//if(get_user_flags(id) & ADMIN_LEVEL_G)	format(szPrefix, 63, "%s[SVIP]", szPrefix);
+    
+	if(strlen(szPrefix) < 2) return 0;
+#endif
+
+#if defined REPLACE_BUG_CHARS
+	check_param(id,g_typed,charsmax(g_typed),2)
+#endif
+
+	if(temp_prefix[0])
+	{
+		#if defined NORMAL_SAY_FOR_TAGGED_PLAYERS
+		if(!is_user_admin(id))
+		{
+			#if !defined TOP_PREFIX
+			formatex(g_message, charsmax(g_message), "^1%s^4%s^3 %s^1 : %s", sayteam_team_info[is_user_alive(id)][g_team], temp_prefix, g_name, g_typed)
+			#else
+			formatex(g_message, charsmax(g_message), "^1%s^4%s%s^3 %s^1 : %s", sayteam_team_info[is_user_alive(id)][g_team], temp_prefix,szPrefix, g_name, g_typed)
+			#endif
+		}
+		else
+		#endif
+			#if !defined TOP_PREFIX
+			formatex(g_message, charsmax(g_message), "^1%s^4%s^3 %s^1 :^4 %s", sayteam_team_info[is_user_alive(id)][g_team], temp_prefix, g_name, g_typed)
+			#else
+			formatex(g_message, charsmax(g_message), "^1%s^4%s%s^3 %s^1 :^4 %s", sayteam_team_info[is_user_alive(id)][g_team], temp_prefix,szPrefix, g_name, g_typed)
+			#endif
+	}
+	else
+	{
+		#if !defined TOP_PREFIX
+		formatex(g_message, charsmax(g_message), "^1%s^3%s^4 :^1 %s", sayteam_team_info[is_user_alive(id)][g_team], g_name, g_typed)
+		#else
+		formatex(g_message, charsmax(g_message), "^1%s%s^3%s^4 :^1 %s", sayteam_team_info[is_user_alive(id)][g_team],szPrefix, g_name, g_typed)
+		#endif
+	}
 
 	//get_pcvar_string(g_listen_flag, temp_cvar, charsmax(temp_cvar))
-
 	for(new i = 1; i <= g_maxplayers; i++)
 	{
-		if(!is_user_connected(i))
-			continue
+		if(!is_user_connected(i)||is_user_bot(i)||is_user_hltv(i))	continue
 
 		if(get_user_team(id) == get_user_team(i) /*&& get_pcvar_num(g_listen) && get_user_flags(i) & read_flags(temp_cvar)*/)
 		{
-			if(is_user_alive(id) || is_user_alive(i) || !is_user_alive(id) || !is_user_alive(i) /*&& get_pcvar_num(g_listen) && get_user_flags(i) & read_flags(temp_cvar)*/)
-			{
+			//if(is_user_alive(id) || is_user_alive(i) || !is_user_alive(id) || !is_user_alive(i) /*&& get_pcvar_num(g_listen) && get_user_flags(i) & read_flags(temp_cvar)*/)
+			//{
 				send_message(g_message, id, i)
-			}
+			//}
 		}
 	}
 
@@ -507,15 +575,15 @@ public HookSayTeam(id)
 
 public SetPlayerPrefix(id)
 {
-	if(!get_pcvar_num(g_custom) /*|| !get_pcvar_string(g_custom_flag, temp_cvar, charsmax(temp_cvar))*/)
+	if(!get_pcvar_num(g_custom) || !get_pcvar_string(g_custom_flag, temp_cvar, charsmax(temp_cvar)))
 	{
 		console_print(id, "%L", LANG_SERVER, "CUSTOM_OFF", in_prefix)
 		return PLUGIN_HANDLED
 	}
 
-	if(!(get_user_flags(id) & ADMIN_IMMUNITY/*read_flags(temp_cvar)*/))
+	if(!(get_user_flags(id) & read_flags(temp_cvar)))
 	{
-		//console_print(id, "%L", LANG_SERVER, "CUSTOM_PERMISSION", in_prefix)
+		console_print(id, "%L", LANG_SERVER, "CUSTOM_PERMISSION", in_prefix)
 		return PLUGIN_HANDLED
 	}
 
@@ -528,7 +596,7 @@ public SetPlayerPrefix(id)
 	parse(input, arg_type, charsmax(arg_type), arg_key, charsmax(arg_key), arg_prefix, charsmax(arg_prefix))
 	trim(arg_prefix)
 
-	if(get_pcvar_num(g_bad_prefix) && is_bad_prefix(arg_prefix) && !equali(arg_prefix, ""))
+	if(get_pcvar_num(g_bad_prefix) && is_bad_prefix(arg_prefix) && !equal(arg_prefix, ""))
 	{
 		console_print(id, "%L", LANG_SERVER, "CUSTOM_FORBIDDEN", in_prefix, arg_prefix)
 		return PLUGIN_HANDLED
@@ -536,28 +604,28 @@ public SetPlayerPrefix(id)
 
 	if(get_pcvar_num(g_prefix_characters) && check_prefix_characters(arg_prefix))
 	{
-		console_print(id, "%L", LANG_SERVER, "CUSTOM_SYMBOL", in_prefix, arg_prefix, forbidden_prefixes_symbols[i])
+		for(new i;i<sizeof(forbidden_prefixes_symbols);i++)	console_print(id, "%L", LANG_SERVER, "CUSTOM_SYMBOL", in_prefix, arg_prefix, forbidden_prefixes_symbols[i])
 		return PLUGIN_HANDLED
 	}
 
 	switch(arg_type[0])
 	{
-		case 'f':
+		case 'f','F':
 		{
 			target = 0
 			temp_str = "Flag"
 		}
-		case 'i':
+		case 'i','I':
 		{
 			target = find_player("d", arg_key)
 			temp_str = "IP"
 		}
-		case 's':
+		case 's','S':
 		{
 			target = find_player("c", arg_key)
 			temp_str = "SteamID"
 		}
-		case 'n':
+		case 'n','N':
 		{
 			target = find_player("a", arg_key)
 			temp_str = "Name"
@@ -575,10 +643,7 @@ public SetPlayerPrefix(id)
 	{
 		find_and_delete(arg_type, arg_key)
 
-		if(target)
-		{
-			PutPrefix(target)
-		}
+		if(target)	PutPrefix(target)
 		
 		console_print(id, "%L", LANG_SERVER, "CUSTOM_REMOVE", in_prefix, temp_str, arg_key)
 		server_print("%L", LANG_SERVER, "CUSTOM_REMOVE_INFO", in_prefix, g_name, temp_str, arg_key)
@@ -592,22 +657,10 @@ public SetPlayerPrefix(id)
 
 	switch(arg_type[0])
 	{
-		case 'f':
-		{
-			TrieSetString(pre_flags_collect, arg_key, arg_prefix)
-		}
-		case 'i':
-		{
-			TrieSetString(pre_ips_collect, arg_key, arg_prefix)
-		}
-		case 's':
-		{
-			TrieSetString(pre_steamids_collect, arg_key, arg_prefix)
-		}
-		case 'n':
-		{
-			TrieSetString(pre_names_collect, arg_key, arg_prefix)
-		}
+		case 'f','F':	TrieSetString(pre_flags_collect, arg_key, arg_prefix)
+		case 'i','I':	TrieSetString(pre_ips_collect, arg_key, arg_prefix)
+		case 's','S':	TrieSetString(pre_steamids_collect, arg_key, arg_prefix)
+		case 'n','N':	TrieSetString(pre_names_collect, arg_key, arg_prefix)
 	}
 
 	if(target)
@@ -624,74 +677,61 @@ public SetPlayerPrefix(id)
 
 public client_infochanged(id)
 {
-	if(!is_user_connected(id))
-		return PLUGIN_CONTINUE
+	if(!is_user_connected(id))	return PLUGIN_CONTINUE
 
 	new g_old_name[32];
-
 	get_user_info(id, "name", g_name, charsmax(g_name))
 	get_user_name(id, g_old_name, charsmax(g_old_name))
 
 	if(!equal(g_name, g_old_name))
 	{
+#if defined REPLACE_BUG_CHARS
+		check_param(id,g_name,charsmax(g_name),1)
+#endif
+#if !defined INCHAT_NAME_CHANGED
 		num_to_str(id, str_id, charsmax(str_id))
 		TrieSetString(client_prefix, str_id, "")
+#else
+		new szMessage[ 265 ]
+		
+		num_to_str(id, str_id, charsmax(str_id))
+		if(TrieGetString(client_prefix, str_id, temp_prefix, charsmax(temp_prefix)))	if(temp_prefix[0])	formatex(szMessage, charsmax(szMessage), "!e*!n %s!v %s!n si-a schimbat numele in!v %s",temp_prefix,g_old_name,g_name);
+		else
+		{
+			if(TrieGetString(client_prefix, str_id, temp_prefix, charsmax(temp_prefix)))	if(temp_prefix[0])	formatex(szMessage, charsmax(szMessage), "!e*!v %s!n si-a schimbat numele in %s!v %s",g_old_name,temp_prefix,g_name);
+			else	formatex(szMessage, charsmax(szMessage), "!e*!v %s!n si-a schimbat numele in!v %s",g_old_name,g_name);
+		}
+		xCoLoR(0,szMessage)
+#endif
+
 		set_task(0.5, "PutPrefix", id)
 		return PLUGIN_HANDLED
 	}
-
 	return PLUGIN_CONTINUE
 }
-
 public PutPrefix(id)
 {
 	num_to_str(id, str_id, charsmax(str_id))
 	TrieSetString(client_prefix, str_id, "")
 
-	new sflags[200], temp_flag[200]
-	get_flags(get_user_flags(id), sflags, charsmax(sflags))
+	get_flags(get_user_flags(id), temp_key, charsmax(temp_key))
+		#if defined EV0_DEBUG
+	if(temp_key==read_flags("cdefri"))	TrieSetString(client_prefix, str_id, "[H]")
+	else if(temp_key==read_flags("cdefpij"))	TrieSetString(client_prefix, str_id, "[M]")
+	else if(temp_key==read_flags("abdceifjt"))	TrieSetString(client_prefix, str_id, "[V]")
+	else
+		#endif
+	if(TrieGetString(pre_flags_collect, temp_key, temp_prefix, charsmax(temp_prefix)))	TrieSetString(client_prefix, str_id, temp_prefix)
 
-	for(new i = 0; i <= charsmax(sflags); i++)
-	{
-		if(get_user_flags(id) == read_flags(sflags[i]))
-		{
-			formatex(temp_flag, charsmax(temp_flag), sflags[i])
-
-			if(TrieGetString(pre_flags_collect, temp_flag, temp_prefix, charsmax(temp_prefix)))
-			{
-				TrieSetString(client_prefix, str_id, temp_prefix)
-			}
-		}
-		else if(get_user_flags(id)==read_flags("cdefri"))
-		{
-			TrieSetString(client_prefix, str_id, "[H]")
-		}
-		else if(get_user_flags(id)==read_flags("cdefpij"))
-		{
-			TrieSetString(client_prefix, str_id, "[M]")
-		}
-	}
 
 	get_user_ip(id, temp_key, charsmax(temp_key), 1)
-
-	if(TrieGetString(pre_ips_collect, temp_key, temp_prefix, charsmax(temp_prefix)))
-	{
-		TrieSetString(client_prefix, str_id, temp_prefix)
-	}
+	if(TrieGetString(pre_ips_collect, temp_key, temp_prefix, charsmax(temp_prefix)))	TrieSetString(client_prefix, str_id, temp_prefix)
 
 	get_user_authid(id, temp_key, charsmax(temp_key))
-
-	if(TrieGetString(pre_steamids_collect, temp_key, temp_prefix, charsmax(temp_prefix)))
-	{
-		TrieSetString(client_prefix, str_id, temp_prefix)
-	}
+	if(TrieGetString(pre_steamids_collect, temp_key, temp_prefix, charsmax(temp_prefix)))	TrieSetString(client_prefix, str_id, temp_prefix)
 
 	get_user_name(id, temp_key, charsmax(temp_key))
-
-	if(TrieGetString(pre_names_collect, temp_key, temp_prefix, charsmax(temp_prefix)))
-	{
-		TrieSetString(client_prefix, str_id, temp_prefix)
-	}
+	if(TrieGetString(pre_names_collect, temp_key, temp_prefix, charsmax(temp_prefix)))	TrieSetString(client_prefix, str_id, temp_prefix)
 
 	return PLUGIN_HANDLED
 }
@@ -703,82 +743,171 @@ send_message(const message[], const id, const i)
 	write_string(message)
 	message_end()
 }
-
-bool:check_say_characters(const check_message[])
-{
-	for(new i = 0; i < charsmax(forbidden_say_symbols); i++)
-	{
-		if(check_message[0] == forbidden_say_symbols[i])
-		{
-			return true
-		}
-	}
-	return false
-}
-
-bool:check_prefix_characters(const check_prefix[])
-{
-	for(i = 0; i < charsmax(forbidden_prefixes_symbols); i++)
-	{
-		if(containi(check_prefix, forbidden_prefixes_symbols[i]) != -1)
-		{
-			return true
-		}
-	}
-	return false
-}
-
-bool:is_bad_prefix(const check_prefix[])
-{
-	if(TrieGetCell(bad_prefixes_collect, check_prefix, temp_value))
-	{
-		return true
-	}
-	return false
-}
-
 find_and_delete(const arg_type[], const arg_key[])
 {
 	line = 0, length = 0;
-
 	while(read_file(file_prefixes, line++ , text, charsmax(text), length))
 	{
-		if(!text[0] || text[0] == '^n' || text[0] == ';' || (text[0] == '/' && text[1] == '/'))
-			continue
-
+		if(!text[0] || text[0] == ';' || (text[0] == '/' && text[1] == '/'))	continue
+#if defined REPLACE_BUG_CHARS
+	#if EXTRA == 1
+		if(text[0] == '\"n')	continue
+	#endif
+#else
+		if(text[0] == '^n')	continue
+#endif
+		
 		parse(text, type, charsmax(type), key, charsmax(key), prefix, charsmax(prefix))
 		trim(prefix)
-
-		if(!type[0] || !prefix[0] || !key[0])
-			continue
-			
-		if(!equal(arg_type, type) || !equal(arg_key, key))
-			continue
-			
+		trim(type)
+		trim(key)
+		
+		if(!type[0] /*|| !prefix[0]*/ || !key[0])	continue
+		
+		if(!equal(arg_type, type) || !equal(arg_key, key))	continue
+		
 		write_file(file_prefixes, "", line - 1)
 	}
 	
 	switch(arg_type[0])
 	{
-		case 'f':
-		{
-			TrieDeleteKey(pre_flags_collect, arg_key)
-		}
-		case 'i':
-		{
-			TrieDeleteKey(pre_ips_collect, arg_key)
-		}
-		case 's':
-		{
-			TrieDeleteKey(pre_steamids_collect, arg_key)
-		}
-		case 'n':
-		{
-			TrieDeleteKey(pre_names_collect, arg_key)
-		}
+		case 'f':	TrieDeleteKey(pre_flags_collect, arg_key)
+		case 'i':	TrieDeleteKey(pre_ips_collect, arg_key)
+		case 's':	TrieDeleteKey(pre_steamids_collect, arg_key)
+		case 'n':	TrieDeleteKey(pre_names_collect, arg_key)
 	}
 }
 
+bool:check_say_characters(const check_message[])
+{
+	for(new i=0; i < charsmax(forbidden_say_symbols); i++)	if(check_message[0]==forbidden_say_symbols[i])	return true
+	return false
+}
+bool:check_prefix_characters(const check_prefix[])
+{
+	for(new i = 0; i < charsmax(forbidden_prefixes_symbols); i++)	if(containi(check_prefix, forbidden_prefixes_symbols[i]) != -1)	return true
+	return false
+}
+bool:is_bad_prefix(const check_prefix[])
+{
+	if(TrieGetCell(bad_prefixes_collect, check_prefix, temp_value))	return true
+	return false
+}
+bool:check_say(const check_message[])
+{
+	for(new i = 0; i < charsmax(FORBIDDEN_CHARS); i++)
+	{
+		if(containi(check_message, FORBIDDEN_CHARS[i]) != -1)
+		{
+			//replace + return pe replace..
+			return true
+		}
+	}
+	return false
+}
+
+
+#if defined REPLACE_BUG_CHARS
+public client_connect(id)
+{
+   get_user_info(id,"name",g_name,charsmax(g_name))
+   check_param(id,g_name,charsmax(g_name),1)
+}
+/*public client_command(id)
+{
+    new cmd[9],Said[130],said[2]
+    read_argv(0,cmd,charsmax(cmd))
+
+	read_argv(1,said,1)
+	if(said[0]=='@')	return PLUGIN_CONTINUE
+	
+    read_args(Said,charsmax(Said))
+    remove_quotes(Said)
+
+	if(equali(cmd,"say_team",8)||equali(cmd,"say",3))	copy(cmdx,charsmax(cmdx),cmd)
+
+	if(equali(cmd,"say_team",8))	check_param(id,Said,charsmax(Said),2)
+	else if(equali(cmd,"say",3))	check_param(id,Said,charsmax(Said),2)
+
+	return PLUGIN_CONTINUE
+}*/
+check_param(id,fc[],fc_max,number)
+{
+   switch(number)
+   {
+      case 1:
+      {
+         if(containi(fc,"%")!=-1)
+         {
+            replace_all(fc,fc_max,"%","％")
+            set_user_info(id,"name",fc)
+         }
+         if(containi(fc,"#")!=-1)
+         {
+            replace_all(fc,fc_max,"#","﹟")
+            set_user_info(id,"name",fc)
+         }
+#if EXTRA==1
+         if(containi(fc,"+")!=-1)
+         {
+            replace_all(fc,fc_max,"+"," + ")
+            set_user_info(id,"name",fc)
+         }
+         if(containi(fc,"&")!=-1)
+         {
+            replace_all(fc,fc_max,"&","＆")
+            set_user_info(id,"name",fc)
+         }
+         if(containi(fc,"\"")!=-1)
+         {
+            replace_all(fc,fc_max,"\"","＾")
+            set_user_info(id,"name",fc)
+         }
+
+         new lenx=strlen(fc)-1
+         if(lenx>0)
+         {
+            if(equali(fc[lenx],"\""))
+            {
+               fc[lenx]='^'//s3x
+               set_user_info(id,"name",fc)
+            }
+         }
+#endif
+      }
+      case 2:
+      {
+         if(containi(fc,"%")!=-1)
+         {
+            replace_all(fc,fc_max,"%","％")
+            engclient_cmd(id,cmdx,fc)
+         }
+         if(containi(fc,"#")!=-1)
+         {
+            replace_all(fc,fc_max,"#","﹟")
+            engclient_cmd(id,cmdx,fc)
+         }
+#if EXTRA==1
+         if(containi(fc,"+")!=-1)
+         {
+            replace_all(fc,fc_max,"+"," + ")
+            engclient_cmd(id,cmdx,fc)
+         }
+         if(containi(fc,"&")!=-1)
+         {
+            replace_all(fc,fc_max,"&","＆")
+            engclient_cmd(id,cmdx,fc)
+         }
+         if(containi(fc,"\"")!=-1)
+         {
+            replace_all(fc,fc_max,"\"","＾")
+            engclient_cmd(id,cmdx,fc)
+         }
+#endif
+      }
+   }
+}
+#endif
 
 stock xCoLoR( const id, const input[ ], any:... )
 {
@@ -792,7 +921,7 @@ stock xCoLoR( const id, const input[ ], any:... )
 	replace_all( msg, sizeof( msg ), "!e2", "^0" );
 
 	if( id )	players[ 0 ] = id;
-	else get_players( players, count, "ch" );
+	else get_players( players, count, "c" );
 
 	for( new i = 0; i < count; i++ )
 	{
