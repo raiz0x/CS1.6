@@ -159,6 +159,7 @@ new const forbidden_say_symbols[] = {//hidden
 }
 
 new const forbidden_prefixes_symbols[] = {
+	"%",
 	"%s",
 	".",
 	":",
@@ -172,13 +173,17 @@ new const forbidden_prefixes_symbols[] = {
 
 new const FORBIDDEN_CHARS[]=
 {
-	"%s",
+	"%"
 	"#c",
 	"#a",
 	"#s",
 	"#t",
 	"#o",
-	"#l"
+	"#l",
+	"",
+	"",
+	"",
+	""
 }
 
 new const separator[] = "************************************************"
@@ -383,10 +388,11 @@ public client_putinserver(id)
 
 public HookSay(id)
 {
+	if(!is_user_connected(id))	return PLUGIN_HANDLED
 	read_args(g_typed, charsmax(g_typed))
 	remove_quotes(g_typed)
 	trim(g_typed)
-	if(equal(g_typed, "") || !is_user_connected(id))	return PLUGIN_HANDLED_MAIN
+	if(equal(g_typed, ""))	return PLUGIN_HANDLED_MAIN
 
 	/*if(containi(g_typed,"%s")!=-1||containi(g_typed,"%s0")!=-1||containi(g_typed,"#c")!=-1||containi(g_typed,"#a")!=-1||containi(g_typed,"#s")!=-1||containi(g_typed,"#t")!=-1||containi(g_typed,"#o")!=-1||containi(g_typed,"#l")!=-1)
 	{
