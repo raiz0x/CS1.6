@@ -30,9 +30,10 @@ public plugin_init()
 public client_putinserver(id)
 {
 	if(is_user_bot(id)||is_user_hltv(id)||!is_user_connected(id)||!is_user_admin(id))	return
-
+	g_FreeVip[id]=false
 	last_flags[id]=stocare_flage_len(id)
 }
+public client_disconnect(id)	if(g_FreeVip[id])	g_FreeVip[id]=false
 
 public fwHamPlayerSpawnPost(id) 
 { 
@@ -50,10 +51,7 @@ public fwHamPlayerSpawnPost(id)
 			remove_user_flags(id); 
 			set_user_flags(id, read_flags(FLAG_VF));
 		}
-		else
-		{
-			set_user_flags(id,read_flags(last_flags[id])&&read_flags(FLAG_VF))
-		}
+		else	set_user_flags(id,read_flags(last_flags[id])&&read_flags(FLAG_VF))
 		g_FreeVip[id] = true;
 	} 
 	else
@@ -64,7 +62,7 @@ public fwHamPlayerSpawnPost(id)
 		if(!Protejat(id))
 		{
 			remove_user_flags(id); 
-				set_user_flags(id, read_flags("z"));
+			set_user_flags(id, read_flags("z"));
 		}
 		else
 		{
@@ -93,10 +91,10 @@ stock client_printcolor(const id, const input[], any:...)
 	static szMsg[191]
 
 	vformat(szMsg, charsmax(szMsg), input, 3)
-	replace_all(szMsg, 190, "/g", "^4")
-	replace_all(szMsg, 190, "/y", "^1")
-	replace_all(szMsg, 190, "/ctr", "^1")
-	replace_all(szMsg, 190, "/w", "^0")
+	replace_all(szMsg, 190, "!g", "^4")
+	replace_all(szMsg, 190, "!n", "^1")
+	replace_all(szMsg, 190, "!t", "^3")
+	replace_all(szMsg, 190, "!n2", "^0")
 
 	if(id) iPlayers[0] = id
 	else get_players(iPlayers, iCount, "ch")
