@@ -6,33 +6,19 @@
 #include <cstrike>
 #include <zombieplague>
 
+
 #pragma tabsize 0
 
-//#define LOCK_SPEED
 
 #define PLUGIN "[ZP] LaserMine" //kkt1
 #define VERSION "2.8.1" //fake
 #define AUTHOR "SandStriker / Shidla / QuZ/DJ_WEST" //lev fix
 
-#define RemoveEntity(%1) engfunc(EngFunc_RemoveEntity,%1)
-
-#define TASK_PLANT 15100 
-#define TASK_RESET 15500 
-#define TASK_RELEASE 15900 
-
-#define LASERMINE_TEAM pev_iuser1
-#define LASERMINE_COUNT pev_fuser1
-#define LASERMINE_OWNER pev_iuser2
-#define LASERMINE_BEAMENDPOINT pev_vuser1
-#define LASERMINE_POWERUP pev_fuser2
-#define LASERMINE_STEP pev_iuser3
-#define LASERMINE_BEAMTHINK pev_fuser3
-#define LASERMINE_HITING pev_iuser4
-
 
 #define MODE_LASERMINE 0 // 0? dmg pe hit
 #define ACCESS ADMIN_IMMUNITY
 #define CHAT_TAG "^4[ZOMBIE.THEXFORCE.RO]^1"
+//#define LOCK_SPEED
 
 static const	LMName[] = "LASER-MINE",
 		LMCost = 2, //ammo
@@ -66,6 +52,21 @@ static const	LMName[] = "LASER-MINE",
 	   gSnarkClassName[]   =   "wpn_snark",  
 	   barnacle_class[]   =   "barnacle",      
 	   weapon_box[]      =   "weaponbox";
+
+#define RemoveEntity(%1) engfunc(EngFunc_RemoveEntity,%1)
+
+#define TASK_PLANT 15100 
+#define TASK_RESET 15500 
+#define TASK_RELEASE 15900 
+
+#define LASERMINE_TEAM pev_iuser1
+#define LASERMINE_COUNT pev_fuser1
+#define LASERMINE_OWNER pev_iuser2
+#define LASERMINE_BEAMENDPOINT pev_vuser1
+#define LASERMINE_POWERUP pev_fuser2
+#define LASERMINE_STEP pev_iuser3
+#define LASERMINE_BEAMTHINK pev_fuser3
+#define LASERMINE_HITING pev_iuser4
 
 enum tripmine_e { 
    TRIPMINE_IDLE1 = 0, 
@@ -124,7 +125,7 @@ public plugin_init()
    register_concmd("lm_take", "luatlaser", ACCESS, " - <nume>"); 
    register_concmd("lm_give", "puslaser", ACCESS, " - <nume>"); 
 
-   g_LENABLE   = register_cvar("lm","1"); 
+   g_LENABLE   = register_cvar("lm","1"); //e activ?
    g_LACCESS   = register_cvar("lm_acc","0"); //0-all / 1-admin
    g_LMODE      = register_cvar("lm_mode","0"); //0-kill / 1-tripmine
    g_LAMMO      = register_cvar("lm_ammo","1"); //limita de lm
@@ -136,7 +137,7 @@ public plugin_init()
    g_LFMONEY   = register_cvar("lm_fragammo","5"); //ammo pe frag
    g_LHEALTH   = register_cvar("lm_health","500"); //hp lm
    g_LTMAX      = register_cvar("lm_teammax","10"); // lm intr-o echipa
-   g_LRADIUS   = register_cvar("lm_radius","320.0")
+   g_LRADIUS   = register_cvar("lm_radius","320.0") //zona din jurul laser-ului
 
    g_LRDMGz      = register_cvar("lm_rdmg_zm","500.0") // dmg la explozie pt zm
    g_LRDMGh      = register_cvar("lm_rdmg_hm","50.0") // dmg la explozie pt hm
@@ -150,7 +151,7 @@ public plugin_init()
    g_LCLMODE   = register_cvar("lm_color","0"); //0-team color/1-green
 
    g_LDMGMODE   = register_cvar("lm_ldmgmode","0"); //laser hit damage mode. (0 is frame dmg, 1 is once dmg, 2 is seconds dmg)
-   g_LDSEC      = register_cvar("lm_ldmgseconds","1");
+   g_LDSEC      = register_cvar("lm_ldmgseconds","1"); //pe cate secunde sa ia dmg
 
    g_LBUYMODE   = register_cvar("lm_buymode","1"); //1-lm moka/2-pe ammo
    g_LCMDMODE   = register_cvar("lm_cmdmode","1"); //command mode. (0 is +USE key, 1 is bind, 2 is each)
@@ -173,8 +174,9 @@ public plugin_init()
    register_forward(FM_Think, "ltm_Think");
    //register_forward(FM_PlayerPostThink, "ltm_PostThink");
    register_forward(FM_PlayerPreThink, "ltm_PreThink");
+	register_forward(FM_TraceLine,		"MinesShowInfo", 1);
 
-   RegisterHam(Ham_TakeDamage, ENT_CLASS_NAME3, "Laser_TakeDamage");
+   RegisterHam(Ham_TakeDamage, ENT_CLASS_NAME3, "Laser_TakeDamage",0);
 	#if defined LOCK_SPEED
 	   RegisterHam(Ham_Spawn,"player","SPCMD",1)
 	#endif
@@ -265,19 +267,33 @@ public puslaser(id, level, cid)
    return PLUGIN_HANDLED; 
 } 
 
-public Laser_TakeDamage(victim, inflictor, attacker, Float:f_Damage, bit_Damage) 
-{ 
-   if(get_pcvar_num(g_LBEO)) 
-   { 
-      new i_Owner 
-      i_Owner = pev(victim, LASERMINE_OWNER) 
-      
-      if(CsTeams:pev(victim, LASERMINE_TEAM) == cs_get_user_team(attacker)) return HAM_IGNORED
-      if(i_Owner != attacker ||get_user_team(i_Owner)==get_user_team(attacker))	return HAM_IGNORED
-
-   } 
-   return HAM_IGNORED
-} 
+public Laser_TakeDamage(victim, inflictor, attacker, Float:f_Damage, bit_Damage) {
+	if(get_pcvar_num(g_LBEO)<0||get_pcvar_num(g_LBEO)>4)	return HAM_IGNORED
+	static entityName[35]; pev(victim, pev_classname, entityName, charsmax(entityName));
+	if (!equali(entityName, ENT_CLASS_NAME))	return HAM_IGNORED;
+	static i_Owner ;i_Owner = pev(victim, LASERMINE_OWNER)
+	switch(get_pcvar_num(g_LBEO)) {
+		case 0:	{
+			if(i_Owner != attacker) return HAM_SUPERCEDE;
+		}
+		case 1:	{
+			if(CsTeams:pev(victim, LASERMINE_TEAM) != cs_get_user_team(attacker)) return HAM_SUPERCEDE;
+		}
+		case 2:{
+			return HAM_IGNORED;
+		}
+		case 3:{
+			if(i_Owner == attacker || CsTeams:pev(victim, LASERMINE_TEAM) == cs_get_user_team(attacker))	return HAM_SUPERCEDE;
+		}
+		case 4:{
+			if(cs_get_user_team(i_Owner)==cs_get_user_team(attacker))	return HAM_SUPERCEDE;
+		}
+		default:{
+			return HAM_IGNORED;
+		}
+	}
+	return HAM_SUPERCEDE
+}
 
 public delaycount(id)	g_dcount[id] = floatround(get_gametime());
 
@@ -1090,7 +1106,6 @@ public client_putinserver(id)
    g_deployed[id] = 0; 
    g_havemine[id] = 0; 
    DeleteTask(id); 
-   set_task( 1.0, "Task_CheckAiming", id + 3389,.flags= "b" ); 
    //set_task( 1.1, "checkIfspec",id,.flags="b") 
 } 
 public client_disconnect(id){ 
@@ -1160,123 +1175,91 @@ public checkIfspec(id)
           }
      }
 }
-public RemoveAllTripmines(i_Owner) 
-{ 
-   new iEnt = g_MaxPL + 1; 
-   new clsname[32]; 
-   while((iEnt = engfunc(EngFunc_FindEntityByString, iEnt, "classname", ENT_CLASS_NAME))) 
-   { 
-      if(i_Owner) 
-      { 
-         if(pev(iEnt, LASERMINE_OWNER) != i_Owner)	continue; 
-         clsname[0] = '^0' 
-         pev(iEnt, pev_classname, clsname, sizeof(clsname)-1); 
-         if(equali(clsname, ENT_CLASS_NAME)) 
-         { 
-            PlaySound(iEnt, STOP_SOUND); 
-            RemoveEntity(iEnt); 
-         } 
-      } 
-      else	set_pev(iEnt, pev_flags, FL_KILLME); 
-   } 
-   g_deployed[i_Owner]=0; 
+public RemoveAllTripmines(i_Owner){ 
+	new iEnt = -1//g_MaxPL + 1;
+	static clsname[35];
+	while((iEnt = engfunc(EngFunc_FindEntityByString, iEnt, "classname", ENT_CLASS_NAME))){
+		if (!pev_valid(iEnt))	continue;
+		if(i_Owner){
+			if(pev(iEnt, LASERMINE_OWNER) != i_Owner)	continue;
+			//clsname[0] = '^0'
+			pev(iEnt, pev_classname, clsname, charsmax(clsname));
+			if(equali(clsname, ENT_CLASS_NAME)){
+				PlaySound(iEnt, STOP_SOUND);
+				RemoveEntity(iEnt);
+			}
+		}
+		else	set_pev(iEnt, pev_flags, FL_KILLME);
+	}
+	g_deployed[i_Owner]=0;
 }
-
-SetStartAmmo(id) 
-{ 
-   new stammo = get_pcvar_num(g_LSTAMMO); 
-   if(stammo <= 0) return
-   g_havemine[id] = (g_havemine[id] <= stammo) ? stammo : g_havemine[id]; 
-} 
 
 public CutDeploy_onDamage(id)	if(get_user_health(id) < 1)	DeleteTask(id);
 
-DeleteTask(id)
-{
+SetStartAmmo(id){
+   static stammo; stammo = get_pcvar_num(g_LSTAMMO);
+   if(stammo <= 0) return
+   g_havemine[id] = (g_havemine[id] <= stammo) ? stammo : g_havemine[id];
+}
+DeleteTask(id){
    if(task_exists((TASK_PLANT + id)))	remove_task((TASK_PLANT + id))
-
    if(task_exists((TASK_RELEASE + id)))	remove_task((TASK_RELEASE + id))
-
    g_settinglaser[id] = false
-} 
-
-stock set_rendering(entity, fx = kRenderFxNone, r = 255, g = 255, b = 255, render = kRenderNormal, amount = 16) 
-{ 
-   static Float:RenderColor[3]; 
-   RenderColor[0] = float(r); 
-   RenderColor[1] = float(g); 
-   RenderColor[2] = float(b); 
-
-   set_pev(entity, pev_renderfx, fx); 
-   set_pev(entity, pev_rendercolor, RenderColor); 
-   set_pev(entity, pev_rendermode, render); 
-   set_pev(entity, pev_renderamt, float(amount)); 
-
-   return 1 
 }
 
-public Task_CheckAiming( iTaskIndex ) 
-{ 
-    static iClient; 
-    iClient = iTaskIndex - 3389; 
+stock set_rendering(entity, fx = kRenderFxNone, r = 255, g = 255, b = 255, render = kRenderNormal, amount = 16){
+   static Float:RenderColor[3];
+   RenderColor[0] = float(r);
+   RenderColor[1] = float(g);
+   RenderColor[2] = float(b);
 
-    if( is_user_alive( iClient ) ) 
-    { 
-        static iEntity, iDummy, cClassname[ 32 ]; 
-        get_user_aiming( iClient, iEntity, iDummy, 9999 ); 
+   set_pev(entity, pev_renderfx, fx);
+   set_pev(entity, pev_rendercolor, RenderColor);
+   set_pev(entity, pev_rendermode, render);
+   set_pev(entity, pev_renderamt, float(amount));
 
-        if( pev_valid( iEntity ) ) 
-        { 
-            pev( iEntity, pev_classname, cClassname, 31 ); 
-
-            if( equali( cClassname, ENT_CLASS_NAME ) ) 
-            { 
-                new name[ 45 ]; 
-                new aim = pev( iEntity, LASERMINE_OWNER ); 
-                get_user_name( aim, name, charsmax( name ) - 1 )
-		if(zp_get_user_zombie(aim))	formatex(name,charsmax(name),"[ZM] %s",name)
-		else	formatex(name,charsmax(name),"[HM] %s",name)
-                set_hudmessage( 50, 100, 150, -1.0, 0.60, 0, 6.0, 1.1, 0.0, 0.0, -1 ) 
-                show_hudmessage( iClient, "Owner: %s^nHealth: %d/700", name, pev(iEntity,pev_health ))
-            } 
-        } 
-    } 
+   return 1
 }
 
+public MinesShowInfo(Float:vStart[3], Float:vEnd[3], Conditions, id, iTrace){
+	static iHit;iHit = get_tr2(iTrace, TR_pHit);
+    if( pev_valid( iHit ) ){
+        if( pev(iHit, pev_deadflag) == DEAD_NO ){//sau id
+			static cClassname[35];pev( iHit, pev_classname, cClassname, charsmax(cClassname) );
+            if( equali( cClassname, ENT_CLASS_NAME ) ){
+                static aim; aim = pev( iHit, LASERMINE_OWNER );
+                static name[ 120 ];get_user_name( aim, name, charsmax( name ) )
+				format(name,charsmax(name),"[%s] %s",zp_get_user_zombie(aim)?"ZM":"HM",name)
+                set_hudmessage( 50, 100, 150, -1.0, 0.60, 0, 6.0, 1.1, 0.0, 0.0, -1 )
+                show_hudmessage( id, "Owner: %s^nHealth: %d/700", name, floatround(Float:pev(iHit,pev_health )))
+            }
+        }
+    }
+}
 
-bool:ReturnCheck(id) 
-{ 
+bool:ReturnCheck(id){ 
    if(!CanCheck(id,-1)) return false;
-
    if(g_havemine[id] + 1 > get_pcvar_num(g_LAMMO)) return false;
-
-   new tgt,body,Float:vo[3],Float:to[3]; 
+   static tgt,body,Float:vo[3],Float:to[3]; 
    get_user_aiming(id,tgt,body);
 
    if(!pev_valid(tgt)) return false;
-   pev(id,pev_origin,vo); 
+   pev(id,pev_origin,vo);
    pev(tgt,pev_origin,to);
-
    if(get_distance_f(vo,to) > 70.0) return false;
 
-   new EntityName[32]; 
-   pev(tgt, pev_classname, EntityName, 31);
-
+   static EntityName[35];pev(tgt, pev_classname, EntityName, charsmax(EntityName));
    if(!equal(EntityName, ENT_CLASS_NAME)) return false;
-
    if(pev(tgt,LASERMINE_OWNER) != id) return false;
 
-   return true; 
+   return true;
 }
-bool:CreateCheck(id) 
-{ 
-   if(!CanCheck(id,0)) return false; 
-  
-   if(!zp_has_round_started() && get_pcvar_num(g_NOROUND)) 
-   { 
-      client_printcolor(id, "%L %L", id, "CHATTAG",id, "STR_NOROUND") 
-      return false; 
-   } 
+bool:CreateCheck(id){
+   if(!CanCheck(id,0)) return false;
+   if(!zp_has_round_started() && get_pcvar_num(g_NOROUND)){
+      client_printcolor(id, "%L %L", id, "CHATTAG",id, "STR_NOROUND")
+      return false;
+   }
 
    if(g_deployed[id] >= get_pcvar_num(g_LAMMO)) 
    { 
