@@ -8,6 +8,8 @@
 
 #pragma tabsize 0
 
+//#define LOCK_SPEED
+
 #define PLUGIN "[ZP] LaserMine" //kkt1
 #define VERSION "2.8.1" //fake
 #define AUTHOR "SandStriker / Shidla / QuZ/DJ_WEST" //lev fix
@@ -32,19 +34,38 @@
 #define ACCESS ADMIN_IMMUNITY
 #define CHAT_TAG "^4[ZOMBIE.THEXFORCE.RO]^1"
 
-new const LMName[] = "LASER-MINE"
-new const LMCost = 2 //ammo
-new const LMTeam = ZP_TEAM_ANY //0-all
+static const	LMName[] = "LASER-MINE",
+		LMCost = 2, //ammo
+		LMTeam = ZP_TEAM_ANY, //0-all
 
-new const 
-   Red_Hum      = 0,
-   Green_Hum    = 0,
-   Blue_Hum   = 255;
+		Red_Hum      = 0,
+		Green_Hum    = 0,
+		Blue_Hum   = 255,
 
-new const 
-   Red_Zomb   = 255,
-   Green_Zomb    = 0,
-   Blue_Zomb   = 0;
+		Red_Zomb   = 255,
+		Green_Zomb    = 0,
+		Blue_Zomb   = 0,
+
+	   ENT_MODELS[]   = "models/v_tripmine.mdl",
+
+	   ENT_SOUND1[]   = "weapons/mine_deploy.wav", 
+	   ENT_SOUND2[]   = "weapons/mine_charge.wav",
+	   ENT_SOUND3[]   = "weapons/mine_activate.wav",
+
+	   ENT_SOUND6[]   = "debris/bustglass1.wav",
+	   ENT_SOUND7[]   = "debris/bustglass2.wav",
+	   ENT_SOUND4[]   = "debris/beamstart9.wav",
+	   
+	   ENT_SOUND5[]   = "items/gunpickup2.wav",
+
+	   ENT_SPRITE1[]   = "sprites/laserbeam.spr",
+	   ENT_SPRITE2[]   = "sprites/lm_explode.spr",
+
+	   ENT_CLASS_NAME[]   =   "lasermine", 
+	   ENT_CLASS_NAME3[]   =   "func_breakable", 
+	   gSnarkClassName[]   =   "wpn_snark",  
+	   barnacle_class[]   =   "barnacle",      
+	   weapon_box[]      =   "weaponbox";
 
 enum tripmine_e { 
    TRIPMINE_IDLE1 = 0, 
@@ -57,44 +78,16 @@ enum tripmine_e {
    TRIPMINE_WORLD, 
    TRIPMINE_GROUND, 
 }; 
-
 enum 
 { 
    POWERUP_THINK, 
    BEAMBREAK_THINK, 
-   EXPLOSE_THINK 
-}; 
+   EXPLOSE_THINK,
 
-enum 
-{ 
    POWERUP_SOUND, 
    ACTIVATE_SOUND, 
-   STOP_SOUND 
+   STOP_SOUND
 }; 
-
-new const 
-   ENT_MODELS[]   = "models/v_tripmine.mdl",
-
-   ENT_SOUND1[]   = "weapons/mine_deploy.wav", 
-   ENT_SOUND2[]   = "weapons/mine_charge.wav",
-   ENT_SOUND3[]   = "weapons/mine_activate.wav",
-
-   ENT_SOUND6[]   = "debris/bustglass1.wav",
-   ENT_SOUND7[]   = "debris/bustglass2.wav",
-   ENT_SOUND4[]   = "debris/beamstart9.wav",
-   
-   ENT_SOUND5[]   = "items/gunpickup2.wav",
-
-   ENT_SPRITE1[]   = "sprites/laserbeam.spr",
-   ENT_SPRITE2[]   = "sprites/lm_explode.spr";
-
-
-new const 
-   ENT_CLASS_NAME[]   =   "lasermine", 
-   ENT_CLASS_NAME3[]   =   "func_breakable", 
-   gSnarkClassName[]   =   "wpn_snark",  
-   barnacle_class[]   =   "barnacle",      
-   weapon_box[]      =   "weaponbox"; 
 
 new g_EntMine, beam, boom 
 new g_LENABLE, g_LFMONEY, g_LAMMO, g_LDMGh,g_LDMGz, g_LBEO, g_LTMAX, g_LHEALTH, g_LMODE, g_LRADIUS, g_NOROUND 
@@ -106,7 +99,11 @@ new bool:g_settinglaser[33]
 new ID_BLOOD; 
 //new g_LCOST
 
-new Float:plspeed[33], g_havemine[33], g_deployed[33]; 
+new g_havemine[33], g_deployed[33]; 
+
+	#if defined LOCK_SPEED
+		new Float:plspeed[33]
+	#endif
 
 public plugin_init() 
 { 
@@ -161,7 +158,7 @@ public plugin_init()
    g_LDETAIL  = register_cvar("lm_realistic_detail", "1"); //efecte lm
 
    register_event("DeathMsg", "DeathEvent", "a"); 
-   register_event("CurWeapon", "standing", "be", "1=1"); 
+   //register_event("CurWeapon", "standing", "be", "1=1"); 
    register_event("ResetHUD", "delaycount", "a");
    register_event("HLTV", "newround", "a", "1=0", "2=0")
    register_event("Damage","CutDeploy_onDamage","b");
@@ -174,10 +171,13 @@ public plugin_init()
    g_msgStatusText = get_user_msgid("StatusText");
   
    register_forward(FM_Think, "ltm_Think");
-   register_forward(FM_PlayerPostThink, "ltm_PostThink");
+   //register_forward(FM_PlayerPostThink, "ltm_PostThink");
    register_forward(FM_PlayerPreThink, "ltm_PreThink");
 
    RegisterHam(Ham_TakeDamage, ENT_CLASS_NAME3, "Laser_TakeDamage");
+	#if defined LOCK_SPEED
+	   RegisterHam(Ham_Spawn,"player","SPCMD",1)
+	#endif
 
    register_dictionary("lasermines.txt") 
 } 
@@ -291,7 +291,10 @@ public CreateLaserMine_Progress(id)
 { 
    if(!CreateCheck(id))	return PLUGIN_HANDLED;
 
-   g_settinglaser[id] = true; 
+   g_settinglaser[id] = true;
+	#if defined LOCK_SPEED
+	   set_pev(id, pev_maxspeed, 1.0)
+	#endif
 
    message_begin(MSG_ONE, 108, {0,0,0}, id); 
    write_byte(1); 
@@ -392,6 +395,10 @@ public Spawn(id)
    g_havemine[id]--; 
    DeleteTask(id); 
    ShowAmmo(id);
+
+	#if defined LOCK_SPEED
+	   resetspeed(id)
+	#endif
 }
 
 public ReturnLaserMine_Progress(id) 
@@ -1043,24 +1050,31 @@ ShowAmmo(id)
 }
 public showInfo(id)	client_printcolor(id, "%L", id, "STR_REF")
 
-public standing(id) 
-{ 
-   if(!g_settinglaser[id])	return
+	#if defined LOCK_SPEED
+		public SPCMD(id){
+			if(!is_user_alive(id)||is_user_bot(id)||is_user_hltv(id))	return
 
-   set_pev(id, pev_maxspeed, 1.0)
-} 
+			pev(id, pev_maxspeed,plspeed[id])
+		}
+		/*public standing(id) 
+		{ 
+		   if(!g_settinglaser[id])	return
 
-public ltm_PostThink(id) 
-{ 
-   if(!g_settinglaser[id])	resetspeed(id)
-   else
-   { 
-      pev(id, pev_maxspeed,plspeed[id]) 
-      set_pev(id, pev_maxspeed, 1.0) 
-   }
+		   set_pev(id, pev_maxspeed, 1.0)
+		}
+		public ltm_PostThink(id) 
+		{ 
+		   if(!g_settinglaser[id])	resetspeed(id)
+		   else
+		   { 
+			  pev(id, pev_maxspeed,plspeed[id]) 
+			  set_pev(id, pev_maxspeed, 1.0) 
+		   }
 
-   return FMRES_IGNORED 
-} 
+		   return FMRES_IGNORED 
+		}*/
+		resetspeed(id)	set_pev(id, pev_maxspeed, plspeed[id]) 
+	#endif
 public ltm_PreThink(id) 
 { 
    if(!pev_user_alive(id) || g_settinglaser[id] == true || is_user_bot(id) || get_pcvar_num(g_LCMDMODE) == 1)	return FMRES_IGNORED; 
@@ -1068,16 +1082,16 @@ public ltm_PreThink(id)
    if(pev(id, pev_button) & IN_USE && !(pev(id, pev_oldbuttons) & IN_USE))	CreateLaserMine_Progress(id)
 
    return FMRES_IGNORED;
-} 
-resetspeed(id)	set_pev(id, pev_maxspeed, plspeed[id]) 
+}
 
 public client_putinserver(id) 
-{ 
+{
+   if(!get_pcvar_num(g_LENABLE))	return
    g_deployed[id] = 0; 
    g_havemine[id] = 0; 
    DeleteTask(id); 
-   //set_task( 1.0, "Task_CheckAiming", id + 3389, _, _, "b" ); 
-   //set_task( 1.1, "checkIfspec",_,_,_,"b") 
+   set_task( 1.0, "Task_CheckAiming", id + 3389,.flags= "b" ); 
+   //set_task( 1.1, "checkIfspec",id,.flags="b") 
 } 
 public client_disconnect(id){ 
    if(!get_pcvar_num(g_LENABLE))	return
@@ -1090,9 +1104,8 @@ public newround(id)
 { 
 	if(!get_pcvar_num(g_LENABLE))	return
 
-	for(new id=0;id<get_maxplayers();id++)
+	for(new id=1;id<=get_maxplayers();id++)
 	{
-		pev(id, pev_maxspeed,plspeed[id]) 
 		DeleteTask(id); 
 		RemoveAllTripmines(id); 
 
@@ -1103,7 +1116,7 @@ public newround(id)
 public endround(id) 
 { 
 	if(!get_pcvar_num(g_LENABLE))	return
-	for(new id=0;id<get_maxplayers();id++)
+	for(new id=1;id<=get_maxplayers();id++)
 	{
 		DeleteTask(id); 
 		RemoveAllTripmines(id); 
