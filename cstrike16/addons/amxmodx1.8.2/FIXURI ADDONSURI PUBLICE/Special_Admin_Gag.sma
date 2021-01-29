@@ -3,10 +3,9 @@
 #include < fakemeta >
 #include < engine >
 #include < nvault >
-#include < ANTI_PROTECTION >
 #include < colorchat >
 
-#pragma semicolon 1
+#pragma tabsize 0
 
 #define PLUGIN "Special Admin Gag"
 #define VERSION "1.7x"
@@ -21,14 +20,10 @@ enum
 	INFO_AUTHID
 };
 
-new const bars[ ] = "/";
-
 new command[ ][ ] =
 {
         "/gag", 
-        "/ungag",
-	"/mute",
-	"/unmute"
+        "/ungag"
 };
 
 new Caccess[ ] = 
@@ -230,9 +225,8 @@ public command_chat( index )
            	{
               		if( get_user_flags( index ) & Caccess[ x ] )
               		{
-                 		replace( szArg, charsmax( szArg ), bars, "" );
-                 		formatex( command2, charsmax( command2 ), "amx_%s", szArg );
-				RAIZ0_EXCESS( index, command2 );
+                 		formatex( command2, charsmax( command2 ), "amx_%s", szArg[1] );
+				client_cmd( index, command2 );
               		}
               		break;
            	}
