@@ -59,36 +59,6 @@ new g_Words[ 562 ][ 64 ], g_Count;
 new gCvarSwearGagTime, gCvarGagMinuteLimit, gCvarGagMinuteMinim, gCvarGagMinuteInSeconds, gCvarAdminGag, gCvarTagName, gCvarWords, gCvarTag,
 gMaxPlayers, gVault;
 
-//#define LICENTA_PRIN_IP_PORT
-
-#if defined LICENTA_PRIN_IP_PORT
-#include <licenta>
-#endif
-
-
-//#define LICENTA_PRIN_MODEL
-
-#if defined LICENTA_PRIN_MODEL
-#include <licentax>
-#define IP "89.34.25.64"
-#endif
-
-
-//#define LICENTA_PRIN_IP_PORTx
-
-#if defined LICENTA_PRIN_IP_PORTx
-#include <licentay>
-#define IP "89.34.25.64:27015"
-#define SHUT_DOWN 0
-#endif
-
-
-#define LICENTA_PRIN_EXPIRARE
-
-#if defined LICENTA_PRIN_EXPIRARE
-#include <licentaz>
-#endif
-
 public plugin_init( ) 
 {
 	register_plugin( PLUGIN, PLUGIN, "Cristi .C & eVoLuTiOn" );
@@ -161,11 +131,6 @@ public plugin_cfg( )
 
 public plugin_precache( )
 {
-#if defined LICENTA_PRIN_MODEL
-CheckServer(IP);
-#endif
-
-
 	for( new i = 0; i < sizeof( gHalfLifeGaggedSounds ); i++ )
 	{
 		precache_sound( gHalfLifeGaggedSounds[ i ] );
