@@ -29,8 +29,6 @@ new command[ ][ ] =
 new Caccess[ ] = 
 {
 	COMMAND_ACCESS,
-	COMMAND_ACCESS,
-	COMMAND_ACCESS,
 	COMMAND_ACCESS
 };
 
@@ -97,8 +95,6 @@ public plugin_init( )
 
 	register_concmd( "amx_gag", "CommandGag" ); 
 	register_concmd( "amx_ungag", "CommandUngag" );
-	register_concmd( "amx_mute", "CommandGag" ); 
-	register_concmd( "amx_unmute", "CommandUngag" );
 
 	register_clcmd( "say", "CheckGag" );
 	register_clcmd( "say_team", "CheckGag" );
