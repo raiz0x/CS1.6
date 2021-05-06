@@ -12,7 +12,7 @@ public plugin_init( ) {
 public MessageScoreAttrib( iMsgID, iDest, iReceiver ) {
    new id = get_msg_arg_int( 1 );
    
-   if(is_user_connected( id ) && get_user_flags( id) & ADMIN_RESERVATION ) {
+   if(is_user_connected( id ) && get_user_flags( id) & ADMIN_RESERVATION && get_user_team(id)==2 ) {
       set_msg_arg_int( 2, ARG_BYTE, is_user_alive( id ) ? VIP : DEAD );
    }
 }
