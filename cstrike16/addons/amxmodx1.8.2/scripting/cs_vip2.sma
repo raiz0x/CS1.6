@@ -38,7 +38,7 @@ public plugin_init()
     //Hamsandwich 
     RegisterHam(Ham_Spawn, "player", "Player_Spawn", 1) 
 	for (new i; i < sizeof VWS; i++) RegisterHam(Ham_Item_Deploy, VWS[i][ENG_WEAPON], "OnItemDeployPost", 1);
-	RegisterHam(Ham_TakeDamage, "player", "player_damage")
+	RegisterHam(Ham_TakeDamage, "player", "player_damage",1)
 
 	g_MaxPlayers = get_maxplayers();
 } 
@@ -180,16 +180,8 @@ public menu_handler(id, menu, item)
 
 public player_damage(victim, inflictor, attacker, Float:damage, bits){
 	if(!is_user_alive(attacker))	return HAM_IGNORED;
-        if(is_valid_player(attacker)&&is_gold_vip(attacker)&&(sp_w[attacker][0]||sp_w[attacker][1]||sp_w[attacker][2])){
-		for (new i; i < sizeof VWS; i++){
-			if(get_user_weapon(attacker)==VWS[i][CSW_WEAPON]){
-				SetHamParamFloat(4, damage * VWS[i][WEAPON_DMG])
-				return HAM_SUPERCEDE;
-			}
-		}
-	}
-
-	return HAM_IGNORED;
+        if(is_valid_player(attacker)&&is_gold_vip(attacker)&&(sp_w[attacker][0]||sp_w[attacker][1]||sp_w[attacker][2])) for (new i; i < sizeof VWS; i++) if(get_user_weapon(attacker)==VWS[i][CSW_WEAPON]) SetHamParamFloat(4, damage * VWS[i][WEAPON_DMG])
+	return HAM_SUPERCEDE;
 }
 
 /* AMXX-Studio Notes - DO NOT MODIFY BELOW HERE
