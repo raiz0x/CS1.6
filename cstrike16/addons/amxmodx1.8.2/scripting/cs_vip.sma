@@ -65,7 +65,7 @@ public plugin_init()
        RegisterHam(Ham_Spawn, "player", "PlayerSpawn", 1 )
        for (new i; i < sizeof WEAPONENTNAMES; i++)//=)))
 		/*if (WEAPONENTNAMES[i][0])*/ RegisterHam(Ham_Item_Deploy, WEAPONENTNAMES[i], "OnItemDeployPost", 1);
-       RegisterHam(Ham_TakeDamage, "player", "player_damage"/*,1*/)
+       RegisterHam(Ham_TakeDamage, "player", "player_damage",1)
        g_MaxPlayers = get_maxplayers();
 
        register_cvar("vip_jumps","1")
