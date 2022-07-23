@@ -1,0 +1,66 @@
+{
+	"response":
+	{
+		"status":
+		[
+			{
+				"current_version":
+				[
+					{
+						"pv1": "1.0.0X",
+						"mxp": "1.0.2X"
+					}
+				],
+				"cv_release":
+				[
+					{
+						"pv1": "01.05.2020 | 15:16:33",
+						"mxp": "23.07.2022 | 15:16:33"
+					}
+				],
+				"updated_version":
+				[
+					{
+						"pv1": "1.0.0X",
+						"mxp": "1.0.2X"
+					}
+				],
+				"uv_release":
+				[
+					{
+						"pv1": "01.09.2020 | 15:16:33",
+						"mxp": "01.09.2020 | 15:16:33"
+					}
+				],
+				"critic_update":
+				[
+					{
+						"pv1": 0,
+						"mxp": 0
+					}
+				],
+				"next_update":
+				[
+					{
+						"pv1": "1.0.0X",
+						"mxp": "1.0.3X"
+					}
+				],
+				"nu_release":
+				[
+					{
+						"pv1": "01.09.2020 | 15:16:33",
+						"mxp": "NO TIMELINE"
+					}
+				]
+			}
+		],
+		"license":
+		[
+			{
+				"licensed_sites_pv1":	"kkt.ro;188.241.222.25",
+				"licensed_sites_mix":	"levin.gamezilla.ro"
+			}
+		]
+	}
+}
