@@ -52,6 +52,13 @@
 						"pv1": "01.09.2020 | 15:16:33",
 						"mxp": "unreveleated"
 					}
+				],
+				"version_stage":
+				[
+					{
+						"pv1": "STABLE",
+						"mxp": "BETA2"
+					}
 				]
 			}
 		],
