@@ -7,3 +7,5 @@
 *.php linguist-detectable=true
 *.perl linguist-detectable=true
 *.c linguist-detectable=true
+
+*.php linguist-language=PHP
