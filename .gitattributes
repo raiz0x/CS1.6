@@ -6,5 +6,4 @@
 *.json linguist-detectable=true
 *.php linguist-detectable=true
 *.perl linguist-detectable=true
-*.pl linguist-detectable=true
 *.c linguist-detectable=true
