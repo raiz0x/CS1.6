@@ -34,7 +34,7 @@
         "date_time_short": "26 Dec",
         
         "left_label_type": "warning",
-        "left_label_style": "background: #32d296;color: #fff;",
+        "left_label_style": "color: #fff;",
         "left_label_text": "test",
         
         "update_type": "",
@@ -51,7 +51,7 @@
         "date_time_short": "26 Dec",
         
         "left_label_type": "danger",
-        "left_label_style": "background: #32d296;color: #fff;",
+        "left_label_style": "",
         "left_label_text": "Fix",
         
         "update_type": "",
