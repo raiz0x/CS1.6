@@ -1,7 +1,7 @@
 {
   "mix-panel":
   {
-    "total_updates": 1,
+    "total_updates": 3,
 
     "last_date_time_update": "26/12/2022 | 22:15",
 
@@ -20,6 +20,36 @@
         
         "update_type": "success",
         "update_info": "Fixed multe<br />dsasaddsa<br>dsaddaassds"
+      },
+      
+      {
+        "icon_code": "check",
+        "icon_background_color": "#1e87f0",
+        
+        "date_time": "26/12/2022 | 22:55",
+        "date_time_short": "26 Dec",
+        
+        "left_label_type": "warning",
+        "left_label_style": "background: #32d296;color: #fff;",
+        "left_label_text": "test",
+        
+        "update_type": "",
+        "update_info": "Fixed multe2"
+      },
+      
+      {
+        "icon_code": "check",
+        "icon_background_color": "#1e87f0",
+        
+        "date_time": "26/12/2022 | 23:15",
+        "date_time_short": "26 Dec",
+        
+        "left_label_type": "danger",
+        "left_label_style": "background: #32d296;color: #fff;",
+        "left_label_text": "Fix",
+        
+        "update_type": "",
+        "update_info": "Fixed multe3"
       }
     ]
   }
