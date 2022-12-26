@@ -5,10 +5,10 @@
 
     "last_date_time_update": "26/12/2022 | 22:15",
 
-    "1":
+    "updates":
     [
       {
-        "icon_code": "<span uk-icon=check style=color: #fff;></span>",
+        "icon_code": "check",
         "icon_background_color": "#1e87f0",
         
         "date_time": "26/12/2022 | 22:15",
