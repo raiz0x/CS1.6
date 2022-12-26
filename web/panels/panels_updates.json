@@ -8,7 +8,7 @@
     "1":
     [
       {
-        "icon_code": "<span uk-icon='check' style='color: #fff;'></span>",
+        "icon_code": "<span uk-icon=\'check\' style=\'color: #fff;\'></span>",
         "icon_background_color": "#1e87f0",
         
         "date_time": "26/12/2022 | 22:15",
