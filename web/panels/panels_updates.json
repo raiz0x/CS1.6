@@ -8,6 +8,8 @@
     "updates":
     [
       {
+        "num": 1,
+        
         "icon_code": "check",
         "icon_background_color": "#1e87f0",
         
@@ -23,6 +25,8 @@
       },
       
       {
+        "num": 2,
+        
         "icon_code": "check",
         "icon_background_color": "#1e87f0",
         
@@ -38,6 +42,8 @@
       },
       
       {
+        "num": 3,
+        
         "icon_code": "check",
         "icon_background_color": "#1e87f0",
         
