@@ -1,0 +1,25 @@
+{
+  "mix-panel":
+  {
+    "total_updates": 1,
+
+    "last_date_time_update": "26/12/2022 | 22:15",
+
+    "1":
+    [
+      {
+        "icon_code": "<span uk-icon='check' style='color: #fff;'></span>",
+        "icon_background_color": "#1e87f0",
+        
+        "date_time": "26/12/2022 | 22:15",
+        "date_time_short": "26 Dec",
+        
+        "left_label_type": "success",
+        "left_label_style": "background: #32d296;color: #fff;",
+        "left_label_text": "Feature",
+        
+        "update_info": "Fixed multe"
+      }
+    ]
+  }
+}
