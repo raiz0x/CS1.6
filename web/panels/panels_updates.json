@@ -21,7 +21,7 @@
         "left_label_text": "Feature",
         
         "update_type": "success",
-        "update_info": "Fixed multe<br />dsasaddsa<br>dsaddaassds"
+        "update_info": "Rework started"
       },
       
       {
@@ -30,7 +30,7 @@
         "icon_code": "check",
         "icon_background_color": "#1e87f0",
         
-        "date_time": "26/12/2022 | 22:55",
+        "date_time": "27/12/2022 | 22:55",
         "date_time_short": "26 Dec",
         
         "left_label_type": "warning",
@@ -38,7 +38,7 @@
         "left_label_text": "test",
         
         "update_type": "",
-        "update_info": "Fixed multe2"
+        "update_info": "Rework success"
       },
       
       {
@@ -47,7 +47,7 @@
         "icon_code": "check",
         "icon_background_color": "#1e87f0",
         
-        "date_time": "26/12/2022 | 23:15",
+        "date_time": "28/12/2022 | 23:15",
         "date_time_short": "26 Dec",
         
         "left_label_type": "danger",
@@ -55,7 +55,7 @@
         "left_label_text": "Fix",
         
         "update_type": "",
-        "update_info": "Fixed multe3"
+        "update_info": "Rework stable"
       }
     ]
   }
