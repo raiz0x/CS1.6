@@ -54,7 +54,7 @@
         "left_label_style": "",
         "left_label_text": "Fix",
         
-        "update_type": "",
+        "update_type": "primary",
         "update_info": "Rework stable"
       }
     ]
