@@ -10,8 +10,9 @@
       {
         "num": 1,
         
+        "uk-badge-bg-color": "#1e87f0",
+        
         "icon_code": "check",
-        "icon_background_color": "#1e87f0",
         
         "date_time": "26/12/2022 | 22:15",
         "date_time_short": "26 Dec | 22:31",
@@ -27,8 +28,9 @@
       {
         "num": 2,
         
+        "uk-badge-bg-color": "#1e87f0",
+        
         "icon_code": "check",
-        "icon_background_color": "#1e87f0",
         
         "date_time": "27/12/2022 | 22:55",
         "date_time_short": "26 Dec | 16:55",
@@ -44,8 +46,9 @@
       {
         "num": 3,
         
+        "uk-badge-bg-color": "#1e87f0",
+        
         "icon_code": "check",
-        "icon_background_color": "#1e87f0",
         
         "date_time": "28/12/2022 | 23:15",
         "date_time_short": "26 Dec | 12:15",
