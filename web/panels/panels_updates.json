@@ -15,7 +15,7 @@
         "icon_code": "check",
         
         "date_time": "26/12/2022 | 22:15",
-        "date_time_short": "26 Dec | 22:31",
+        "date_time_short": "26 Dec 2022 | 22:31",
         
         "left_label_type": "success",
         "left_label_style": "background: #32d296;color: #fff;",
@@ -33,7 +33,7 @@
         "icon_code": "check",
         
         "date_time": "27/12/2022 | 22:55",
-        "date_time_short": "26 Dec | 16:55",
+        "date_time_short": "26 Dec 2022 | 16:55",
         
         "left_label_type": "warning",
         "left_label_style": "color: #fff;",
@@ -51,7 +51,7 @@
         "icon_code": "check",
         
         "date_time": "28/12/2022 | 23:15",
-        "date_time_short": "26 Dec | 12:15",
+        "date_time_short": "26 Dec 2022 | 12:15",
         
         "left_label_type": "danger",
         "left_label_style": "",
