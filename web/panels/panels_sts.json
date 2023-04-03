@@ -73,6 +73,13 @@
 						"pv1": "STABLE",
 						"mxp": "STABLE"
 					}
+				],
+				"build":
+				[
+					{
+						"pv1": "",
+						"mxp": ""
+					}
 				]
 			}
 		],
