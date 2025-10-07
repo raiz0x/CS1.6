@@ -4,7 +4,7 @@ OFFICIAL LINK - https://www.extreamcs.com/forum/search.php?keywords=&terms=all&a
 
 DIRECT DWD LINKS:
 1. Ghost-Fury @2018 - https://www.dropbox.com/s/wft0ivb8zs396qm/FURY%20OF%20GHOSTS%20%23EXTREAMCS.COM.zip?dl=1
-2. Classic new style @2017 - https://www.dropbox.com/s/v7wsqpvoq4hpp86/CS%20%23EXTREAMCS.COM.zip?dl=1
+2. Classic new style @2017 - https://www.dropbox.com/scl/fi/8gtmqi3n90zjxomgd6tbt/CS-EXTREAMCS.COM.zip?rlkey=7w00lazl7fk0imvpj0p5wcqej&st=plab324w&dl=1
 3. Respawn new style @2013 - https://www.dropbox.com/s/1urs0ng4wqrqauy/RESPAWN%20%23EXTREAMCS.COM.zip?dl=1 + fix - https://www.dropbox.com/scl/fi/grm9iz5b7i74r9d6c4znr/RESPAWN-edit-EXTREAMCS.COM.zip?rlkey=ikx1084yfob55qjb94fl41o9p&st=ovpq3xpm&dl=1
 4. Zombie giant @2018 - https://www.dropbox.com/s/hq5etgb2ti5gj13/Zombie-Giant2%20%23EXTREAMCS.COM.zip?dl=1
 5. Zombie pague new style @2016 - https://www.dropbox.com/s/g1keq8z2wmi8qa3/ZP%40CS0%20%23EXTREAMCS.COM.zip?dl=1
